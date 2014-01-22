@@ -1,0 +1,5 @@
+[0m[[0mdebug[0m] [0mRunning TaskDef(pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysisSuite, sbt.SubclassFingerprintWrapper@7c7421ff, false, [SuiteSelector])[0m
+[0m[[0mdebug[0m] [0mSummary for ScalaTest not available.[0m
+[0m[[0minfo[0m] [0mPassed: Total 3, Failed 0, Errors 0, Passed 3[0m
+[0m[[0mdebug[0m] [0mPassed tests:[0m
+[0m[[0mdebug[0m] [0m	pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysisSuite[0m

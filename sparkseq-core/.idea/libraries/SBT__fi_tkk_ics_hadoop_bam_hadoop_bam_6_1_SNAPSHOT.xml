@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="SBT: fi.tkk.ics.hadoop.bam:hadoop-bam:6.1-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/fi.tkk.ics.hadoop.bam/hadoop-bam/jars/hadoop-bam-6.1-SNAPSHOT.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
