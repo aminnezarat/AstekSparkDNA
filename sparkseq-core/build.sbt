@@ -2,14 +2,14 @@ name := "sparkseq"
 
 version := "0.1"
 
-scalaVersion := "2.9.3"
+scalaVersion := "2.10.3"
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "0.8.1-incubating",
+  "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
   "com.github.tototoshi" %% "scala-csv" % "1.0.0-SNAPSHOT",
   "org.apache.commons" % "commons-math3" % "3.2",          
-  "org.apache.hadoop" % "hadoop-client" % "1.1.2",
+  "org.apache.hadoop" % "hadoop-client" % "1.2.1",
   "fi.tkk.ics.hadoop.bam" % "hadoop-bam" % "6.1-SNAPSHOT",
   "picard" % "picard" % "1.93",
   "samtools" % "samtools" % "1.93",

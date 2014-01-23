@@ -23,7 +23,7 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
   val sparkHome = iSparkHome getOrElse "/opt/spark"*/
   
     //val sc = iSC
-  	var bamFile= iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile).map(r=>(iSampleId,r))
+  	var bamFile= iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile,cloneRecords = false).map(r=>(iSampleId,r))
   	var bamFileFilter = bamFile	
     //val bedFile= iSC.textFile(iBEDFile)
       
@@ -76,7 +76,7 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
   
   	
   def addBAM(iSC: SparkContext,iBAMFile:String,iSampleId:Int,iNormFactor:Double){
-    bamFile=bamFile++iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile).map(r=>(iSampleId,r))
+    bamFile=bamFile++iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile,cloneRecords = false).map(r=>(iSampleId,r))
     normFactor(iSampleId) = iNormFactor
     bamFileFilter = bamFile
   }
