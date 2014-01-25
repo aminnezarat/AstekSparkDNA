@@ -5,9 +5,9 @@ red='\033[31m'
 NC='\033[0m'  # No Color
 green='\033[32m'
 blue='\033[34m'
-
-instanceList="instances.txt"
-
+userName=mesos
+instList="instances.txt"
+privKey="myPrivateKey.key"
 
 echo -e "${blue}Creating instances in Azure...${NC}\n" 
 sh ./createAzureCluster.sh
@@ -20,7 +20,8 @@ do
   allReady=1
   while read host
   do 
-    instStatus=`azure vm show $host | grep -i instancestatus | cut -f6 -d" " | sed s/\"//\g`
+    inst=`echo $host | cut -f1 -d'.'`
+    instStatus=`azure vm show ${inst} | grep -i instancestatus | cut -f6 -d" " | sed s/\"//\g`
     if [ "$instStatus" != "ReadyRole" ]
     then
       allReady=0
@@ -28,16 +29,41 @@ do
     else
      echo -e "${green}Instance ${host} started...${NC}\n"   
     fi	
-  done < ${instanceList}
+  done < ${instList}
   sleep 30
 done
 
+echo -e "${green}All instances started...${NC}\n"
+
+echo -e "${blue}Checking ssh connectivity...${NC}\n"
+#Check ssh connectivity
+allReady=0
+while read host
+do
+ ssh-keygen -f "/home/marek/.ssh/known_hosts" -R ${host} 1>/dev/null
+done <${instList}
+
+while [ $allReady -eq 0 ]
+do
+   allReady=1
+   sh ./addToKnownHostsAzureCluster.sh
+   parallel-ssh -v -O IdentityFile=${privKey} -l ${userName} -e ../error -o ../output -h ${instList} date
+   exitCode=$?
+   if [ $exitCode -ne 0 ]
+   then
+     allReady=0
+     echo -e "${red}SSH connectivity not ready for some hosts...${NC}\n"     
+   fi
+   sleep 30
+done
 
 echo -e "${blue}Copying priv keys to instances...${NC}\n" 
 sh ./copyKeyToAzureCluster.sh
+sleep 60
 
-echo -e "${blue}Adding instances to known hosts locally...${NC}\n" 
-sh ./addToKnownHostsAzureCluster.sh
+#echo -e "${blue}Adding instances to known hosts locally...${NC}\n" 
+#sh ./addToKnownHostsAzureCluster.sh
+#sleep 10
 
 echo -e "${blue}Adding instances to known hosts in Azure Cluster...${NC}\n" 
 sh ./addRemoteToKnownHostsAzureCluster.sh	
