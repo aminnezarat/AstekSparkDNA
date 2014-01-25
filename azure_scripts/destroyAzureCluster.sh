@@ -2,5 +2,5 @@
 instList="instances.txt"
 while read line
 do
-  azure vm delete $line -q &
+  azure vm delete -b -q $line &
 done < ${instList}	
