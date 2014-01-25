@@ -38,7 +38,7 @@ object SparkSeqSimpleJob {
         //  val sparkConf = new SparkConf().setMaster("local[8]").setAppName("SparkSeq")
         //   val sc = new SparkContext("local","My app",sparkConf)
     //spark://hadoop-jobtracker001:7077
-     val sc = new  SparkContext("local[8]", "sparkseq", "/opt/spark-0.9.0-incubating")
+     val sc = new  SparkContext("spark://MarekNotebook:7077", "sparkseq", "/opt/spark-0.9.0-incubating")
     // , List("target/scala-2.9.3/sparkseq_2.9.3-0.1.jar","/opt/hadoop-classpath/hadoop-bam-6.1-SNAPSHOT.jar","/opt/hadoop-classpath/picard-1.106.jar","/opt/hadoop-classpath/sam-1.106.jar", "/opt/hadoop-classpath/variant-1.106.jar","/opt/hadoop-classpath/tribble-1.106.jar","/opt/hadoop-classpath/commons-jexl-2.1.1.jar"))
 
 
