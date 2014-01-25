@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ###setup section
-instNumber=2
+instNumber=8
 imageName=b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-12_04_3-LTS-amd64-server-20131205-en-us-30GB
 vmSzie=a6
 instPreffix=sparkseq
