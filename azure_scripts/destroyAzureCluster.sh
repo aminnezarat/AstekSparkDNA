@@ -1,12 +1,7 @@
 #!/bin/bash
-#colors
-red='\033[31m'
-NC='\033[0m'  # No Color
-green='\033[32m'
-blue='\033[34m'
 
+source azureConfig.cfg
 
-instList="instances.txt"
 while read line
 do
   #azure vm delete -b -q $line &

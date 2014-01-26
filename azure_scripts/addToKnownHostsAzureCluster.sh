@@ -1,8 +1,6 @@
 #!/bin/bash
-##setup
-instList="instances.txt"
-userName=mesos
-privKey="myPrivateKey.key"
+
+instList="instance.txt"
 
 #first do this locally
 while read h

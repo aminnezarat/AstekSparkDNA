@@ -1,16 +1,39 @@
 #!/bin/bash
 
-#colors
-red='\033[31m'
-NC='\033[0m'  # No Color
-green='\033[32m'
-blue='\033[34m'
-userName=mesos
-instList="instances.txt"
-privKey="myPrivateKey.key"
+. azureConfig.cfg
 
 echo -e "${blue}Creating instances in Azure...${NC}\n" 
-sh ./createAzureCluster.sh
+workDir=`pwd`
+
+rm -f ${instanceList}
+
+for i in $(seq 1 ${instNumber});
+  do
+    i=$(printf %03d $i)
+    (
+    ifRetry=1
+    while [ $ifRetry -eq 1 ]
+    do
+      error=$( azure vm create --virtual-network-name ${vpnName} --subnet-names Subnet-1 --affinity-group ${agName} ${instPreffix}$i ${imageName} ${userName} -z ${vmSzie} --ssh -t ${cert} -P 2>&1)
+      exitCode=$?
+      if [ $exitCode -ne 0 ]
+      then
+        echo -e "${red}Creating instance ${instPreffix}$i failed...${NC}\n"
+        echo $error >> azure_create.err
+        ifRetry=`echo $error | grep "failed" | wc -l`
+        if  [ $ifRetry -eq 1 ]
+        then
+          echo -e "${green}Retrying to create instance ${instPreffix}$i ...${NC}\n"
+        fi
+      else
+        ifRetry=0
+      fi
+     done
+    ) &
+    echo "${instPreffix}${i}.cloudapp.net" >> ${instanceList}
+  done
+
+
 
 #check if all instance are up and running (barrier)
 allReady=0
@@ -21,13 +44,14 @@ do
   while read host
   do 
     inst=`echo $host | cut -f1 -d'.'`
-    instStatus=`azure vm show ${inst} | grep -i instancestatus | cut -f6 -d" " | sed s/\"//\g`
+    instStatus=$(azure vm show ${inst} | grep -i instancestatus | cut -f6 -d" " | sed s/\"//\g)
     if [ "$instStatus" != "ReadyRole" ]
     then
       allReady=0
       echo -e "${red}Instance ${host} not yet started...${NC}\n" 
     else
-     echo -e "${green}Instance ${host} started...${NC}\n"   
+     echo -e "${green}Instance ${host} started...${NC}\n"
+     azure vm endpoint create-multiple ${inst} ${endPoints} &   
     fi	
   done < ${instList}
   sleep 30
@@ -46,7 +70,14 @@ done <${instList}
 while [ $allReady -eq 0 ]
 do
    allReady=1
-   sh ./addToKnownHostsAzureCluster.sh
+   while read h
+   do
+     ip=$(dig +short $h)
+     ssh-keygen -f ~/.ssh/known_hosts -R $h 1>/dev/null
+     ssh-keygen -f ~/.ssh/known_hosts -R $ip 1>/dev/null
+     ssh-keyscan -H $ip >> ~/.ssh/known_hosts
+     ssh-keyscan -H $h >> ~/.ssh/known_hosts
+   done < ${instList}
    parallel-ssh -v -O IdentityFile=${privKey} -l ${userName} -e ../error -o ../output -h ${instList} date
    exitCode=$?
    if [ $exitCode -ne 0 ]

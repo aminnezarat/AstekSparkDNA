@@ -1,5 +1,6 @@
 #!/bin/bash
-instList="instances.txt"
+. azureConfig.cfg
+
 while read line
 do
   azure vm shutdown $line &
