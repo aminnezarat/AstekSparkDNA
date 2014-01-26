@@ -21,7 +21,7 @@
     deburl: http://apache.cs.utah.edu/hadoop/common/hadoop-1.2.1/hadoop_1.2.1-1_x86_64.deb
     rpmurl: http://apache.cs.utah.edu/hadoop/common/hadoop-1.2.1/hadoop_1.2.1-1_x86_64.rpm
     hd_confdir: "/etc/hadoop/"
-    hd_tmpdir: "/srv/hadoop"
+    hd_tmpdir: "/mnt/hadoop"
     hd_namedir: "${hd_tmpdir}/dfs/name"
     hd_datadir: "${hd_tmpdir}/dfs/data"
     mapred_localdir: "${hd_tmpdir}/mapred"

@@ -19,6 +19,20 @@
 # Allow all incoming ssh connections
 -A INPUT -s 0.0.0.0/0 -p tcp --dport 22 -j ACCEPT
 
+#Allow connections to Namenode console
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 50070 -j ACCEPT
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 50075 -j ACCEPT
+#Allow connection to JobTracker console
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 50030 -j ACCEPT 
+#JobTracker connections
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 9001 -j ACCEPT
+
+#HDFS data transfer
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 9000 -j ACCEPT
+#-A INPUT -s 0.0.0.0/0 -p tcp --dport 50020 -j ACCEPT
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 50010 -j ACCEPT
+#Allow connections to Spark Master
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 5050 -j ACCEPT
 # Allow all incoming connections from ``trusted_hosts``
 {% if trusted_hosts %}
 {% for host in trusted_hosts  %}
