@@ -25,7 +25,7 @@ do
     if [ "$instStatus" != "ReadyRole" ]
     then
       allReady=0
-      echo -e "${red}Instance ${host} not started...${NC}\n" 
+      echo -e "${red}Instance ${host} not yet started...${NC}\n" 
     else
      echo -e "${green}Instance ${host} started...${NC}\n"   
     fi	
@@ -58,12 +58,19 @@ do
 done
 
 echo -e "${blue}Copying priv keys to instances...${NC}\n" 
-sh ./copyKeyToAzureCluster.sh
-sleep 60
+#sh ./copyKeyToAzureCluster.sh
+parallel-scp -O IdentityFile=${privKey} -O User=${userName} -h ${instList} ${privKey} /home/mesos/.ssh/id_rsa
+#sleep 60
 
 #echo -e "${blue}Adding instances to known hosts locally...${NC}\n" 
 #sh ./addToKnownHostsAzureCluster.sh
 #sleep 10
 
 echo -e "${blue}Adding instances to known hosts in Azure Cluster...${NC}\n" 
-sh ./addRemoteToKnownHostsAzureCluster.sh	
+#sh ./addRemoteToKnownHostsAzureCluster.sh
+parallel-scp -O IdentityFile=${privKey} -O User=${userName} -h ${instList} ${instList} /home/mesos
+parallel-scp -O IdentityFile=${privKey} -O User=${userName} -h ${instList} addToKnownHostsAzureCluster.sh /home/mesos/
+parallel-ssh -v -O IdentityFile=${privKey} -l ${userName} -e ../error -o ../output -h ${instList} chmod +x /home/mesos/addToKnownHostsAzureCluster.sh
+parallel-ssh -v -O IdentityFile=${privKey} -l ${userName} -e ../error -o ../output -h ${instList} /home/mesos/addToKnownHostsAzureCluster.sh
+
+echo -e "${blue}Azure Cluster setup completed!${NC}\n"	
