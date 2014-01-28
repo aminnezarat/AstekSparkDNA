@@ -19,6 +19,12 @@
 # Allow all incoming ssh connections
 -A INPUT -s 0.0.0.0/0 -p tcp --dport 22 -j ACCEPT
 
+#Allow connections to Apache Spark Master
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 7077 -j ACCEPT
+#Allow connections to Apache Spark WebUIs
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 8080 -j ACCEPT
+-A INPUT -s 0.0.0.0/0 -p tcp --dport 4040 -j ACCEPT
+
 #Allow connections to Namenode console
 -A INPUT -s 0.0.0.0/0 -p tcp --dport 50070 -j ACCEPT
 -A INPUT -s 0.0.0.0/0 -p tcp --dport 50075 -j ACCEPT
