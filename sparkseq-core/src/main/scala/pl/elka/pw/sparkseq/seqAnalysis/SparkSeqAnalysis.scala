@@ -50,7 +50,13 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
     normFactor(iSampleId) = iNormFactor
 	//var bedFile:RDD[String] = null
 	//val fastaFile = iFASTAFile
-	
+  /**
+   *  Function for generating bases coordinates that a given read is alligned to using its Cigar string.
+   *
+   * @param iAlignStart
+   * @param iCigar
+   * @return
+   */
   private def genBasesFromCigar(iAlignStart:Int, iCigar:net.sf.samtools.Cigar ): Array[Range] = {
     
     var nuclReadArray = ArrayBuffer[Range]()
