@@ -32,8 +32,11 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
   val sparkHome = iSparkHome getOrElse "/opt/spark"*/
   
     //val sc = iSC
+  /**
+   * References to all samples in the analysis.
+   */
   	var bamFile= iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile).map(r=>(iSampleId,r))
-  	var bamFileFilter = bamFile	
+  	private var bamFileFilter = bamFile
     //val bedFile= iSC.textFile(iBEDFile)
       
    // val genExons = iSC.textFile(iBEDFile)
@@ -46,16 +49,16 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
     //print(genExons.count)
     //iSC.broadcast(genExons)
 		   			
-    var normFactor = scala.collection.mutable.HashMap[Int,Double]()
+    private var normFactor = scala.collection.mutable.HashMap[Int,Double]()
     normFactor(iSampleId) = iNormFactor
 	//var bedFile:RDD[String] = null
 	//val fastaFile = iFASTAFile
   /**
-   *  Function for generating bases coordinates that a given read is alligned to using its Cigar string.
+   *  Method for generating bases coordinates that a given read is alligned to using its Cigar string.
    *
-   * @param iAlignStart
-   * @param iCigar
-   * @return
+   * @param iAlignStart Start of a read alignment
+   * @param iCigar Cigar string of a read aligments
+   * @return Array of ranges computed from Cigar string.
    */
   private def genBasesFromCigar(iAlignStart:Int, iCigar:net.sf.samtools.Cigar ): Array[Range] = {
     
@@ -87,16 +90,29 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
     return nuclReadArray.toArray
     
   }
-  
-  
-  	
+
+
+  /**
+   * Method for adding another BAM files to intance of SparkSeqAnalysis class.
+   *
+   * @param iSC Apache Spark context.
+   * @param iBAMFile  Path to the first BAM file.
+   * @param iSampleId  Id of the firs sample (must be numeric).
+   * @param iNormFactor  Normalization factor for doing count normalization between samples.
+   *
+   */
   def addBAM(iSC: SparkContext,iBAMFile:String,iSampleId:Int,iNormFactor:Double){
     bamFile=bamFile++iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile).map(r=>(iSampleId,r))
     normFactor(iSampleId) = iNormFactor
     bamFileFilter = bamFile
   }
 
-
+  /**
+   *Method for computing coverage for a given list of genetic regions.
+   *
+   * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
+   * @return RDD of tuples (regionId, coverage)
+   */
 def getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.collection.mutable.HashMap[String,Array[scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]]]]):RDD[(Long,Int)] ={
 
 //iGenExons:scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(Int,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]):RDD[(Long,Int)] = {
@@ -289,7 +305,10 @@ def getCoverageExonOLD2():RDD[((Int,String,Int),Int)] = {
    return(coverage)
  }
 */
-  	
+  /**
+   * Method for computing coverage of all bases.
+   * @return RDD of tuples (genID, coverage)
+   */
   def getCoverageBase() : RDD[(Long,Int)]= {
 		val coverage = (bamFileFilter.mapPartitions{partitionIterator =>
 		var sampleId = 0
@@ -372,8 +391,15 @@ def getCoverageExonOLD2():RDD[((Int,String,Int),Int)] = {
     bamFileFilter=bamFile
     return (coverageNotReduce.union(coverageToReduce) )
   }
- 
 
+  /**
+   * Method for computing coverage of all bases from a give chromosome region.
+   *
+   * @param chr Chromosome (eg. chr1)
+   * @param regStart Starting position in a chromosome.
+   * @param regEnd End position in a chromosome.
+   * @return RDD of tuples (genID, coverage)
+   */
   def getCoverageBaseRegion(chr:String, regStart:Int, regEnd:Int): RDD[(Long,Int)]={
     //val chrCode = chrToLong(chr)
     if(chr=="*")

@@ -2,8 +2,15 @@ package pl.elka.pw.sparkseq.statisticalTests
 import java.lang.Math._
 import org.apache.commons.math3.distribution.ChiSquaredDistribution
 
-class SparkSeqFisherCombProb extends Serializable{
-	
+/**
+ * Object for computing combined p-values using Fisher's method
+ */
+object SparkSeqFisherCombProb extends Serializable{
+  /**
+   * Method for combining p-values from various tests.
+   * @param pvalArray Array of p-values from other statistical tests.
+   * @return Fisher's combined test statistics.
+   */
 	def computeStatistics(pvalArray:Array[Double] ) : (Double,Double) ={
 	  var fisherStat = 0.0
 	  for(v <- pvalArray){
@@ -12,7 +19,13 @@ class SparkSeqFisherCombProb extends Serializable{
 	  //return tuple : fisher stat,degrees of freedom
 	  return((fisherStat,2*pvalArray.length) )
 	}
-	
+
+  /**
+   * Method for computing a combined p-value using Fisher's method.
+   * @param fStat Fisher's combined test statistics.
+   * @param dof Degrees of freedom basing on a number of combined p-values.
+   * @return Combined p-value.
+   */
 	def getPValue(fStat:Double,dof:Double) : Double ={
 	  
 	  var pvalue = 1.0

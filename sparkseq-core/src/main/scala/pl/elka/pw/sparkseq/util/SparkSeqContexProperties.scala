@@ -1,10 +1,13 @@
 package pl.elka.pw.sparkseq.util
 
 /**
- * Created by marek on 1/22/14.
+ * Object for setting various Apache Spark Context properties.
  */
 object SparkSeqContexProperties {
-
+  /**
+   * Method used before creating Apache Spark context for setting various of its properties.
+   * @return
+   */
   def setupContexProperties() ={
     //	System.setProperty("spark.storage.memoryFraction","0.33")
     System.setProperty("spark.executor.memory", "10g")

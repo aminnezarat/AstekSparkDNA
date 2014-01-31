@@ -39,7 +39,7 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Created by marek on 1/22/14.
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Object for doing various data conversions used by SparkSeq.
 </p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
@@ -151,7 +151,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="pl.elka.pw.sparkseq.conversions.SparkSeqConversions#BEDFileToHashMap" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="pl.elka.pw.sparkseq.conversions.SparkSeqConversions#BEDFileToHashMap" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="BEDFileToHashMap(sc:org.apache.spark.SparkContext,bedFile:String):scala.collection.mutable.HashMap[String,Array[scala.collection.mutable.ArrayBuffer[(Int,Int,Int,Int)]]]"></a>
       <a id="BEDFileToHashMap(SparkContext,String):HashMap[String,Array[ArrayBuffer[(Int,Int,Int,Int)]]]"></a>
       <h4 class="signature">
@@ -163,7 +163,8 @@
         <span class="name">BEDFileToHashMap</span><span class="params">(<span name="sc">sc: <span class="extype" name="org.apache.spark.SparkContext">SparkContext</span></span>, <span name="bedFile">bedFile: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.collection.mutable.HashMap">HashMap</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[(<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>)]]]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Method for converting BED file to SparSeq internal HashMap</p><div class="fullcomment"><div class="comment cmt"><p>Method for converting BED file to SparSeq internal HashMap</p></div><dl class="paramcmts block"><dt class="param">sc</dt><dd class="cmt"><p>Apache Spark context.</p></dd><dt class="param">bedFile</dt><dd class="cmt"><p>Path to BED file.</p></dd><dt>returns</dt><dd class="cmt"><p>SparkSeq internal representation of a BED as a HashMap
+</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -177,7 +178,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="pl.elka.pw.sparkseq.conversions.SparkSeqConversions#chrToLong" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="pl.elka.pw.sparkseq.conversions.SparkSeqConversions#chrToLong" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="chrToLong(iRefName:String):Long"></a>
       <a id="chrToLong(String):Long"></a>
       <h4 class="signature">
@@ -189,7 +190,10 @@
         <span class="name">chrToLong</span><span class="params">(<span name="iRefName">iRefName: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result">: <span class="extype" name="scala.Long">Long</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Method for converting string chromosome name to Long representation.</p><div class="fullcomment"><div class="comment cmt"><p>Method for converting string chromosome name to Long representation. It is used for
+performance reasons.
+</p></div><dl class="paramcmts block"><dt class="param">iRefName</dt><dd class="cmt"><p>Chromosome name (e.g. chr1).</p></dd><dt>returns</dt><dd class="cmt"><p>Chromosome name encoded as Long number.
+</p></dd></dl></div>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -280,7 +284,7 @@
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="pl.elka.pw.sparkseq.conversions.SparkSeqConversions#idToCoordinates" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="pl.elka.pw.sparkseq.conversions.SparkSeqConversions#idToCoordinates" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="idToCoordinates(id:Long):(String,Int)"></a>
       <a id="idToCoordinates(Long):(String,Int)"></a>
       <h4 class="signature">
@@ -292,7 +296,8 @@
         <span class="name">idToCoordinates</span><span class="params">(<span name="id">id: <span class="extype" name="scala.Long">Long</span></span>)</span><span class="result">: (<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Int">Int</span>)</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Method for converting SparSeq internal gen position representation to tuple (chromosome, position)</p><div class="fullcomment"><div class="comment cmt"><p>Method for converting SparSeq internal gen position representation to tuple (chromosome, position)</p></div><dl class="paramcmts block"><dt class="param">id</dt><dd class="cmt"><p>SparSeq internal gen position representation as Long number</p></dd><dt>returns</dt><dd class="cmt"><p>Tuple (chromosome, position)
+</p></dd></dl></div>
     </li><li name="scala.Any#isInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="isInstanceOf[T0]:Boolean"></a>
       <a id="isInstanceOf[T0]:Boolean"></a>

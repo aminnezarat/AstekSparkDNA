@@ -1,6 +1,16 @@
 package pl.elka.pw.sparkseq.statisticalTests
 import scala.util.control._
-class SparkSeqCvM2STest extends Serializable{
+
+/**
+ * Object for computing two-sample Cramer-von Mises test
+ */
+object SparkSeqCvM2STest extends Serializable{
+  /**
+   * Method for computing test statistics of two-sample Cramer von Mises test
+   * @param x Value from the first sample.
+   * @param y Valure from the other sample.
+   * @return Test statistics.
+   */
 	def computeTestStat(x:Seq[Int],y:Seq[Int]) : Double ={
 	  
 	  var T2 = 0.0
@@ -82,7 +92,13 @@ class SparkSeqCvM2STest extends Serializable{
 	  T2 = U/(n.toDouble*m.toDouble*(m.toDouble+n.toDouble)) - (4*n.toDouble*m.toDouble-1)/(6*(m.toDouble+n.toDouble))
 	  return(T2)
 	}
-	
+
+  /**
+   * Method for computing p-value for a given Cramer von Mises test statistics and distance Table
+   * @param t2 Test statistics
+   * @param distTable Distance table
+   * @return p-value
+   */
 	def getPValue(t2:Double,distTable:Array[(Double,Double)]):Double ={
 	  
 	  var pvalue:Double = 1.0

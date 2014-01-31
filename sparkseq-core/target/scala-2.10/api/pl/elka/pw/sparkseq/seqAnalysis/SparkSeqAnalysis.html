@@ -170,7 +170,7 @@ to BAM files containing NGS data.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
-    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#addBAM" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#addBAM" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="addBAM(iSC:org.apache.spark.SparkContext,iBAMFile:String,iSampleId:Int,iNormFactor:Double):Unit"></a>
       <a id="addBAM(SparkContext,String,Int,Double):Unit"></a>
       <h4 class="signature">
@@ -182,7 +182,8 @@ to BAM files containing NGS data.
         <span class="name">addBAM</span><span class="params">(<span name="iSC">iSC: <span class="extype" name="org.apache.spark.SparkContext">SparkContext</span></span>, <span name="iBAMFile">iBAMFile: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="iSampleId">iSampleId: <span class="extype" name="scala.Int">Int</span></span>, <span name="iNormFactor">iNormFactor: <span class="extype" name="scala.Double">Double</span></span>)</span><span class="result">: <span class="extype" name="scala.Unit">Unit</span></span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Method for adding another BAM files to intance of SparkSeqAnalysis class.</p><div class="fullcomment"><div class="comment cmt"><p>Method for adding another BAM files to intance of SparkSeqAnalysis class.
+</p></div><dl class="paramcmts block"><dt class="param">iSC</dt><dd class="cmt"><p>Apache Spark context.</p></dd><dt class="param">iBAMFile</dt><dd class="cmt"><p>Path to the first BAM file.</p></dd><dt class="param">iSampleId</dt><dd class="cmt"><p>Id of the firs sample (must be numeric).</p></dd><dt class="param">iNormFactor</dt><dd class="cmt"><p>Normalization factor for doing count normalization between samples.</p></dd></dl></div>
     </li><li name="scala.Any#asInstanceOf" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="asInstanceOf[T0]:T0"></a>
       <a id="asInstanceOf[T0]:T0"></a>
@@ -208,20 +209,7 @@ to BAM files containing NGS data.
         <span class="name">bamFile</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Int">Int</span>, (<span class="extype" name="org.apache.hadoop.io.LongWritable">LongWritable</span>, <span class="extype" name="fi.tkk.ics.hadoop.bam.SAMRecordWritable">SAMRecordWritable</span>))]</span>
       </span>
       </h4>
-      
-    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#bamFileFilter" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="bamFileFilter:org.apache.spark.rdd.RDD[(Int,(org.apache.hadoop.io.LongWritable,fi.tkk.ics.hadoop.bam.SAMRecordWritable))]"></a>
-      <a id="bamFileFilter:RDD[(Int,(LongWritable,SAMRecordWritable))]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">var</span>
-      </span>
-      <span class="symbol">
-        <span class="name">bamFileFilter</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Int">Int</span>, (<span class="extype" name="org.apache.hadoop.io.LongWritable">LongWritable</span>, <span class="extype" name="fi.tkk.ics.hadoop.bam.SAMRecordWritable">SAMRecordWritable</span>))]</span>
-      </span>
-      </h4>
-      
+      <p class="shortcomment cmt">References to all samples in the analysis.</p>
     </li><li name="scala.AnyRef#clone" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="clone():Object"></a>
       <a id="clone():AnyRef"></a>
@@ -299,7 +287,7 @@ to BAM files containing NGS data.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#getCoverageBase" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#getCoverageBase" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getCoverageBase():org.apache.spark.rdd.RDD[(Long,Int)]"></a>
       <a id="getCoverageBase():RDD[(Long,Int)]"></a>
       <h4 class="signature">
@@ -311,8 +299,9 @@ to BAM files containing NGS data.
         <span class="name">getCoverageBase</span><span class="params">()</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="scala.Int">Int</span>)]</span>
       </span>
       </h4>
-      
-    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#getCoverageBaseRegion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Method for computing coverage of all bases.</p><div class="fullcomment"><div class="comment cmt"><p>Method for computing coverage of all bases.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>RDD of tuples (genID, coverage)
+</p></dd></dl></div>
+    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#getCoverageBaseRegion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getCoverageBaseRegion(chr:String,regStart:Int,regEnd:Int):org.apache.spark.rdd.RDD[(Long,Int)]"></a>
       <a id="getCoverageBaseRegion(String,Int,Int):RDD[(Long,Int)]"></a>
       <h4 class="signature">
@@ -324,8 +313,10 @@ to BAM files containing NGS data.
         <span class="name">getCoverageBaseRegion</span><span class="params">(<span name="chr">chr: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="regStart">regStart: <span class="extype" name="scala.Int">Int</span></span>, <span name="regEnd">regEnd: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="scala.Int">Int</span>)]</span>
       </span>
       </h4>
-      
-    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#getCoverageRegion" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+      <p class="shortcomment cmt">Method for computing coverage of all bases from a give chromosome region.</p><div class="fullcomment"><div class="comment cmt"><p>Method for computing coverage of all bases from a give chromosome region.
+</p></div><dl class="paramcmts block"><dt class="param">chr</dt><dd class="cmt"><p>Chromosome (eg. chr1)</p></dd><dt class="param">regStart</dt><dd class="cmt"><p>Starting position in a chromosome.</p></dd><dt class="param">regEnd</dt><dd class="cmt"><p>End position in a chromosome.</p></dd><dt>returns</dt><dd class="cmt"><p>RDD of tuples (genID, coverage)
+</p></dd></dl></div>
+    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#getCoverageRegion" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.collection.mutable.HashMap[String,Array[scala.collection.mutable.ArrayBuffer[(Int,Int,Int,Int)]]]]):org.apache.spark.rdd.RDD[(Long,Int)]"></a>
       <a id="getCoverageRegion(Broadcast[HashMap[String,Array[ArrayBuffer[(Int,Int,Int,Int)]]]]):RDD[(Long,Int)]"></a>
       <h4 class="signature">
@@ -337,7 +328,9 @@ to BAM files containing NGS data.
         <span class="name">getCoverageRegion</span><span class="params">(<span name="iGenExons">iGenExons: <span class="extype" name="org.apache.spark.broadcast.Broadcast">Broadcast</span>[<span class="extype" name="scala.collection.mutable.HashMap">HashMap</span>[<span class="extype" name="scala.Predef.String">String</span>, <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.collection.mutable.ArrayBuffer">ArrayBuffer</span>[(<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Int">Int</span>)]]]]</span>)</span><span class="result">: <span class="extype" name="org.apache.spark.rdd.RDD">RDD</span>[(<span class="extype" name="scala.Long">Long</span>, <span class="extype" name="scala.Int">Int</span>)]</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt">Method for computing coverage for a given list of genetic regions.</p><div class="fullcomment"><div class="comment cmt"><p>Method for computing coverage for a given list of genetic regions.
+</p></div><dl class="paramcmts block"><dt class="param">iGenExons</dt><dd class="cmt"><p>A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap</p></dd><dt>returns</dt><dd class="cmt"><p>RDD of tuples (regionId, coverage)
+</p></dd></dl></div>
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
@@ -377,19 +370,6 @@ to BAM files containing NGS data.
       </span>
       </h4>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#normFactor" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="normFactor:scala.collection.mutable.HashMap[Int,Double]"></a>
-      <a id="normFactor:HashMap[Int,Double]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">var</span>
-      </span>
-      <span class="symbol">
-        <span class="name">normFactor</span><span class="result">: <span class="extype" name="scala.collection.mutable.HashMap">HashMap</span>[<span class="extype" name="scala.Int">Int</span>, <span class="extype" name="scala.Double">Double</span>]</span>
-      </span>
-      </h4>
-      
     </li><li name="scala.AnyRef#notify" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="notify():Unit"></a>
       <a id="notify():Unit"></a>

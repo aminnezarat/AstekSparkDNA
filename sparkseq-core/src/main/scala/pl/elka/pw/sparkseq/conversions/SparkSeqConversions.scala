@@ -3,10 +3,17 @@ import org.apache.spark.SparkContext
 import scala.collection.mutable.ArrayBuffer
 
 /**
- * Created by marek on 1/22/14.
+ * Object for doing various data conversions used by SparkSeq.
  */
 object SparkSeqConversions {
 
+  /**
+   * Method for converting string chromosome name to Long representation. It is used for
+   * performance reasons.
+   *
+   * @param iRefName Chromosome name (e.g. chr1).
+   * @return Chromosome name encoded as Long number.
+   */
   def chrToLong(iRefName:String):Long = {
 
     val id = iRefName  match{
@@ -53,6 +60,11 @@ object SparkSeqConversions {
 
   }
 
+  /**
+   * Method for converting SparSeq internal gen position representation to tuple (chromosome, position)
+   * @param id SparSeq internal gen position representation as Long number
+   * @return Tuple (chromosome, position)
+   */
   def idToCoordinates(id:Long) :(String,Int) ={
 
     var coord = id match {
@@ -97,6 +109,12 @@ object SparkSeqConversions {
     return coord
   }
 
+  /**
+   * Method for converting BED file to SparSeq internal HashMap
+   * @param sc Apache Spark context.
+   * @param bedFile Path to BED file.
+   * @return SparkSeq internal representation of a BED as a HashMap
+   */
   def BEDFileToHashMap(sc:SparkContext,bedFile:String) : scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(Int,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]={
 
     val genExons = sc.textFile(bedFile)

@@ -26,8 +26,11 @@ import pl.elka.pw.sparkseq.statisticalTests._
 import java.util.HashMap
 import scala.collection.mutable.Map
 import com.github.tototoshi.csv._
-import java.io.File 
+import java.io.File
 
+/**
+ * An example of a simple job implemented using SparkSeq.
+ */
 object SparkSeqSimpleJob {
 
  def main(args: Array[String]) {
@@ -51,7 +54,7 @@ object SparkSeqSimpleJob {
 
     //val (initMax,initFree):(Long,Long) = sc.getExecutorMemoryStatus.values.take(1)
     val startTimeLoad = System.currentTimeMillis
-    val CMTest = new SparkSeqCvM2STest()
+    //val CMTest = new SparkSeqCvM2STest()
     val fileSplitSize = 64
 
     val rootPath="/mnt/software/Phd_datastore/RAO/"

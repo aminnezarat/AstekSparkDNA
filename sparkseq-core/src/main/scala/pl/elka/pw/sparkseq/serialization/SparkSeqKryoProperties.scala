@@ -1,10 +1,14 @@
 package pl.elka.pw.sparkseq.serialization
 
 /**
- * Created by marek on 1/22/14.
+ * Object for setting various KryoSerializer properties.
  */
 object SparkSeqKryoProperties {
 
+  /**
+   * Method used before creating Apache Spark context for setting various KryoSerializer properties.
+   * @return
+   */
   def setupKryoContextProperties() = {
     System.setProperty("spark.kryoserializer.buffer.mb", "20")
     System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
