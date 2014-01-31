@@ -16,10 +16,10 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
  * to BAM files containing NGS data.
  *
  * @param iSC Apache Spark context.
- * @param iBAMFile Path to the first BAM file.
- * @param iSampleId Id of the firs sample (must be numeric).
- * @param iNormFactor Normalization factor for doing count normalization between samples.
- * @param iReduceWorkers Number of Reduce workers for doing transformations such as sort or join (see
+ * @param iBAMFile  Path to the first BAM file.
+ * @param iSampleId  Id of the firs sample (must be numeric).
+ * @param iNormFactor  Normalization factor for doing count normalization between samples.
+ * @param iReduceWorkers  Number of Reduce workers for doing transformations such as sort or join (see
  *                       http://spark.incubator.apache.org/docs/latest/scala-programming-guide.html for details).
  */
  class SparkSeqAnalysis(iSC: SparkContext, iBAMFile:String,iSampleId:Int,iNormFactor:Double, iReduceWorkers:Int=8) extends Serializable
