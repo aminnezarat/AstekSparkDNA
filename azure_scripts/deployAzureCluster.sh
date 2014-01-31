@@ -14,7 +14,7 @@ for i in $(seq 1 ${instNumber});
     ifRetry=1
     while [ $ifRetry -eq 1 ]
     do
-      error=$( azure vm create --virtual-network-name ${vpnName} --subnet-names Subnet-1 --affinity-group ${agName} ${instPreffix}$i ${imageName} ${userName} -z ${vmSzie} --ssh -t ${cert} -P 2>&1)
+      error=$( azure vm create --virtual-network-name ${vpnName} --subnet-names Subnet-1 --affinity-group ${agName} ${instPreffix}$i ${imageName} ${userName} -z ${vmSize} --ssh -t ${cert} -P 2>&1)
       exitCode=$?
       if [ $exitCode -ne 0 ]
       then
