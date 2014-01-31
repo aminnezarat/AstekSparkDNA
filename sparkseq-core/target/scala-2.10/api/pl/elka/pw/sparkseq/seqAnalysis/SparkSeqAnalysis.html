@@ -39,7 +39,9 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Main class for analysis of sequening data. A SparkSeqAnalysis holds Apache Spark context as well as references
+to BAM files containing NGS data.
+</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><span class="extype" name="scala.Serializable">Serializable</span>, <span class="extype" name="java.io.Serializable">Serializable</span>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -79,7 +81,7 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="&lt;init&gt;(iSC:org.apache.spark.SparkContext,iBAMFile:String,iSampleId:Int,iNormFactor:Double,iReduceWorkers:Int):pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis"></a>
       <a id="&lt;init&gt;:SparkSeqAnalysis"></a>
       <h4 class="signature">
@@ -91,7 +93,9 @@
         <span class="name">SparkSeqAnalysis</span><span class="params">(<span name="iSC">iSC: <span class="extype" name="org.apache.spark.SparkContext">SparkContext</span></span>, <span name="iBAMFile">iBAMFile: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="iSampleId">iSampleId: <span class="extype" name="scala.Int">Int</span></span>, <span name="iNormFactor">iNormFactor: <span class="extype" name="scala.Double">Double</span></span>, <span name="iReduceWorkers">iReduceWorkers: <span class="extype" name="scala.Int">Int</span> = <span class="symbol">8</span></span>)</span>
       </span>
       </h4>
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">iSC</dt><dd class="cmt"><p>Apache Spark context.</p></dd><dt class="param">iBAMFile</dt><dd class="cmt"><p>Path to the first BAM file.</p></dd><dt class="param">iSampleId</dt><dd class="cmt"><p>Id of the firs sample (must be numeric).</p></dd><dt class="param">iNormFactor</dt><dd class="cmt"><p>Normalization factor for doing count normalization between samples.</p></dd><dt class="param">iReduceWorkers</dt><dd class="cmt"><p>Number of Reduce workers for doing transformations such as sort or join (see
+                      http://spark.incubator.apache.org/docs/latest/scala-programming-guide.html for details).
+</p></dd></dl></div>
     </li></ol>
             </div>
 
