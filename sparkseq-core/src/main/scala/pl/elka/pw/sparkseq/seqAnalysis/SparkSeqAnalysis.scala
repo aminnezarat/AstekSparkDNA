@@ -12,7 +12,7 @@ import scala.collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
 
 /**
- * Main class for analysis of sequening data. A SparkSeqAnalysis holds Apache Spark context as well as references
+ * Main class for analysis of sequencing data. A SparkSeqAnalysis holds Apache Spark context as well as references
  * to BAM files containing NGS data.
  *
  * @param iSC Apache Spark context.
