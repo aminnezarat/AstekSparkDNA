@@ -25,7 +25,6 @@ import collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.statisticalTests._
 import java.util.HashMap
 import scala.collection.mutable.Map
-import com.github.tototoshi.csv._
 import java.io.File
 
 /**

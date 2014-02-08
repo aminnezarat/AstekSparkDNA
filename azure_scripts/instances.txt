@@ -1,0 +1,8 @@
+sparkseq001.cloudapp.net
+sparkseq002.cloudapp.net
+sparkseq003.cloudapp.net
+sparkseq004.cloudapp.net
+sparkseq005.cloudapp.net
+sparkseq006.cloudapp.net
+sparkseq007.cloudapp.net
+sparkseq008.cloudapp.net

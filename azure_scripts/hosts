@@ -1,0 +1,12 @@
+# This file is managed by Ansible.
+127.0.0.1 localhost.localdomain localhost
+
+10.0.0.8 sparkseq001.cloudapp.net sparkseq001
+10.0.0.5 sparkseq002.cloudapp.net sparkseq002
+10.0.0.10 sparkseq003.cloudapp.net sparkseq003
+10.0.0.7 sparkseq004.cloudapp.net sparkseq004
+10.0.0.4 sparkseq005.cloudapp.net sparkseq005
+10.0.0.6 sparkseq006.cloudapp.net sparkseq006
+10.0.0.11 sparkseq007.cloudapp.net sparkseq007
+10.0.0.9 sparkseq008.cloudapp.net sparkseq008
+

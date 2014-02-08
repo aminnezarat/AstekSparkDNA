@@ -1,0 +1,30 @@
+info:    Executing command vm disk list
+info:    Fetching disk images
+data:    Name                                          OS     
+data:    --------------------------------------------  -------
+data:    mesos001-mesos001-0-201401251327540545        Linux  
+data:    sparkClone-sparkClone-0-201401251207570400    Linux  
+data:    sparkseq001-sparkseq001-0-201401251401330428  Linux  
+data:    sparkseq001-sparkseq001-0-201401251421180793  Linux  
+data:    sparkseq001-sparkseq001-0-201401251441410351  Linux  
+data:    sparkseq001-sparkseq001-0-201401251503130768  Linux  
+data:    sparkseq001-sparkseq001-0-201401251550040782  Linux  
+data:    sparkseq002-sparkseq002-0-201401251401310312  Linux  
+data:    sparkseq002-sparkseq002-0-201401251421180128  Linux  
+data:    sparkseq002-sparkseq002-0-201401251441430084  Linux  
+data:    sparkseq002-sparkseq002-0-201401251550060162  Linux  
+data:    sparkseq003-sparkseq003-0-201401251503160653  Linux  
+data:    sparkseq003-sparkseq003-0-201401251550040388  Linux  
+data:    sparkseq004-sparkseq004-0-201401251503120892  Linux  
+data:    sparkseq004-sparkseq004-0-201401251550110211  Linux  
+data:    sparkseq005-sparkseq005-0-201401251503160324  Linux  
+data:    sparkseq005-sparkseq005-0-201401251550020575  Linux  
+data:    sparkseq006-sparkseq006-0-201401251503130724  Linux  
+data:    sparkseq006-sparkseq006-0-201401251550020240  Linux  
+data:    sparkseq007-sparkseq007-0-201401251550030029  Linux  
+data:    sparkseq008-sparkseq008-0-201401251503120203  Linux  
+data:    sparkseq008-sparkseq008-0-201401251550110671  Linux  
+data:    sparkseq009-sparkseq009-0-201401251503110584  Linux  
+data:    sparkseq010-sparkseq010-0-201401251503140687  Linux  
+data:    sparkseq2-sparkseq2-0-201401251505560645      Windows
+info:    vm disk list command OK
