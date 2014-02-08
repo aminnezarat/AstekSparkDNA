@@ -22,10 +22,10 @@ object SparkSeqBaseDE {
     val minCoverageRatio = 0.33
     val pval = 0.1
 
-    val caseIdFam1 = Array(38,39/*,42,44,45,47,53*/)
-    val controlIdFam1 = Array(56,74/*,76,77,83,94*/)
-    val caseIdFam2 = Array(100,111/*,29,36,52,55,64,69*/)
-    val controlIdFam2 = Array(110,30/*,31,51,54,58,63,91,99*/)
+    val caseIdFam1 = Array(38,39,42/*,44,45,47,53*/)
+    val controlIdFam1 = Array(56,74,76/*,77,83,94*/)
+    val caseIdFam2 = Array(100,111,29/*,36,52,55,64,69*/)
+    val controlIdFam2 = Array(110,30,31/*,51,54,58,63,91,99*/)
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
@@ -33,7 +33,7 @@ object SparkSeqBaseDE {
     val testSuff="_sort_chr1.bam"
     val chr = "chr1"
     val posStart=1
-    val posEnd=1000000
+    val posEnd=1000000000
     val minAvgBaseCov = 1
 
 
@@ -67,12 +67,15 @@ object SparkSeqBaseDE {
     	  .map(c=> if(caseSampSize-c._2.length>0)(c._1,c._2++ArrayBuffer.fill[Int](caseSampSize-c._2.length)(0)) else (c._1,c._2) )
     	//.map(c=> if(SparkSeqStats.mean(c._2) < 1 )(c._1,ArrayBuffer.fill[Int](caseSampSize)(0)) else(c._1,c._2)  )
     val covControl = seqAnalysisControl.getCoverageBaseRegion(chr,posStart,posEnd).map(r=>(r._1%100000000000L,r._2)).groupByKey()
-        .filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov) )
+        .filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov ) )
     	  .map(c=> if(caseSampSize-c._2.length>0)(c._1,c._2++ArrayBuffer.fill[Int](caseSampSize-c._2.length)(0)) else (c._1,c._2) )
      // .map(c=> if(SparkSeqStats.mean(c._2) < 1 )(c._1,ArrayBuffer.fill[Int](caseSampSize)(0)) else(c._1,c._2)  )
     val leftCovJoint = covCase.leftOuterJoin(covControl).subtract(covCase.join(covControl.map(r=>(r._1,Option(r._2)) ) ) )
     val rightCovJoint = covCase.rightOuterJoin(covControl)
-    val finalcovJoint = leftCovJoint.map(r=>(r._1,Option(r._2._1),r._2._2)).union(rightCovJoint.map(r=>(r._1,r._2._1,Option(r._2._2))) ).map(r=>(r._1,(r._2,r._3))).sortByKey(true,8)
+    val finalcovJoint = leftCovJoint.map(r=>(r._1,Option(r._2._1),r._2._2)).union(rightCovJoint.map(r=>(r._1,r._2._1,Option(r._2._2))) ).map(r=>(r._1,(r._2,r._3)))
+        .map( r=> (r._1,(r._2._1 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](caseSampSize)(0) },
+                         r._2._2 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](controlSampSize)(0) }) ) )
+        .sortByKey(true,8)
    // println(leftCovJoint)
 //println(finalcovJoint)
 
