@@ -40,8 +40,11 @@ object SparkSeqBaseDE {
     val minAvgBaseCov = 10
 
 
-   //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
-    val cmDistTable = sc.textFile("../sparkseq-core/src/main/resources/cm7_7_2.txt").map(l => l.split("\t")).map(r=>(r.array(0).toDouble,r.array(1).toDouble) ).toArray
+    //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
+    val cmDistTable = sc.textFile("../sparkseq-core/src/main/resources/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")
+      .map(l => l.split("\t"))
+      .map(r=>(r.array(0).toDouble,r.array(1).toDouble) )
+      .toArray
 
 
 
@@ -77,7 +80,7 @@ object SparkSeqBaseDE {
 
     }
 
-
+    //compute coverage + filer out bases with mean cov < minAvgBaseCov + padding with 0 so that all vectors have the same length
     val covCase = seqAnalysisCase.getCoverageBaseRegion(chr,posStart,posEnd)
           .map(r=>(r._1%100000000000L,r._2)).groupByKey()
           .filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > caseSampSize/2) )
@@ -88,11 +91,13 @@ object SparkSeqBaseDE {
     	  .map(c=> if((controlSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](controlSampSize-c._2.length)(0)) else (c._1,c._2) )
     val leftCovJoint = covCase.leftOuterJoin(covControl).subtract(covCase.join(covControl.map(r=>(r._1,Option(r._2)) ) ) )
     val rightCovJoint = covCase.rightOuterJoin(covControl)
+
+    //final join + compute Cramver von Mises test statistics + filtering
     val finalcovJoint = leftCovJoint.map(r=>(r._1,Option(r._2._1),r._2._2)).union(rightCovJoint.map(r=>(r._1,r._2._1,Option(r._2._2))) ).map(r=>(r._1,(r._2,r._3)))
         .map( r=> (r._1,(r._2._1 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](caseSampSize)(0) },
                          r._2._2 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](controlSampSize)(0) }) ) )
       .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) ).map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTable)) ) )
-      .fil
+      .filter(r=> r._2._3<0.05)
       .sortByKey(true,8)
         //.count()
    // println(leftCovJoint)
