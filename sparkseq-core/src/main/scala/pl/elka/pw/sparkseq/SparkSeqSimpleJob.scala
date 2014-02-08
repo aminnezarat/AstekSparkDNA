@@ -80,9 +80,11 @@ object SparkSeqSimpleJob {
     val caseIdFam2 = Array(100,111/*,29,36,52,55,64,69*/)
     val controlIdFam2 = Array(110,30/*,31,51,54,58,63,91,99*/)
 
-    val normArray=Array(1.0,8622606.0/19357579.0,8622606.0/14087644.0,8622606.0/18824924.0,8622606.0/9651030.0,8622606.0/22731556.0,
-                 8622606.0/15975604.0,8622606.0/17681528.0, 8622606.0/16323269.0,  8622606.0/18408612.0, 8622606.0/15934054.0, 8622606.0/22329258.0,
-                 8622606.0/14788631.0, 8622606.0/14346120.0, 8622606.0/ 16693869.0)
+    //val normArray = Array(1.0,8622606.0/19357579.0,8622606.0/14087644)
+
+    //val normArray=Array(1.0,8622606.0/19357579.0,8622606.0/14087644.0,8622606.0/18824924.0,8622606.0/9651030.0,8622606.0/22731556.0,
+    //             8622606.0/15975604.0,8622606.0/17681528.0, 8622606.0/16323269.0,  8622606.0/18408612.0, 8622606.0/15934054.0, 8622606.0/22329258.0,
+    //             8622606.0/14788631.0, 8622606.0/14346120.0, 8622606.0/ 16693869.0)
     val minCount = 10
     val minRegLength= 10
     val minCoverageRatio = 0.33
@@ -91,12 +93,19 @@ object SparkSeqSimpleJob {
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
 
     val seqAnalysisCase = new SparkSeqAnalysis(sc,pathFam1+"/Case/Sample_25_sort.bam",25,1,numTasks)
+
     var id = 1
     for(i<-caseIdFam1){
-        seqAnalysisCase.addBAM(sc,pathFam1+"/Case/Sample_"+i.toString+"*_sort.bam",i,1); id+=1}
+
+      seqAnalysisCase.addBAM(sc,pathFam1+"/Case/Sample_"+i.toString+"*_sort.bam",i,1)
+      id+=1
+    }
 
     for(i<-caseIdFam2){
-        seqAnalysisCase.addBAM(sc,pathFam2+"/Case/Sample_"+i.toString+"*_sort.bam",i,1); id+=1}
+
+      seqAnalysisCase.addBAM(sc,pathFam2+"/Case/Sample_"+i.toString+"*_sort.bam",i,1)
+      id+=1
+    }
 
 
 
