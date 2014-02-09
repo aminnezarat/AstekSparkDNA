@@ -7,7 +7,8 @@ import org.apache.spark.SparkContext._
 import collection.mutable.ArrayBuffer
 import org.apache.hadoop.io.LongWritable
 import fi.tkk.ics.hadoop.bam.{BAMInputFormat, SAMRecordWritable}
-
+import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
+import scala.util.control._
 /**
  * Created by marek on 2/8/14.
  */
@@ -19,16 +20,19 @@ object SparkSeqBaseDE {
     val rootPath="/mnt/software/Phd_datastore/RAO/"
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
     val pathFam2 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam2"
-    val numTasks = 30
-    val minCount = 10
-    val minRegLength= 10
-    val minCoverageRatio = 0.33
-    val pval = 0.1
+    val bedFile = "Equus_caballus.EquCab2.73_exons_chr2.bed"
+    val pathExonsList = rootPath+fileSplitSize.toString+"MB/aux/"+bedFile
+    val genExonsMapB = sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
 
-    val caseIdFam1 = Array(38,39,42/*,44,45,47,53*/)
-    val controlIdFam1 = Array(56,74,76/*,77,83,94*/)
-    val caseIdFam2 = Array(100,111,29/*,36,52,55,64,69*/)
-    val controlIdFam2 = Array(110,30,31/*,51,54,58,63,91,99*/)
+
+    val numTasks = 30
+
+    val minRegLength= 10
+
+    val caseIdFam1 = Array(38,39/*,42,44,45,47,53*/)
+    val controlIdFam1 = Array(56,74/*,76,77,83,94*/)
+    val caseIdFam2 = Array(100,111/*,29,36,52,55,64,69*/)
+    val controlIdFam2 = Array(110,30/*,31,51,54,58,63,91,99*/)
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
@@ -36,7 +40,7 @@ object SparkSeqBaseDE {
     val testSuff="_sort_chr1.bam"
     val chr = "chr1"
     val posStart=1
-    val posEnd=300000000
+    val posEnd=1000000
     val minAvgBaseCov = 10
 
 
@@ -99,7 +103,7 @@ object SparkSeqBaseDE {
       .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) ).map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTable)) ) )
       .filter(r=> ( SparkSeqStats.mean(r._2._1._1) > minAvgBaseCov || SparkSeqStats.mean(r._2._1._2) > minAvgBaseCov ) )
       .map(r=>(r._2._3,r._1)) //pick position and p-value
-      .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete
+      .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete(OPTIMIZE!! it can be combined with getPval)!
       .groupByKey().sortByKey(true,8).map(r=>(r._1,r._2.sortBy(x=>x)) )
       .map{r=>
           var regLenArray:ArrayBuffer[(Int,Long)]=ArrayBuffer()
@@ -118,7 +122,31 @@ object SparkSeqBaseDE {
           }
           (r._1,regLenArray.sortBy(-_._1))
     }
-
+    .map(r=>(r._1,r._2(0)._1,SparkSeqConversions.idToCoordinates(r._2(0)_2 ) ) )
+    .map(r=>
+      if(genExonsMapB.value.contains(r._3._1) ){
+          val exons = genExonsMapB.value(r._3._1)
+          var exId = 0
+          var genId = 0
+          val id = r._3._2/10000
+          var exonOverlapPct = 0.0
+          val loop = new Breaks
+          loop.breakable{
+               for(e<-exons(id)){
+                 val exonIntersect = Range(r._3._2,r._3._2+r._2).intersect(Range(e._3,e._4))
+                 if( exonIntersect.length>0 ){
+                   exonOverlapPct = (exonIntersect.max-exonIntersect.min).toDouble/(e._4-e._3)
+                   exId = e._2
+                   genId = e._1
+                   loop.break()
+                 }
+               }
+          }
+        (r._1,r._2,r._3,"ENSECAG000000"+genId,exId,math.round(exonOverlapPct*10000).toDouble/10000)
+        }
+        else
+          (r._1,r._2,r._3,"N/A",0,0.0)
+      )
 
 
     //.reduce((a,b) => if(a._1.max==b._1.min-1) (a._1++b._1,b._2) else if())
