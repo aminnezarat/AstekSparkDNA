@@ -40,7 +40,7 @@ object SparkSeqBaseDE {
     val testSuff="_sort_chr1.bam"
     val chr = "chr1"
     val posStart=1
-    val posEnd=1000000
+    val posEnd=500000
     val minAvgBaseCov = 10
 
 
@@ -105,24 +105,26 @@ object SparkSeqBaseDE {
       .map(r=>(r._2._3,r._1)) //pick position and p-value
       .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete(OPTIMIZE!! it can be combined with getPval)!
       .groupByKey().sortByKey(true,8).map(r=>(r._1,r._2.sortBy(x=>x)) )
-      .map{r=>
-          var regLenArray:ArrayBuffer[(Int,Long)]=ArrayBuffer()
+      .flatMap{r=>
+          var regLenArray:ArrayBuffer[(Double,Int,Long)]=ArrayBuffer()
           var regStart = r._2(0)
           var regLength = 1
           var i = 1
           while(i<r._2.length){
           if(r._2(i)-1 != r._2(i-1) ){
             if(regLength>=minRegLength)
-            regLenArray+=((regLength,regStart))
+            regLenArray+=((r._1,regLength,regStart))
             regLength=1
           regStart=r._2(i)
           }
           else regLength+=1
             i=i+1
           }
-          (r._1,regLenArray.sortBy(-_._1))
+          regLenArray.sortBy(-_._2)
     }
-    .map(r=>(r._1,r._2(0)._1,SparkSeqConversions.idToCoordinates(r._2(0)_2 ) ) )
+    //.flatMap(r=>r)
+    //.flatMap(r=>(r._1,r._2 ) )
+    .map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._3)) )
     .map(r=>
       if(genExonsMapB.value.contains(r._3._1) ){
           val exons = genExonsMapB.value(r._3._1)
@@ -132,6 +134,7 @@ object SparkSeqBaseDE {
           var exonOverlapPct = 0.0
           val loop = new Breaks
           loop.breakable{
+               if(exons(id) != null){
                for(e<-exons(id)){
                  val exonIntersect = Range(r._3._2,r._3._2+r._2).intersect(Range(e._3,e._4))
                  if( exonIntersect.length>0 ){
@@ -139,26 +142,29 @@ object SparkSeqBaseDE {
                    exId = e._2
                    genId = e._1
                    loop.break()
-                 }
+                  }
+                }
+
                }
           }
         (r._1,r._2,r._3,"ENSECAG000000"+genId,exId,math.round(exonOverlapPct*10000).toDouble/10000)
         }
         else
-          (r._1,r._2,r._3,"N/A",0,0.0)
+          (r._1,r._2,r._3,"ChrNotFound",0,0.0)
       )
 
+ .filter(r=>r._1<=0.01)
+  val a =finalcovJoint.toArray()
+  sc.stop()
+  Thread.sleep(100)
+  println("==========================================Results======================================")
+  println("p-value".toString.padTo(10,' ')+"length".padTo(10, ' ')+"Coordinates".padTo(15, ' ')+"geneId".padTo(25,' ')+"exonId".padTo(10, ' ')+"exonOverlapPct")
 
-    //.reduce((a,b) => if(a._1.max==b._1.min-1) (a._1++b._1,b._2) else if())
-
-      //.filter(r=>r._1==1000029324L)
-        //.count()
-   // println(leftCovJoint)
-//println(finalcovJoint)
-
-  finalcovJoint.take(100).foreach(println)
-    //println(rightCovJoint)
+  for(r<-a){
+  println(r._1.toString.padTo(10,' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(15, ' ')+r._4.toString.padTo(25,' ')+r._5.toString.padTo(10, ' ')+r._6)
+  }
+    //println(rightCovJoin
 
   }
-
+  //System.exit(0)
 }

@@ -67,7 +67,7 @@
       <file leaf-file-name="SparkSeqSimpleJob.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqSimpleJob.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="74" column="92" selection-start="3393" selection-end="3481" vertical-scroll-proportion="0.0" vertical-offset="911" max-vertical-offset="2985">
+            <state line="74" column="92" selection-start="3393" selection-end="3481" vertical-scroll-proportion="0.0" vertical-offset="1586" max-vertical-offset="2985">
               <folding>
                 <element signature="e#55#91#0" expanded="true" />
               </folding>
@@ -78,7 +78,7 @@
       <file leaf-file-name="SparkSeqBaseDE.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqBaseDE.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="144" column="92" selection-start="7225" selection-end="7225" vertical-scroll-proportion="0.58434784" vertical-offset="1824" max-vertical-offset="2550">
+            <state line="159" column="93" selection-start="7601" selection-end="7601" vertical-scroll-proportion="0.31610942" vertical-offset="2281" max-vertical-offset="2640">
               <folding>
                 <element signature="e#28#73#0" expanded="true" />
               </folding>
@@ -134,7 +134,7 @@
       <file leaf-file-name="SparkSeqAnalysis.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/seqAnalysis/SparkSeqAnalysis.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="148" column="25" selection-start="6792" selection-end="6807" vertical-scroll-proportion="0.0" vertical-offset="1875" max-vertical-offset="6360">
+            <state line="148" column="25" selection-start="6792" selection-end="6807" vertical-scroll-proportion="0.0" vertical-offset="4605" max-vertical-offset="6360">
               <folding>
                 <element signature="e#41#77#0" expanded="true" />
               </folding>
@@ -856,7 +856,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1920" height="1045" extended-state="0" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -876,7 +876,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32947367" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.58842105" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1259,6 +1259,22 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/conversions/SparkSeqConversions.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="130" column="29" selection-start="6534" selection-end="6534" vertical-scroll-proportion="0.0" vertical-offset="1372" max-vertical-offset="2115">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/seqAnalysis/SparkSeqAnalysis.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="148" column="25" selection-start="6792" selection-end="6807" vertical-scroll-proportion="0.0" vertical-offset="5768" max-vertical-offset="6360">
+          <folding>
+            <element signature="e#41#77#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqSimpleJob.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="74" column="92" selection-start="3393" selection-end="3481" vertical-scroll-proportion="0.0" vertical-offset="712" max-vertical-offset="2985">
@@ -1268,25 +1284,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/seqAnalysis/SparkSeqAnalysis.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="148" column="25" selection-start="6792" selection-end="6807" vertical-scroll-proportion="0.0" vertical-offset="1875" max-vertical-offset="6360">
-          <folding>
-            <element signature="e#41#77#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/conversions/SparkSeqConversions.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="130" column="29" selection-start="6534" selection-end="6534" vertical-scroll-proportion="0.0" vertical-offset="1372" max-vertical-offset="2115">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqBaseDE.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="144" column="92" selection-start="7225" selection-end="7225" vertical-scroll-proportion="0.58434784" vertical-offset="1824" max-vertical-offset="2550">
+        <state line="159" column="93" selection-start="7601" selection-end="7601" vertical-scroll-proportion="0.31610942" vertical-offset="2281" max-vertical-offset="2640">
           <folding>
             <element signature="e#28#73#0" expanded="true" />
           </folding>
