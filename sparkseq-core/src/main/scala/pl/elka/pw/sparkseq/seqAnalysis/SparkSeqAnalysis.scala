@@ -72,20 +72,20 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
       //first mapped read fragment
       if(cElem.getOperator().toString()=="M" && i ==0 ||(i==1 && iCigar.getCigarElement(0).getOperator().toString()=="S" ) )
     	  //nuclReadArray=Array.range(iAlignStart,iAlignStart+cElem.getLength()+1)
-        nuclReadArray+=Range(iAlignStart,iAlignStart+cElem.getLength()+1)
+        nuclReadArray+=Range(iAlignStart,iAlignStart+cElem.getLength())
       //find maps in between	  
       else if(cElem.getOperator().toString()!="M" )
     	  nuclShift+=cElem.getLength()
       else if(cElem.getOperator().toString()=="M" && i>1 && i<(numCigElem-1 ) && nuclReadArray.length>0){ 	 
           var mapStr=nuclReadArray.last.last+nuclShift
     	  //nuclReadArray=Array.concat(nuclReadArray,Array.range(mapStr,mapStr+cElem.getLength()+1))
-          nuclReadArray+=Range(mapStr,mapStr+cElem.getLength()+1)
+          nuclReadArray+=Range(mapStr,mapStr+cElem.getLength())
     	  nuclShift=0  		
       }
        //last mapped read fragment
        else if(cElem.getOperator().toString()=="M" && i == (numCigElem-1) && nuclReadArray.length>0)
          //nuclReadArray=Array.concat(nuclReadArray,Array.range(nuclReadArray.last+nuclShift,nuclReadArray.last+nuclShift+cElem.getLength()+1))    
-         nuclReadArray+=Range(nuclReadArray.last.last+nuclShift,nuclReadArray.last.last+nuclShift+cElem.getLength()+1)
+         nuclReadArray+=Range(nuclReadArray.last.last+nuclShift,nuclReadArray.last.last+nuclShift+cElem.getLength())
     }     
     return nuclReadArray.toArray
     

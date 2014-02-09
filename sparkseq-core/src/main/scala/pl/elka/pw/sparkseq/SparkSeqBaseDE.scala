@@ -36,7 +36,7 @@ object SparkSeqBaseDE {
     val testSuff="_sort_chr1.bam"
     val chr = "chr1"
     val posStart=1
-    val posEnd=1000000
+    val posEnd=300000000
     val minAvgBaseCov = 10
 
 
@@ -62,7 +62,7 @@ object SparkSeqBaseDE {
       else
         path = pathFam2+"/Case/Sample_"+i.toString+testSuff
       val bamFileCount= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
-      seqAnalysisCase.addBAM(sc,path,i,bamFileCountCaseFirst/bamFileCount)
+      seqAnalysisCase.addBAM(sc,path,i,bamFileCountCaseFirst.toDouble/bamFileCount.toDouble)
     }
 
 
@@ -76,18 +76,18 @@ object SparkSeqBaseDE {
       else
         path = pathFam2+"/Control/Sample_"+i.toString+testSuff
       val bamFileCount= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
-      seqAnalysisControl.addBAM(sc,path,i,bamFileCountControlFirst/bamFileCount)
+      seqAnalysisControl.addBAM(sc,path,i,bamFileCountControlFirst.toDouble/bamFileCount.toDouble)
 
     }
 
     //compute coverage + filer out bases with mean cov < minAvgBaseCov + padding with 0 so that all vectors have the same length
     val covCase = seqAnalysisCase.getCoverageBaseRegion(chr,posStart,posEnd)
           .map(r=>(r._1%100000000000L,r._2)).groupByKey()
-          .filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > caseSampSize/2) )
+          //.filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > caseSampSize/2) )
           .map(c=> if((caseSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](caseSampSize-c._2.length)(0)) else (c._1,c._2) )
     val covControl = seqAnalysisControl.getCoverageBaseRegion(chr,posStart,posEnd)
         .map(r=>(r._1%100000000000L,r._2)).groupByKey()
-        .filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > controlSampSize/2) )
+        //.filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > controlSampSize/2) )
     	  .map(c=> if((controlSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](controlSampSize-c._2.length)(0)) else (c._1,c._2) )
     val leftCovJoint = covCase.leftOuterJoin(covControl).subtract(covCase.join(covControl.map(r=>(r._1,Option(r._2)) ) ) )
     val rightCovJoint = covCase.rightOuterJoin(covControl)
@@ -97,8 +97,33 @@ object SparkSeqBaseDE {
         .map( r=> (r._1,(r._2._1 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](caseSampSize)(0) },
                          r._2._2 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](controlSampSize)(0) }) ) )
       .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) ).map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTable)) ) )
-      .filter(r=> r._2._3<0.05)
-      .sortByKey(true,8)
+      .filter(r=> ( SparkSeqStats.mean(r._2._1._1) > minAvgBaseCov || SparkSeqStats.mean(r._2._1._2) > minAvgBaseCov ) )
+      .map(r=>(r._2._3,r._1)) //pick position and p-value
+      .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete
+      .groupByKey().sortByKey(true,8).map(r=>(r._1,r._2.sortBy(x=>x)) )
+      .map{r=>
+          var regLenArray:ArrayBuffer[(Int,Long)]=ArrayBuffer()
+          var regStart = r._2(0)
+          var regLength = 1
+          var i = 1
+          while(i<r._2.length){
+          if(r._2(i)-1 != r._2(i-1) ){
+            if(regLength>=minRegLength)
+            regLenArray+=((regLength,regStart))
+            regLength=1
+          regStart=r._2(i)
+          }
+          else regLength+=1
+            i=i+1
+          }
+          (r._1,regLenArray.sortBy(-_._1))
+    }
+
+
+
+    //.reduce((a,b) => if(a._1.max==b._1.min-1) (a._1++b._1,b._2) else if())
+
+      //.filter(r=>r._1==1000029324L)
         //.count()
    // println(leftCovJoint)
 //println(finalcovJoint)
