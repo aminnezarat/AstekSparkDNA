@@ -29,10 +29,10 @@ object SparkSeqBaseDE {
 
     val minRegLength= 10
 
-    val caseIdFam1 = Array(38,39/*,42,44,45,47,53*/)
-    val controlIdFam1 = Array(56,74/*,76,77,83,94*/)
-    val caseIdFam2 = Array(100,111/*,29,36,52,55,64,69*/)
-    val controlIdFam2 = Array(110,30/*,31,51,54,58,63,91,99*/)
+    val caseIdFam1 = Array(38,39,42/*,44,45,47,53*/)
+    val controlIdFam1 = Array(56,74,76/*,77,83,94*/)
+    val caseIdFam2 = Array(100,111,29/*,36,52,55,64,69*/)
+    val controlIdFam2 = Array(110,30,31/*,51,54,58,63,91,99*/)
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
@@ -40,7 +40,7 @@ object SparkSeqBaseDE {
     val testSuff="_sort_chr1.bam"
     val chr = "chr1"
     val posStart=1
-    val posEnd=500000
+    val posEnd=300000000
     val minAvgBaseCov = 10
 
 
@@ -157,11 +157,11 @@ object SparkSeqBaseDE {
   val a =finalcovJoint.toArray()
   sc.stop()
   Thread.sleep(100)
-  println("==========================================Results======================================")
-  println("p-value".toString.padTo(10,' ')+"length".padTo(10, ' ')+"Coordinates".padTo(15, ' ')+"geneId".padTo(25,' ')+"exonId".padTo(10, ' ')+"exonOverlapPct")
+  println("=======================================Results======================================")
+  println("p-value".toString.padTo(10,' ')+"length".padTo(10, ' ')+"Coordinates".padTo(20, ' ')+"geneId".padTo(25,' ')+"exonId".padTo(10, ' ')+"exonOverlapPct")
 
   for(r<-a){
-  println(r._1.toString.padTo(10,' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(15, ' ')+r._4.toString.padTo(25,' ')+r._5.toString.padTo(10, ' ')+r._6)
+  println(r._1.toString.padTo(10,' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(20, ' ')+r._4.toString.padTo(25,' ')+r._5.toString.padTo(10, ' ')+r._6)
   }
     //println(rightCovJoin
 

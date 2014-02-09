@@ -78,7 +78,7 @@
       <file leaf-file-name="SparkSeqBaseDE.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqBaseDE.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="159" column="93" selection-start="7601" selection-end="7601" vertical-scroll-proportion="0.31610942" vertical-offset="2281" max-vertical-offset="2640">
+            <state line="46" column="86" selection-start="1674" selection-end="1754" vertical-scroll-proportion="0.3251445" vertical-offset="465" max-vertical-offset="2640">
               <folding>
                 <element signature="e#28#73#0" expanded="true" />
               </folding>
@@ -876,7 +876,7 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.58842105" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.20631579" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -1286,7 +1286,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqBaseDE.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="159" column="93" selection-start="7601" selection-end="7601" vertical-scroll-proportion="0.31610942" vertical-offset="2281" max-vertical-offset="2640">
+        <state line="46" column="86" selection-start="1674" selection-end="1754" vertical-scroll-proportion="0.3251445" vertical-offset="465" max-vertical-offset="2640">
           <folding>
             <element signature="e#28#73#0" expanded="true" />
           </folding>
