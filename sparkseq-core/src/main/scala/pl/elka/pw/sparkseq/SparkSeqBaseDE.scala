@@ -9,13 +9,19 @@ import org.apache.hadoop.io.LongWritable
 import fi.tkk.ics.hadoop.bam.{BAMInputFormat, SAMRecordWritable}
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
 import scala.util.control._
+import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
+import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
+import scala.Array
+
 /**
  * Created by marek on 2/8/14.
  */
 object SparkSeqBaseDE {
 
   def main(args: Array[String]) {
-    val sc = new  SparkContext("local[8]", "sparkseq", "/opt/spark-0.9.0-incubating")
+    SparkSeqContexProperties.setupContexProperties()
+    SparkSeqKryoProperties.setupKryoContextProperties()
+    val sc = new  SparkContext("spark://MarekNotebook:7077", "sparkseq", System.getenv("SPARK_HOME"))
     val fileSplitSize = 64
     val rootPath="/mnt/software/Phd_datastore/RAO/"
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
@@ -29,10 +35,10 @@ object SparkSeqBaseDE {
 
     val minRegLength= 10
 
-    val caseIdFam1 = Array(38,39,42/*,44,45,47,53*/)
-    val controlIdFam1 = Array(56,74,76/*,77,83,94*/)
-    val caseIdFam2 = Array(100,111,29/*,36,52,55,64,69*/)
-    val controlIdFam2 = Array(110,30,31/*,51,54,58,63,91,99*/)
+    val caseIdFam1 = Array(38,39/*,42,44,45,47,53*/)
+    val controlIdFam1 = Array(56,74/*,76,77,83,94*/)
+    val caseIdFam2 = Array(100,111/*,29,36,52,55,64,69*/)
+    val controlIdFam2 = Array(110,30/*,31,51,54,58,63,91,99*/)
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
@@ -40,7 +46,7 @@ object SparkSeqBaseDE {
     val testSuff="_sort_chr1.bam"
     val chr = "chr1"
     val posStart=1
-    val posEnd=300000000
+    val posEnd=500000
     val minAvgBaseCov = 10
 
 
@@ -49,6 +55,7 @@ object SparkSeqBaseDE {
       .map(l => l.split("\t"))
       .map(r=>(r.array(0).toDouble,r.array(1).toDouble) )
       .toArray
+    val cmDistTableB = sc.broadcast(cmDistTable)
 
 
 
@@ -93,14 +100,15 @@ object SparkSeqBaseDE {
         .map(r=>(r._1%100000000000L,r._2)).groupByKey()
         //.filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > controlSampSize/2) )
     	  .map(c=> if((controlSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](controlSampSize-c._2.length)(0)) else (c._1,c._2) )
-    val leftCovJoint = covCase.leftOuterJoin(covControl).subtract(covCase.join(covControl.map(r=>(r._1,Option(r._2)) ) ) )
+    val leftCovJoint = covCase.leftOuterJoin(covControl)
+      //.subtract(covCase.join(covControl.map(r=>(r._1,Option(r._2)) ) ) )
     val rightCovJoint = covCase.rightOuterJoin(covControl)
 
     //final join + compute Cramver von Mises test statistics + filtering
     val finalcovJoint = leftCovJoint.map(r=>(r._1,Option(r._2._1),r._2._2)).union(rightCovJoint.map(r=>(r._1,r._2._1,Option(r._2._2))) ).map(r=>(r._1,(r._2,r._3)))
-        .map( r=> (r._1,(r._2._1 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](caseSampSize)(0) },
-                         r._2._2 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](controlSampSize)(0) }) ) )
-      .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) ).map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTable)) ) )
+        .map( r=> (r._1,(r._2._1 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](caseSampSize)(0)},
+                         r._2._2 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](controlSampSize)(0)}) ) ).distinct()
+      .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) ).map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTableB )))  )
       .filter(r=> ( SparkSeqStats.mean(r._2._1._1) > minAvgBaseCov || SparkSeqStats.mean(r._2._1._2) > minAvgBaseCov ) )
       .map(r=>(r._2._3,r._1)) //pick position and p-value
       .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete(OPTIMIZE!! it can be combined with getPval)!

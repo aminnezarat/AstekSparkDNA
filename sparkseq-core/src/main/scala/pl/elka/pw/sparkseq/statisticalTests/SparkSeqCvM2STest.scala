@@ -99,16 +99,16 @@ object SparkSeqCvM2STest extends Serializable{
    * @param distTable Distance table
    * @return p-value
    */
-	def getPValue(t2:Double,distTable:Array[(Double,Double)]):Double ={
+	def getPValue(t2:Double,distTable:org.apache.spark.broadcast.Broadcast[Array[(Double,Double)]]):Double ={
 	  
 	  var pvalue:Double = 1.0
 	  val loop = new Breaks;
 	 // println(t2)
 	  if(t2 == 0.0) return(1.0)
       loop.breakable {
-		  for(i <- 0 to distTable.length-1){
-		    if(t2<=distTable(i)._1 && i >1 ){
-		      pvalue = 1-distTable(i-1)._2
+		  for(i <- 0 to distTable.value.length-1){
+		    if(t2<=distTable.value(i)._1 && i >1 ){
+		      pvalue = 1-distTable.value(i-1)._2
 		       loop.break
 		    }
 		  /* if(t2<=distTable(i)._1 && distTable(i)._2<0.5 && i >1){

@@ -8,7 +8,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
   "org.apache.commons" % "commons-math3" % "3.2",          
-  "org.apache.hadoop" % "hadoop-client" % "2.2.0",
+  "org.apache.hadoop" % "hadoop-client" % "1.2.1",
   "fi.tkk.ics.hadoop.bam" % "hadoop-bam" % "6.1-SNAPSHOT",
   "picard" % "picard" % "1.93",
   "samtools" % "samtools" % "1.93",
