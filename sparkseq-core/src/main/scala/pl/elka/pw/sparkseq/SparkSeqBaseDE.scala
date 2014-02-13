@@ -12,6 +12,7 @@ import scala.util.control._
 import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
 import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
 import scala.Array
+import org.apache.spark.RangePartitioner
 
 /**
  * Created by marek on 2/8/14.
@@ -21,7 +22,7 @@ object SparkSeqBaseDE {
   def main(args: Array[String]) {
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
-    val sc = new  SparkContext("spark://MarekNotebook:7077", "sparkseq", System.getenv("SPARK_HOME"))
+    val sc = new  SparkContext(/*"spark://MarekNotebook:7077"*/"local[8]", "sparkseq", System.getenv("SPARK_HOME"))
     val fileSplitSize = 64
     val rootPath="/mnt/software/Phd_datastore/RAO/"
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
@@ -48,6 +49,7 @@ object SparkSeqBaseDE {
     val posStart=1
     val posEnd=500000
     val minAvgBaseCov = 10
+    val minPval = 0.05
 
 
     //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
@@ -111,10 +113,16 @@ object SparkSeqBaseDE {
       .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) ).map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTableB )))  )
       .filter(r=> ( SparkSeqStats.mean(r._2._1._1) > minAvgBaseCov || SparkSeqStats.mean(r._2._1._2) > minAvgBaseCov ) )
       .map(r=>(r._2._3,r._1)) //pick position and p-value
+      //.map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._2)) )
+
       .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete(OPTIMIZE!! it can be combined with getPval)!
-      .groupByKey().sortByKey(true,8).map(r=>(r._1,r._2.sortBy(x=>x)) )
-      .flatMap{r=>
+      .filter(r=>r._1<=minPval)
+     .groupByKey()
+     val f = finalcovJoint.partitionBy(new RangePartitioner[Double,Seq[Long]](4,finalcovJoint))
+       .map(r=>(r._1,r._2.sortBy(x=>x)) )
+      .mapPartitions{partitionIterator =>
           var regLenArray:ArrayBuffer[(Double,Int,Long)]=ArrayBuffer()
+       for (r <- partitionIterator){
           var regStart = r._2(0)
           var regLength = 1
           var i = 1
@@ -128,11 +136,12 @@ object SparkSeqBaseDE {
           else regLength+=1
             i=i+1
           }
-          regLenArray.sortBy(-_._2)
-    }
+       }
+          Iterator(regLenArray.sortBy(-_._2) )
+    }.flatMap(r=>r)
     //.flatMap(r=>r)
     //.flatMap(r=>(r._1,r._2 ) )
-    .map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._3)) )
+   .map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._3)) )
     .map(r=>
       if(genExonsMapB.value.contains(r._3._1) ){
           val exons = genExonsMapB.value(r._3._1)
@@ -161,8 +170,10 @@ object SparkSeqBaseDE {
           (r._1,r._2,r._3,"ChrNotFound",0,0.0)
       )
 
- .filter(r=>r._1<=0.01)
-  val a =finalcovJoint.toArray()
+
+  val a =f.toArray()
+//    val b = finalcovJoint.take(10)
+ //   b.foreach(println)
   sc.stop()
   Thread.sleep(100)
   println("=======================================Results======================================")

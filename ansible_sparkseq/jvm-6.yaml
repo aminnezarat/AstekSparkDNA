@@ -4,7 +4,7 @@
     scala_version: 2.10.3
     sbt_version: 0.13.0
     thrift_version: 0.9.1
-  #user: vagrant
+  user: mesos
   sudo: yes # TODO: remove sudo off global default
   tasks:
     - name: Update apt cache
@@ -34,10 +34,10 @@
       shell: echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections
       tags: [java]
 
-    - name: Install Oracle Java 7
-      apt: pkg=oracle-java7-installer
+    - name: Install Oracle Java 6
+      apt: pkg=oracle-java6-installer
       tags: [java]
-        
+
     # #########################################################################
     # For Scala support
     # ->
