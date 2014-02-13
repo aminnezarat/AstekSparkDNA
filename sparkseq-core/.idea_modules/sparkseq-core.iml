@@ -4,9 +4,8 @@
     <facet type="scala" name="Scala">
       <configuration>
         <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="SBT: scala:2.9.3" />
+        <option name="compilerLibraryName" value="SBT: scala:2.10.2" />
         <option name="fsc" value="true" />
-        <option name="languageLevel" value="Scala 2.9" />
       </configuration>
     </facet>
   </component>
@@ -23,7 +22,7 @@
       <sourceFolder url="file://$MODULE_DIR$/../src/test/resources" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/../target" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.6" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.9.3" level="project" />
     <orderEntry type="library" name="SBT: org.apache.spark:spark-core_2.9.3:0.8.1-incubating" level="project" />

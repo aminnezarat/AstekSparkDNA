@@ -22,38 +22,37 @@ object SparkSeqBaseDE {
   def main(args: Array[String]) {
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
-    val sc = new  SparkContext(/*"spark://MarekNotebook:7077"*/"local[8]", "sparkseq", System.getenv("SPARK_HOME"))
+    val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
     val fileSplitSize = 64
-    val rootPath="/mnt/software/Phd_datastore/RAO/"
+    val rootPath="hdfs://sparkseq002.cloudapp.net:9000/BAM/"
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
     val pathFam2 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam2"
     val bedFile = "Equus_caballus.EquCab2.73_exons_chr2.bed"
     val pathExonsList = rootPath+fileSplitSize.toString+"MB/aux/"+bedFile
     val genExonsMapB = sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
-
-
     val numTasks = 30
 
-    val minRegLength= 10
 
-    val caseIdFam1 = Array(38,39/*,42,44,45,47,53*/)
-    val controlIdFam1 = Array(56,74/*,76,77,83,94*/)
-    val caseIdFam2 = Array(100,111/*,29,36,52,55,64,69*/)
-    val controlIdFam2 = Array(110,30/*,31,51,54,58,63,91,99*/)
+
+
+    val caseIdFam1 = Array(38,39,42/*,44,45,47,53*/)
+    val controlIdFam1 = Array(56,74,76/*,77,83,94*/)
+    val caseIdFam2 = Array(100,111,29/*,36,52,55,64,69*/)
+    val controlIdFam2 = Array(110,30,31/*,51,54,58,63,91,99*/)
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
 
-    val testSuff="_sort_chr1.bam"
+    val testSuff="_sort.bam"
     val chr = "chr1"
     val posStart=1
-    val posEnd=500000
+    val posEnd=3000000
     val minAvgBaseCov = 10
-    val minPval = 0.05
-
+    val minPval = 0.01
+    val minRegLength= 30
 
     //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
-    val cmDistTable = sc.textFile("../sparkseq-core/src/main/resources/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")
+    val cmDistTable = sc.textFile(rootPath+fileSplitSize.toString+"MB/aux/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")
       .map(l => l.split("\t"))
       .map(r=>(r.array(0).toDouble,r.array(1).toDouble) )
       .toArray
@@ -110,30 +109,40 @@ object SparkSeqBaseDE {
     val finalcovJoint = leftCovJoint.map(r=>(r._1,Option(r._2._1),r._2._2)).union(rightCovJoint.map(r=>(r._1,r._2._1,Option(r._2._2))) ).map(r=>(r._1,(r._2,r._3)))
         .map( r=> (r._1,(r._2._1 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](caseSampSize)(0)},
                          r._2._2 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](controlSampSize)(0)}) ) ).distinct()
-      .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) ).map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTableB )))  )
-      .filter(r=> ( SparkSeqStats.mean(r._2._1._1) > minAvgBaseCov || SparkSeqStats.mean(r._2._1._2) > minAvgBaseCov ) )
-      .map(r=>(r._2._3,r._1)) //pick position and p-value
+
+      .filter(r=> ( SparkSeqStats.mean(r._2._1) > minAvgBaseCov || SparkSeqStats.mean(r._2._2) > minAvgBaseCov ) )
+      .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) )
+      .map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTableB ),SparkSeqStats.mean(r._2._1)/SparkSeqStats.mean(r._2._2)))  )
+      .map(r=>(r._2._3,(r._1.toInt,r._2._4))) //pick position and p-value
       //.map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._2)) )
 
       .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete(OPTIMIZE!! it can be combined with getPval)!
       .filter(r=>r._1<=minPval)
-     .groupByKey()
-     val f = finalcovJoint.partitionBy(new RangePartitioner[Double,Seq[Long]](4,finalcovJoint))
-       .map(r=>(r._1,r._2.sortBy(x=>x)) )
+    //println(finalcovJoint.count())
+     //.groupByKey()
+      .groupByKey(numTasks)
+     val f = finalcovJoint.partitionBy(new RangePartitioner[Double,Seq[(Int,Double)]](4,finalcovJoint))
+     .map(r=>(r._1,r._2.sortBy(_._1).distinct)).map(r=>(r._1,r._2.distinct) ) //2x distinct workaround
+     //  println(f.first.toString)
       .mapPartitions{partitionIterator =>
-          var regLenArray:ArrayBuffer[(Double,Int,Long)]=ArrayBuffer()
+          var regLenArray:ArrayBuffer[(Double,Int,Int,Double)]=ArrayBuffer()
        for (r <- partitionIterator){
-          var regStart = r._2(0)
+          var regStart = r._2(0)._1
           var regLength = 1
+          var fcSum = 0.0
           var i = 1
           while(i<r._2.length){
-          if(r._2(i)-1 != r._2(i-1) ){
+          if(r._2(i)._1-1 != r._2(i-1)._1 ){
             if(regLength>=minRegLength)
-            regLenArray+=((r._1,regLength,regStart))
-            regLength=1
-          regStart=r._2(i)
+            regLenArray+=((r._1,regLength,regStart,fcSum/regLength))
+          regLength=1
+          fcSum = 0.0
+          regStart=r._2(i)._1
           }
-          else regLength+=1
+          else{
+            regLength+=1
+            fcSum+=(r._2(i)._2)
+          }
             i=i+1
           }
        }
@@ -141,7 +150,7 @@ object SparkSeqBaseDE {
     }.flatMap(r=>r)
     //.flatMap(r=>r)
     //.flatMap(r=>(r._1,r._2 ) )
-   .map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._3)) )
+   .map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._3),r._4) )
     .map(r=>
       if(genExonsMapB.value.contains(r._3._1) ){
           val exons = genExonsMapB.value(r._3._1)
@@ -164,23 +173,25 @@ object SparkSeqBaseDE {
 
                }
           }
-        (r._1,r._2,r._3,"ENSECAG000000"+genId,exId,math.round(exonOverlapPct*10000).toDouble/10000)
+        (r._1,r._2,r._3,r._4,"ENSECAG000000"+genId,exId,math.round(exonOverlapPct*10000).toDouble/10000)
         }
         else
-          (r._1,r._2,r._3,"ChrNotFound",0,0.0)
+          (r._1,r._2,r._3,r._4,"ChrNotFound",0,0.0)
       )
 
 
   val a =f.toArray()
+    .map(r=>(r._1,r._2,r._3,if(r._4<1.0) -1/r._4;else r._4,r._5,r._6,r._7))
+    .sortBy(r=>(r._1,-(math.abs(r._4)),-r._2))
 //    val b = finalcovJoint.take(10)
  //   b.foreach(println)
   sc.stop()
   Thread.sleep(100)
   println("=======================================Results======================================")
-  println("p-value".toString.padTo(10,' ')+"length".padTo(10, ' ')+"Coordinates".padTo(20, ' ')+"geneId".padTo(25,' ')+"exonId".padTo(10, ' ')+"exonOverlapPct")
+  println("p-value".toString.padTo(10,' ')+"foldChange".padTo(15, ' ')+"length".padTo(10, ' ')+"Coordinates".padTo(20, ' ')+"geneId".padTo(25,' ')+"exonId".padTo(10, ' ')+"exonOverlapPct")
 
   for(r<-a){
-  println(r._1.toString.padTo(10,' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(20, ' ')+r._4.toString.padTo(25,' ')+r._5.toString.padTo(10, ' ')+r._6)
+    println(r._1.toString.padTo(10,' ')+(math.round(r._4*10000).toDouble/10000).toString.padTo(15, ' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(20, ' ')+r._5.toString.padTo(25,' ')+r._6.toString.padTo(10, ' ')+r._7)
   }
     //println(rightCovJoin
 

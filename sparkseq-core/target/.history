@@ -1,2 +1,4 @@
 help
 exit
+gen-idea no-classifiers
+exit
