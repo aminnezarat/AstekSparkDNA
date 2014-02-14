@@ -42,6 +42,7 @@ object SparkSeqBaseDE {
     val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
     val testSuff="_sort.bam"
     */
+
     
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/GSE49712"
     val pathFam2 = rootPath+fileSplitSize.toString+"MB/GSE49712"

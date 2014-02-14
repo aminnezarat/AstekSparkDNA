@@ -76,7 +76,7 @@
       <file leaf-file-name="SparkSeqBaseDE.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqBaseDE.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="44" column="4" selection-start="1836" selection-end="1836" vertical-scroll-proportion="0.49749583" vertical-offset="122" max-vertical-offset="3255">
+            <state line="45" column="4" selection-start="1837" selection-end="1837" vertical-scroll-proportion="0.5225376" vertical-offset="122" max-vertical-offset="3270">
               <folding />
             </state>
           </provider>
@@ -1095,7 +1095,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/scala/pl/elka/pw/sparkseq/SparkSeqBaseDE.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="44" column="4" selection-start="1836" selection-end="1836" vertical-scroll-proportion="0.49749583" vertical-offset="122" max-vertical-offset="3255">
+        <state line="45" column="4" selection-start="1837" selection-end="1837" vertical-scroll-proportion="0.5225376" vertical-offset="122" max-vertical-offset="3270">
           <folding />
         </state>
       </provider>
