@@ -2,3 +2,5 @@ help
 exit
 gen-idea no-classifiers
 exit
+gen-idea no-classifiers
+exit

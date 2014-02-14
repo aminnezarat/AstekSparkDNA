@@ -324,8 +324,8 @@ def getCoverageExonOLD2():RDD[((Int,String,Int),Int)] = {
 		var refName:String =""
 		var chNumCode:Long = 0
 		//val nuclArray = new Array[Array[Int]](2000000)
-		var countArray = new Array[(Long,Int)](10000000)
-		var countArrayToReduce = new Array[(Long,Int)](200000)
+		var countArray = new Array[(Long,Int)](12000000)
+		var countArrayToReduce = new Array[(Long,Int)](300000)
 		var outputArray = new   Array[Array[(Long,Int)]](2)
 
 		for (read <- partitionIterator){

@@ -13,16 +13,22 @@ import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
 import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
 import scala.Array
 import org.apache.spark.RangePartitioner
-
+import java.io._
+import com.github.nscala_time.time._
+import com.github.nscala_time.time.Imports._
 /**
  * Created by marek on 2/8/14.
  */
 object SparkSeqBaseDE {
 
   def main(args: Array[String]) {
+
+
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
     val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
+
+    val timeStamp=DateTime.now.toString()
     val fileSplitSize = 64
     val rootPath="hdfs://sparkseq002.cloudapp.net:9000/BAM/"
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
@@ -30,26 +36,26 @@ object SparkSeqBaseDE {
     val bedFile = "Equus_caballus.EquCab2.73_exons_chr2.bed"
     val pathExonsList = rootPath+fileSplitSize.toString+"MB/aux/"+bedFile
     val genExonsMapB = sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
-    val numTasks = 30
+    val numTasks = 16
 
 
 
 
     val caseIdFam1 = Array(38,39,42/*,44,45,47,53*/)
     val controlIdFam1 = Array(56,74,76/*,77,83,94*/)
-    val caseIdFam2 = Array(100,111,29/*,36,52,55,64,69*/)
-    val controlIdFam2 = Array(110,30,31/*,51,54,58,63,91,99*/)
+    val caseIdFam2:Array[Int] = Array(/*100,111,29,36,52,55,64,69*/)
+    val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
 
     val testSuff="_sort.bam"
-    val chr = "chr1"
+    val chr = args(0)
     val posStart=1
-    val posEnd=3000000
+    val posEnd=300000000
     val minAvgBaseCov = 10
-    val minPval = 0.01
-    val minRegLength= 30
+    val minPval = 0.05
+    val minRegLength= 10
 
     //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
     val cmDistTable = sc.textFile(rootPath+fileSplitSize.toString+"MB/aux/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")
@@ -94,11 +100,11 @@ object SparkSeqBaseDE {
 
     //compute coverage + filer out bases with mean cov < minAvgBaseCov + padding with 0 so that all vectors have the same length
     val covCase = seqAnalysisCase.getCoverageBaseRegion(chr,posStart,posEnd)
-          .map(r=>(r._1%100000000000L,r._2)).groupByKey()
+          .map(r=>(r._1%1000000000000L,r._2)).groupByKey()
           //.filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > caseSampSize/2) )
           .map(c=> if((caseSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](caseSampSize-c._2.length)(0)) else (c._1,c._2) )
     val covControl = seqAnalysisControl.getCoverageBaseRegion(chr,posStart,posEnd)
-        .map(r=>(r._1%100000000000L,r._2)).groupByKey()
+        .map(r=>(r._1%1000000000000L,r._2)).groupByKey()
         //.filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > controlSampSize/2) )
     	  .map(c=> if((controlSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](controlSampSize-c._2.length)(0)) else (c._1,c._2) )
     val leftCovJoint = covCase.leftOuterJoin(covControl)
@@ -113,7 +119,7 @@ object SparkSeqBaseDE {
       .filter(r=> ( SparkSeqStats.mean(r._2._1) > minAvgBaseCov || SparkSeqStats.mean(r._2._2) > minAvgBaseCov ) )
       .map(r=>(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) )
       .map(r=>((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTableB ),SparkSeqStats.mean(r._2._1)/SparkSeqStats.mean(r._2._2)))  )
-      .map(r=>(r._2._3,(r._1.toInt,r._2._4))) //pick position and p-value
+      .map(r=>(r._2._3,(r._1,r._2._4))) //pick position and p-value
       //.map(r=>(r._1,r._2,SparkSeqConversions.idToCoordinates(r._2)) )
 
       .map(c=>if(c._1<0.001)(0.001,c._2) else if(c._1>=0.001 && c._1<0.01) (0.01,c._2) else if(c._1>=0.01 && c._1<0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete(OPTIMIZE!! it can be combined with getPval)!
@@ -121,11 +127,11 @@ object SparkSeqBaseDE {
     //println(finalcovJoint.count())
      //.groupByKey()
       .groupByKey(numTasks)
-     val f = finalcovJoint.partitionBy(new RangePartitioner[Double,Seq[(Int,Double)]](4,finalcovJoint))
+     val f = finalcovJoint.partitionBy(new RangePartitioner[Double,Seq[(Long,Double)]](4,finalcovJoint))
      .map(r=>(r._1,r._2.sortBy(_._1).distinct)).map(r=>(r._1,r._2.distinct) ) //2x distinct workaround
      //  println(f.first.toString)
       .mapPartitions{partitionIterator =>
-          var regLenArray:ArrayBuffer[(Double,Int,Int,Double)]=ArrayBuffer()
+          var regLenArray:ArrayBuffer[(Double,Int,Long,Double)]=ArrayBuffer()
        for (r <- partitionIterator){
           var regStart = r._2(0)._1
           var regLength = 1
@@ -187,12 +193,18 @@ object SparkSeqBaseDE {
  //   b.foreach(println)
   sc.stop()
   Thread.sleep(100)
+  val writer = new PrintWriter(new File(timeStamp+"exp.txt" ))
+  val header="p-value".toString.padTo(10,' ')+"foldChange".padTo(15, ' ')+"length".padTo(10, ' ')+"Coordinates".padTo(20, ' ')+"geneId".padTo(25,' ')+"exonId".padTo(10, ' ')+"exonOverlapPct"
   println("=======================================Results======================================")
-  println("p-value".toString.padTo(10,' ')+"foldChange".padTo(15, ' ')+"length".padTo(10, ' ')+"Coordinates".padTo(20, ' ')+"geneId".padTo(25,' ')+"exonId".padTo(10, ' ')+"exonOverlapPct")
+  println(header)
+  writer.write(header+"\n")
 
   for(r<-a){
-    println(r._1.toString.padTo(10,' ')+(math.round(r._4*10000).toDouble/10000).toString.padTo(15, ' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(20, ' ')+r._5.toString.padTo(25,' ')+r._6.toString.padTo(10, ' ')+r._7)
+    var rec = r._1.toString.padTo(10,' ')+(math.round(r._4*10000).toDouble/10000).toString.padTo(15, ' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(20, ' ')+r._5.toString.padTo(25,' ')+r._6.toString.padTo(10, ' ')+r._7
+    println(rec)
+    writer.write(rec+"\n")
   }
+  writer.close()
     //println(rightCovJoin
 
   }

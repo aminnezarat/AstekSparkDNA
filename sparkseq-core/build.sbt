@@ -13,7 +13,8 @@ libraryDependencies ++= Seq(
   "picard" % "picard" % "1.93",
   "samtools" % "samtools" % "1.93",
   "tribble" % "tribble" % "1.93",
-  "variant" % "variant" % "1.93" 
+  "variant" % "variant" % "1.93",
+  "com.github.nscala-time" %% "nscala-time" % "0.8.0"
 )
 
 resolvers ++= Seq(
