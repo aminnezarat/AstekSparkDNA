@@ -43,7 +43,6 @@ object SparkSeqBaseDE {
     val testSuff="_sort.bam"
     */
 
-    
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/GSE49712"
     val pathFam2 = rootPath+fileSplitSize.toString+"MB/GSE49712"
     val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_ordered.bed"
