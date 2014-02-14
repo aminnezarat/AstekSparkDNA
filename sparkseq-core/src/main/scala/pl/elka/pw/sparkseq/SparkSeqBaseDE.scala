@@ -26,36 +26,50 @@ object SparkSeqBaseDE {
 
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
-    val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
+    val sc = new  SparkContext(/*"spark://sparkseq001.cloudapp.net:7077"*/"local[4]", "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
 
     val timeStamp=DateTime.now.toString()
     val fileSplitSize = 64
     val rootPath="hdfs://sparkseq002.cloudapp.net:9000/BAM/"
-    val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
+
+    /*val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
     val pathFam2 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam2"
     val bedFile = "Equus_caballus.EquCab2.74_exons_chr_ordered.bed"
     val pathExonsList = rootPath+fileSplitSize.toString+"MB/aux/"+bedFile
+     val caseIdFam1 = Array(38,39,42,44,45,47,53)
+    val controlIdFam1 = Array(56,74,76,77,83,94)
+    val caseIdFam2:Array[Int] = Array(/*100,111,29,36,52,55,64,69*/)
+    val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
+    val testSuff="_sort.bam"
+    */
+    val pathFam1 = rootPath+fileSplitSize.toString+"MB/GSE49712"
+    val pathFam2 = rootPath+fileSplitSize.toString+"MB/GSE49712"
+    val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_ordered.bed"
+    val pathExonsList = rootPath+fileSplitSize.toString+"MB/aux/"+bedFile
+
+
     val genExonsMapB = sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
     val numTasks = 16
 
 
 
 
-    val caseIdFam1 = Array(38,39,42/*,44,45,47,53*/)
-    val controlIdFam1 = Array(56,74,76/*,77,83,94*/)
+    val caseIdFam1 = Array(950080,950082,950084,950086)
+    val controlIdFam1 = Array(950081,950083,950085,950087)
     val caseIdFam2:Array[Int] = Array(/*100,111,29,36,52,55,64,69*/)
     val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
 
-    val testSuff="_sort.bam"
+
+    val testSuff=".sra_sort.bam"
     val chr = args(0)
     val posStart=1
     val posEnd=300000000
     val minAvgBaseCov = 10
-    val minPval = 0.05
-    val minRegLength= 10
+    val minPval = 0.2
+    val minRegLength= 5
 
     //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
     val cmDistTable = sc.textFile(rootPath+fileSplitSize.toString+"MB/aux/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")
@@ -71,8 +85,8 @@ object SparkSeqBaseDE {
       8622606.0/14788631.0, 8622606.0/14346120.0, 8622606.0/ 16693869.0)
 */
 
-    val seqAnalysisCase = new SparkSeqAnalysis(sc,pathFam1+"/Case/Sample_25"+testSuff,25,1,numTasks)
-    val bamFileCountCaseFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Case/Sample_25"+testSuff).count()
+    val seqAnalysisCase = new SparkSeqAnalysis(sc,pathFam1+"/Case/Sample_950078"+testSuff,25,1,numTasks)
+    val bamFileCountCaseFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Case/Sample_950078"+testSuff).count()
     for(i<-caseIdFam1++caseIdFam2){
       var path:String = ""
       if(caseIdFam1.contains(i))
@@ -85,8 +99,8 @@ object SparkSeqBaseDE {
 
 
 
-    val seqAnalysisControl = new SparkSeqAnalysis(sc,pathFam1+"/Control/Sample_26"+testSuff,26,1,numTasks)
-    val bamFileCountControlFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Control/Sample_26"+testSuff).count()
+    val seqAnalysisControl = new SparkSeqAnalysis(sc,pathFam1+"/Control/Sample_950079"+testSuff,26,1,numTasks)
+    val bamFileCountControlFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Control/Sample_950079"+testSuff).count()
     for(i<-controlIdFam1++controlIdFam2){
       var path:String = ""
       if(controlIdFam1.contains(i))
