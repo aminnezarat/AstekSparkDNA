@@ -26,7 +26,7 @@ object SparkSeqBaseDE {
 
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
-    val sc = new  SparkContext(/*"spark://sparkseq001.cloudapp.net:7077"*/"local[4]", "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
+    val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
 
     val timeStamp=DateTime.now.toString()
     val fileSplitSize = 64
@@ -69,8 +69,8 @@ object SparkSeqBaseDE {
     val posStart=1
     val posEnd=300000000
     val minAvgBaseCov = 10
-    val minPval = 0.2
-    val minRegLength= 5
+    val minPval = 0.05
+    val minRegLength= 10
 
     //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
     val cmDistTable = sc.textFile(rootPath+fileSplitSize.toString+"MB/aux/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")
@@ -95,7 +95,7 @@ object SparkSeqBaseDE {
       else
         path = pathFam2+"/Case/Sample_"+i.toString+testSuff
       val bamFileCount= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
-      seqAnalysisCase.addBAM(sc,path,i,bamFileCountCaseFirst.toDouble/bamFileCount.toDouble)
+      seqAnalysisCase.addBAM(sc,path,i-950000,bamFileCountCaseFirst.toDouble/bamFileCount.toDouble)
     }
 
 
@@ -109,7 +109,7 @@ object SparkSeqBaseDE {
       else
         path = pathFam2+"/Control/Sample_"+i.toString+testSuff
       val bamFileCount= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
-      seqAnalysisControl.addBAM(sc,path,i,bamFileCountControlFirst.toDouble/bamFileCount.toDouble)
+      seqAnalysisControl.addBAM(sc,path,i-950000,bamFileCountControlFirst.toDouble/bamFileCount.toDouble)
 
     }
 
