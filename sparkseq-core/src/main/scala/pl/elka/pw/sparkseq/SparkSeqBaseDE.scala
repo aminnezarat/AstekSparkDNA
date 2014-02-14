@@ -33,7 +33,7 @@ object SparkSeqBaseDE {
     val rootPath="hdfs://sparkseq002.cloudapp.net:9000/BAM/"
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
     val pathFam2 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam2"
-    val bedFile = "Equus_caballus.EquCab2.73_exons_chr2.bed"
+    val bedFile = "Equus_caballus.EquCab2.74_exons_chr_ordered.bed"
     val pathExonsList = rootPath+fileSplitSize.toString+"MB/aux/"+bedFile
     val genExonsMapB = sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
     val numTasks = 16
@@ -161,7 +161,7 @@ object SparkSeqBaseDE {
       if(genExonsMapB.value.contains(r._3._1) ){
           val exons = genExonsMapB.value(r._3._1)
           var exId = 0
-          var genId = 0
+          var genId = ""
           val id = r._3._2/10000
           var exonOverlapPct = 0.0
           val loop = new Breaks
@@ -173,13 +173,13 @@ object SparkSeqBaseDE {
                    exonOverlapPct = (exonIntersect.max-exonIntersect.min).toDouble/(e._4-e._3)
                    exId = e._2
                    genId = e._1
-                   loop.break()
+                   //loop.break() //because there are some overlapping regions
                   }
                 }
 
                }
           }
-        (r._1,r._2,r._3,r._4,"ENSECAG000000"+genId,exId,math.round(exonOverlapPct*10000).toDouble/10000)
+        (r._1,r._2,r._3,r._4,genId,exId,math.round(exonOverlapPct*10000).toDouble/10000)
         }
         else
           (r._1,r._2,r._3,r._4,"ChrNotFound",0,0.0)

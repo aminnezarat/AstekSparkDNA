@@ -113,7 +113,7 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
    * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
    * @return RDD of tuples (regionId, coverage)
    */
-def getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.collection.mutable.HashMap[String,Array[scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]]]]):RDD[(Long,Int)] ={
+def getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.collection.mutable.HashMap[String,Array[scala.collection.mutable.ArrayBuffer[(String, Int, Int, Int)]]]]):RDD[(Long,Int)] ={
 
 //iGenExons:scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(Int,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]):RDD[(Long,Int)] = {
 
@@ -125,6 +125,7 @@ def getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.colle
 	 	var sampleId:Long = 0
 	 	var exId=0
 	 	var refName:String =""
+    val pattern = "^[A-Za-z]*0*".r
 	 	for (read <- partitionIterator){
 	 	   sampleId = read._1*1000000000000L
 	 	   refName = read._2._2.get.getReferenceName
@@ -149,9 +150,9 @@ def getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.colle
 				 	loop.breakable{
 				 	   for(r <-subReadStart to subReadEnd by 2) {
 				 		if(es._3<=r && es._4>=r){
-                   				    var id = sampleId+es._1*100000L+es._2
-                                                   if(!exonsCountMap.contains(id) )
-							exonsCountMap(id) = 1
+                var id = sampleId+pattern.replaceAllIn(es._1,"").toInt*100000L+es._2
+                if(!exonsCountMap.contains(id) )
+						    	exonsCountMap(id) = 1
 						    else
 						       exonsCountMap(id) += 1	  
 				 		      //exonsCountArray(exId)= (id,1)

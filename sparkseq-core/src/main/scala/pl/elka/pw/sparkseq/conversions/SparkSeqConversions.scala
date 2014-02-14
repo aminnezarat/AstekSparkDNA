@@ -115,20 +115,20 @@ object SparkSeqConversions {
    * @param bedFile Path to BED file.
    * @return SparkSeq internal representation of a BED as a HashMap
    */
-  def BEDFileToHashMap(sc:SparkContext,bedFile:String) : scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(Int,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]={
+  def BEDFileToHashMap(sc:SparkContext,bedFile:String) : scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(String,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]={
 
     val genExons = sc.textFile(bedFile)
       .map(l => l.split("\t"))
-      .map(r=>(r.array(4).trim.toInt,r.array(5).toInt,r.array(0).trim,r.array(1).toInt,r.array(2).toInt,r.array(3).trim) ).toArray
+      .map(r=>(r.array(4).trim,r.array(5).trim.toInt,r.array(0).trim,r.array(1).trim.toInt,r.array(2).trim.toInt,r.array(3).trim) ).toArray
     /*genExons format: (genId,ExonId,chr,start,end,strand)*/
 
-    var genExonsMap = scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(Int,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]()
+    var genExonsMap = scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(String,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]()
     for(ge <-genExons){
       if(!genExonsMap.contains(ge._3))
-        genExonsMap(ge._3) = new Array[ArrayBuffer[(Int,Int,Int,Int)]](25000)
+        genExonsMap(ge._3) = new Array[ArrayBuffer[(String,Int,Int,Int)]](25000)
       var idIn = ge._4/10000
       if( genExonsMap(ge._3)(idIn) == null)
-        genExonsMap(ge._3)(idIn) =  new  ArrayBuffer[(Int,Int,Int,Int)]()
+        genExonsMap(ge._3)(idIn) =  new  ArrayBuffer[(String,Int,Int,Int)]()
       genExonsMap(ge._3)(idIn)+=((ge._1,ge._2,ge._4,ge._5))
     }
     return genExonsMap
