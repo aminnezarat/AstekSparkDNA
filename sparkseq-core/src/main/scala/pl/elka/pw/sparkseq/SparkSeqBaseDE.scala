@@ -13,6 +13,8 @@ import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
 import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
 import scala.Array
 import org.apache.spark.RangePartitioner
+import org.apache.spark.HashPartitioner
+
 import java.io._
 import com.github.nscala_time.time._
 import com.github.nscala_time.time.Imports._
@@ -43,20 +45,24 @@ object SparkSeqBaseDE {
     val testSuff="_sort.bam"
     */
 
-    val pathFam1 = rootPath+fileSplitSize.toString+"MB/GSE49712"
-    val pathFam2 = rootPath+fileSplitSize.toString+"MB/GSE49712"
+    val pathFam1 = rootPath+fileSplitSize.toString+"MB/GSE51403"
+    val pathFam2 = rootPath+fileSplitSize.toString+"MB/GSE51403"
     val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_ordered.bed"
     val pathExonsList = rootPath+fileSplitSize.toString+"MB/aux/"+bedFile
 
 
     val genExonsMapB = sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
     val numTasks = 16
+    val numPartitions = 24
 
 
 
 
-    val caseIdFam1 = Array(950080,950082,950084,950086)
-    val controlIdFam1 = Array(950081,950083,950085,950087)
+    /*val caseIdFam1 = Array(950080,950082,950084,950086)
+    val controlIdFam1 = Array(950081,950083,950085,950087)*/
+    val caseIdFam1 = Array(1012920,1012922,1012924,1012927,1012930,1012933)
+    val controlIdFam1 = Array(1012938,1012942,1012945,1012948,1012951,1012954)
+
     val caseIdFam2:Array[Int] = Array(/*100,111,29,36,52,55,64,69*/)
     val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
 
@@ -64,13 +70,13 @@ object SparkSeqBaseDE {
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
 
 
-    val testSuff=".sra_sort.bam"
+    val testSuff="_sort.bam"
     val chr = args(0)
     val posStart=1
     val posEnd=300000000
     val minAvgBaseCov = 10
     val minPval = 0.05
-    val minRegLength= 10
+    val minRegLength= 1
 
     //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
     val cmDistTable = sc.textFile(rootPath+fileSplitSize.toString+"MB/aux/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")
@@ -85,8 +91,8 @@ object SparkSeqBaseDE {
       8622606.0/14788631.0, 8622606.0/14346120.0, 8622606.0/ 16693869.0)
 */
 
-    val seqAnalysisCase = new SparkSeqAnalysis(sc,pathFam1+"/Case/Sample_950078"+testSuff,25,1,numTasks)
-    val bamFileCountCaseFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Case/Sample_950078"+testSuff).count()
+    val seqAnalysisCase = new SparkSeqAnalysis(sc,pathFam1+"/Case/Sample_1012918"+testSuff,25,1,numTasks)
+    val bamFileCountCaseFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Case/Sample_1012918"+testSuff).count()
     for(i<-caseIdFam1++caseIdFam2){
       var path:String = ""
       if(caseIdFam1.contains(i))
@@ -94,13 +100,13 @@ object SparkSeqBaseDE {
       else
         path = pathFam2+"/Case/Sample_"+i.toString+testSuff
       val bamFileCount= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
-      seqAnalysisCase.addBAM(sc,path,i-950000,bamFileCountCaseFirst.toDouble/bamFileCount.toDouble)
+      seqAnalysisCase.addBAM(sc,path,i,bamFileCountCaseFirst.toDouble/bamFileCount.toDouble)
     }
 
 
 
-    val seqAnalysisControl = new SparkSeqAnalysis(sc,pathFam1+"/Control/Sample_950079"+testSuff,26,1,numTasks)
-    val bamFileCountControlFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Control/Sample_950079"+testSuff).count()
+    val seqAnalysisControl = new SparkSeqAnalysis(sc,pathFam1+"/Control/Sample_1012936"+testSuff,26,1,numTasks)
+    val bamFileCountControlFirst= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+"/Control/Sample_1012936"+testSuff).count()
     for(i<-controlIdFam1++controlIdFam2){
       var path:String = ""
       if(controlIdFam1.contains(i))
@@ -108,23 +114,34 @@ object SparkSeqBaseDE {
       else
         path = pathFam2+"/Control/Sample_"+i.toString+testSuff
       val bamFileCount= sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
-      seqAnalysisControl.addBAM(sc,path,i-950000,bamFileCountControlFirst.toDouble/bamFileCount.toDouble)
+      seqAnalysisControl.addBAM(sc,path,i,bamFileCountControlFirst.toDouble/bamFileCount.toDouble)
 
     }
 
     //compute coverage + filer out bases with mean cov < minAvgBaseCov + padding with 0 so that all vectors have the same length
     val covCase = seqAnalysisCase.getCoverageBaseRegion(chr,posStart,posEnd)
-          .map(r=>(r._1%1000000000000L,r._2)).groupByKey()
+      .map(r=>(r._1%1000000000000L,r._2))
+      .groupByKey()
+      .mapValues(c=> if((caseSampSize-c.length)>0)(c++ArrayBuffer.fill[Int](caseSampSize-c.length)(0)) else (c) )
+    //val covCasePart =   covCase.partitionBy(new HashPartitioner(numPartitions))
+
           //.filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > caseSampSize/2) )
-          .map(c=> if((caseSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](caseSampSize-c._2.length)(0)) else (c._1,c._2) )
+
     val covControl = seqAnalysisControl.getCoverageBaseRegion(chr,posStart,posEnd)
-        .map(r=>(r._1%1000000000000L,r._2)).groupByKey()
+      .map(r=>(r._1%1000000000000L,r._2))
+      .groupByKey()
+      .mapValues(c=> if((controlSampSize-c.length)>0)(c++ArrayBuffer.fill[Int](controlSampSize-c.length)(0)) else (c) )
+    //val covControlPart =   covControl.partitionBy(new HashPartitioner(numPartitions))
         //.filter(r=>(SparkSeqStats.mean(r._2) > minAvgBaseCov && r._2.length > controlSampSize/2) )
-    	  .map(c=> if((controlSampSize-c._2.length)>0)(c._1,c._2++ArrayBuffer.fill[Int](controlSampSize-c._2.length)(0)) else (c._1,c._2) )
+
+
     val leftCovJoint = covCase.leftOuterJoin(covControl)
       //.subtract(covCase.join(covControl.map(r=>(r._1,Option(r._2)) ) ) )
     val rightCovJoint = covCase.rightOuterJoin(covControl)
+   println(leftCovJoint.count() )
+    println(rightCovJoint.count() )
 
+//println(leftCovJoint)
     //final join + compute Cramver von Mises test statistics + filtering
     val finalcovJoint = leftCovJoint.map(r=>(r._1,Option(r._2._1),r._2._2)).union(rightCovJoint.map(r=>(r._1,r._2._1,Option(r._2._2))) ).map(r=>(r._1,(r._2,r._3)))
         .map( r=> (r._1,(r._2._1 match {case Some(x) =>x;case None =>ArrayBuffer.fill[Int](caseSampSize)(0)},
