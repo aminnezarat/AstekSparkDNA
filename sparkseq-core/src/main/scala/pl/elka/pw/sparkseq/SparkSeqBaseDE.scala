@@ -30,6 +30,7 @@ object SparkSeqBaseDE {
     SparkSeqKryoProperties.setupKryoContextProperties()
     val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
 
+
     val timeStamp=DateTime.now.toString()
     val fileSplitSize = 64
     val rootPath="hdfs://sparkseq002.cloudapp.net:9000/BAM/"
