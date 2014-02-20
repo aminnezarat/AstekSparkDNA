@@ -72,8 +72,8 @@ object SparkSeqBaseDE {
     val caseIdFam1 = Array(1012920,1012922,1012924,1012927,1012930,1012933)
     val controlIdFam1 = Array(1012938,1012942,1012945,1012948,1012951,1012954)
 
-    val caseIdFam2:Array[Int] = Array(/*100,111,29,36,52,55,64,69*/)
-    val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
+    val caseIdFam2:Array[Int] = Array()
+    val controlIdFam2:Array[Int] = Array()
 
     val caseSampSize = caseIdFam1.length + caseIdFam2.length + 1
     val controlSampSize = controlIdFam1.length + controlIdFam2.length  + 1
