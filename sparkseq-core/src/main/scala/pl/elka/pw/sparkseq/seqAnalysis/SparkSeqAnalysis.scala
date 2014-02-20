@@ -181,6 +181,7 @@ def getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.colle
 	 ).flatMap(r=>r).reduceByKey(_+_, iReduceWorkers)
    return(coverage)
 } 
+
   
  /* returns (sampleId,GeneName,ExonId,Count)*/
 /* def getCoverageExonOLD():RDD[((Int,String,Int),Int)] = {
