@@ -74,7 +74,7 @@ object SparkSeqCvM2STest extends Serializable{
 	      k=p+1
 	    }
 	  }
-	  /*compute T2 statistics, T2 = U/(NM(M+N)) - (4MN-1)/(6(M+N))*/
+	  /*compute T2 statistics, T2 = U/(N*M*(M+N)) - (4*M*N-1)/(6*(M+N))*/
 	  //
 /*	  xRank.foreach(x =>println(x))
 	  println("****")
