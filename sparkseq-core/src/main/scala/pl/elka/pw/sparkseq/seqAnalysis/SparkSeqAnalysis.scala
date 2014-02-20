@@ -274,7 +274,6 @@ def getCoverageExonOLD2():RDD[((Int,String,Int),Int)] = {
       	    }
 	 }
      readsArray = readsArray.filter(r=>r!=null)
-     //filter exons according to min/max coordinates from the 1st pass over partition	
      var genExonsPruned= Array[(java.lang.String, Int, java.lang.String, Int, Int, java.lang.String)]()
      for(chr <- chrMax){
        
