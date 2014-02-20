@@ -29,7 +29,6 @@ object SparkSeqBaseDE {
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
     val conf = new SparkConf()
-
       .setMaster("mesos://sparkseq001.cloudapp.net:5050")
       .setAppName("SparkSeq")
       .set("spark.executor.uri", "hdfs:///frameworks/spark/0.9.0/spark-0.9.0-incubating-hadoop_1.2.1-bin.tar.gz")
