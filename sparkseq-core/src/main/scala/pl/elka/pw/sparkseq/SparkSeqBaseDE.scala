@@ -50,8 +50,8 @@ object SparkSeqBaseDE {
      val caseIdFam1 = Array(38,39,42,44,45,47,53)
     val controlIdFam1 = Array(56,74,76,77,83,94)
     val caseIdFam2:Array[Int] = Array(/*100,111,29,36,52,55,64,69*/)
-    val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
-    val testSuff="_sort.bam"
+    //val controlIdFam2:Array[Int] = Array(/*110,30,31,51,54,58,63,91,99*/)
+    //val testSuff="_sort.bam"
     */
 
     val pathFam1 = rootPath+fileSplitSize.toString+"MB/GSE51403"
