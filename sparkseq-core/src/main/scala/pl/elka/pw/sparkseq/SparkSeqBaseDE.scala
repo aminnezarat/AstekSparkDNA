@@ -168,7 +168,7 @@ object SparkSeqBaseDE {
      //.groupByKey()
       .groupByKey(numTasks)
      val f = finalcovJoint.partitionBy(new RangePartitioner[Double,Seq[(Long,Double)]](4,finalcovJoint))
-     .map(r=>(r._1,r._2.sortBy(_._1).distinct)).map(r=>(r._1,r._2.distinct) ) //2x distinct workaround
+     .map(r=>(r._1,r._2.sortBy(_._1).distinct)).map(r=>(r._1,r._2.distinct) ) //2*x distinct workaround
      //  println(f.first.toString)
       .mapPartitions{partitionIterator =>
           var regLenArray:ArrayBuffer[(Double,Int,Long,Double)]=ArrayBuffer()
