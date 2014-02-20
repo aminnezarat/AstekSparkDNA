@@ -1,5 +1,3 @@
-import de.johoop.jacoco4sbt._
-import JacocoPlugin._
 
 name := "sparkseq"
 
@@ -7,17 +5,12 @@ version := "0.1"
 
 scalaVersion := "2.10.3"
 
-jacoco.settings
-
-jacoco.reportFormats in jacoco.Config := Seq(
-  XMLReport(encoding = "utf-8"), 
-  ScalaHTMLReport(withBranchCoverage = true))
 
 ScctPlugin.instrumentSettings
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
-  "org.scalatest" %% "scalatest" % "1.9.1" % "test",
+  "org.scalatest" % "scalatest_2.10" % "2.1.0-RC2" % "test",
   "org.apache.commons" % "commons-math3" % "3.2",          
   "org.apache.hadoop" % "hadoop-client" % "1.2.1",
   "fi.tkk.ics.hadoop.bam" % "hadoop-bam" % "6.1-SNAPSHOT",
@@ -38,3 +31,6 @@ resolvers ++= Seq(
   "Hadoop-BAM" at "http://hadoop-bam.sourceforge.net/maven/" 
 )
 
+testOptions in Test <+= (target in Test) map {
+  t => Tests.Argument(TestFrameworks.ScalaTest, "junitxml(directory=\"%s\")" format (t / "test-reports"))
+}

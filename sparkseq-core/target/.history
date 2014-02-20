@@ -17,3 +17,7 @@ jacoco:cover
 exit
 clean scct:test
 exit
+test
+exit
+test
+exit
