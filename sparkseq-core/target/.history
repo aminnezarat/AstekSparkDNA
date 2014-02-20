@@ -4,3 +4,14 @@ gen-idea no-classifiers
 exit
 gen-idea no-classifiers
 exit
+sbt jacoco:cover
+exit
+sbt jacoco:cover
+sbt help
+sbt jacoco
+exit
+sbt jacoco:cover
+jacoco:cover
+exit
+jacoco:cover
+exit

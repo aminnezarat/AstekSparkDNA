@@ -1,8 +1,8 @@
 package pl.elka.pw.sparkseq
 import pl.elka.pw.sparkseq.statisticalTests._
-import org.apache.spark.SparkContext
 import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
 import pl.elka.pw.sparkseq.statisticalTests._
+import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import collection.mutable.ArrayBuffer
 import org.apache.hadoop.io.LongWritable
@@ -14,7 +14,7 @@ import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
 import scala.Array
 import org.apache.spark.RangePartitioner
 import org.apache.spark.HashPartitioner
-
+import org.apache.spark.SparkConf
 import java.io._
 import com.github.nscala_time.time._
 import com.github.nscala_time.time.Imports._
@@ -28,7 +28,16 @@ object SparkSeqBaseDE {
 
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
-    val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
+    val conf = new SparkConf()
+
+      .setMaster("mesos://sparkseq001.cloudapp.net:5050")
+      .setAppName("SparkSeq")
+      .set("spark.executor.uri", "hdfs:///frameworks/spark/0.9.0/spark-0.9.0-incubating-hadoop_1.2.1-bin.tar.gz")
+      .setJars(Seq(System.getenv("ADD_JARS")))
+      .setSparkHome(System.getenv("SPARK_HOME"))
+    val sc = new SparkContext(conf)
+
+   //val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
 
 
     val timeStamp=DateTime.now.toString()
@@ -77,7 +86,7 @@ object SparkSeqBaseDE {
     val posEnd=300000000
     val minAvgBaseCov = 10
     val minPval = 0.05
-    val minRegLength= 1
+    val minRegLength= 10
 
     //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep "^[[:digit:]]" >cm7_7_2.txt
     val cmDistTable = sc.textFile(rootPath+fileSplitSize.toString+"MB/aux/cm"+caseSampSize+"_"+controlSampSize+"_2.txt")

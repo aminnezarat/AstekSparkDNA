@@ -1,8 +1,17 @@
+import de.johoop.jacoco4sbt._
+import JacocoPlugin._
+
 name := "sparkseq"
 
 version := "0.1"
 
 scalaVersion := "2.10.3"
+
+jacoco.settings
+
+jacoco.reportFormats in jacoco.Config := Seq(
+  XMLReport(encoding = "utf-8"), 
+  ScalaHTMLReport(withBranchCoverage = true))
 
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
