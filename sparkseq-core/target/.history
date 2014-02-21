@@ -21,3 +21,6 @@ test
 exit
 test
 exit
+hadoop1:package
+hadoop1:compile
+exit
