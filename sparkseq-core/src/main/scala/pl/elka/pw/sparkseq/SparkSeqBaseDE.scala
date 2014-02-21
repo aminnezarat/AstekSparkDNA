@@ -25,7 +25,6 @@ object SparkSeqBaseDE {
 
   def main(args: Array[String]) {
 
-
     SparkSeqContexProperties.setupContexProperties()
     SparkSeqKryoProperties.setupKryoContextProperties()
     val conf = new SparkConf()
