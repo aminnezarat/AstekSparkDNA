@@ -9,6 +9,6 @@ object SparkSeqBuild extends Build {
     lazy val core = Project(id = "sparkseq-core", base = file("sparkseq-core"))
 	//		    settings (ScctPlugin.instrumentSettings: _*)
 
-    lazy val repl = Project(id = "sparkseq-repl", base = file("sparkseq-repl"))
-	//		    settings (ScctPlugin.instrumentSettings: _*)
+    lazy val repl = Project(id = "sparkseq-repl", base = file("sparkseq-repl")) dependsOn(core)
+	//		    settings (ScctPlugin.instrumentSettings: _*) 
 }

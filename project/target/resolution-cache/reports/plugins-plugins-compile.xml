@@ -9,27 +9,27 @@
 		extra-scalaVersion="2.10"
 		conf="compile"
 		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool"
-		date="20140222130012"/>
+		date="20140222141950"/>
 	<dependencies>
 		<module organisation="com.sqality.scct" name="sbt-scct">
-			<revision name="0.3" status="release" pubdate="20140124173300" resolver="public" artresolver="public" homepage="http://sqality.com" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="true" searched="true" default="false" conf="default(compile), default, compile, runtime, master" position="7">
+			<revision name="0.3" status="release" pubdate="20140124173300" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://sqality.com" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="false" searched="false" default="false" conf="default(compile), default, compile, runtime, master" position="7">
 				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
-				<metadata-artifact status="successful" details="" size="1934" time="341" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/ivy-0.3.xml" searched="true" original-local-location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/ivy-0.3.xml.original" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/sqality/scct/sbt-scct_2.10_0.13/0.3/sbt-scct-0.3.pom"/>
+				<metadata-artifact status="no" details="" size="3000" time="0" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/ivy-0.3.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/sqality/scct/sbt-scct_2.10_0.13/0.3/sbt-scct-0.3.pom"/>
 				<caller organisation="plugins" name="plugins" conf="compile" rev="0.3" rev-constraint-default="0.3" rev-constraint-dynamic="0.3" callerrev="0.1-SNAPSHOT" extra-sbtVersion="0.13" extra-scalaVersion="2.10"/>
 				<artifacts>
-					<artifact name="sbt-scct" type="jar" ext="jar" status="successful" details="" size="40088" time="486" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/jars/sbt-scct-0.3.jar">
+					<artifact name="sbt-scct" type="jar" ext="jar" status="no" details="" size="40088" time="0" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/jars/sbt-scct-0.3.jar">
 						<origin-location is-local="false" location="http://repo1.maven.org/maven2/com/sqality/scct/sbt-scct_2.10_0.13/0.3/sbt-scct-0.3.jar"/>
 					</artifact>
 				</artifacts>
 			</revision>
 		</module>
 		<module organisation="com.sqality.scct" name="scct_2.10">
-			<revision name="0.3" status="release" pubdate="20140124133327" resolver="public" artresolver="public" homepage="http://sqality.com" downloaded="true" searched="true" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="8">
+			<revision name="0.3" status="release" pubdate="20140124133327" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://sqality.com" downloaded="false" searched="false" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="8">
 				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
-				<metadata-artifact status="successful" details="" size="2777" time="329" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/ivy-0.3.xml" searched="true" original-local-location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/ivy-0.3.xml.original" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/sqality/scct/scct_2.10/0.3/scct_2.10-0.3.pom"/>
+				<metadata-artifact status="no" details="" size="3201" time="0" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/ivy-0.3.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/sqality/scct/scct_2.10/0.3/scct_2.10-0.3.pom"/>
 				<caller organisation="com.sqality.scct" name="sbt-scct" conf="default, compile, runtime, master" rev="0.3" rev-constraint-default="0.3" rev-constraint-dynamic="0.3" callerrev="0.3"/>
 				<artifacts>
-					<artifact name="scct_2.10" type="jar" ext="jar" status="successful" details="" size="248181" time="448" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/jars/scct_2.10-0.3.jar">
+					<artifact name="scct_2.10" type="jar" ext="jar" status="no" details="" size="248181" time="0" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/jars/scct_2.10-0.3.jar">
 						<origin-location is-local="false" location="http://repo1.maven.org/maven2/com/sqality/scct/scct_2.10/0.3/scct_2.10-0.3.jar"/>
 					</artifact>
 				</artifacts>
@@ -105,7 +105,7 @@
 			</revision>
 		</module>
 		<module organisation="ca.seibelnet" name="sbt-simple-junit-xml-reporter-plugin">
-			<revision name="0.3" status="integration" pubdate="20140222130012" resolver="inter-project" artresolver="inter-project" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="false" searched="false" default="false" conf="default(compile), compile" position="0">
+			<revision name="0.3" status="integration" pubdate="20140222141950" resolver="inter-project" artresolver="inter-project" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="false" searched="false" default="false" conf="default(compile), compile" position="0">
 				<metadata-artifact status="failed" details="" size="0" time="0" searched="false"/>
 				<caller organisation="plugins" name="plugins" conf="compile" rev="0.3" rev-constraint-default="0.3" rev-constraint-dynamic="0.3" callerrev="0.1-SNAPSHOT" extra-sbtVersion="0.13" extra-scalaVersion="2.10"/>
 				<artifacts>

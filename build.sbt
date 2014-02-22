@@ -2,9 +2,13 @@ import scala.util.Properties
 
 name := "sparkseq"
 
-version := "0.1"
+organization := "pl.edu.pw.elka"
+
+version := "0.1-SNAPSHOT"
 
 scalaVersion := "2.10.3"
+
+publishTo := Some(Resolver.file("file", new File("/var/www/maven.sparkseq001.cloudapp.net/html/maven")) )
 
 ScctPlugin.instrumentSettings
 
@@ -25,3 +29,6 @@ resolvers ++= Seq(
 testOptions in Test <+= (target in Test) map {
   t => Tests.Argument(TestFrameworks.ScalaTest, "junitxml(directory=\"%s\")" format (t / "test-reports"))
 }
+
+
+
