@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="ivy-report.xsl"?>
+<ivy-report version="1.0">
+	<info
+		organisation="plugins"
+		module="plugins"
+		revision="0.1-SNAPSHOT"
+		extra-sbtVersion="0.13"
+		extra-scalaVersion="2.10"
+		conf="test"
+		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool"
+		date="20140222130012"/>
+	<dependencies>
+		<module organisation="com.sqality.scct" name="sbt-scct">
+			<revision name="0.3" status="release" pubdate="20140124173300" resolver="public" artresolver="public" homepage="http://sqality.com" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="true" searched="true" default="false" conf="default(compile), default, compile, runtime, master" position="7">
+				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="successful" details="" size="1934" time="341" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/ivy-0.3.xml" searched="true" original-local-location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/ivy-0.3.xml.original" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/sqality/scct/sbt-scct_2.10_0.13/0.3/sbt-scct-0.3.pom"/>
+				<caller organisation="plugins" name="plugins" conf="test, compile, runtime" rev="0.3" rev-constraint-default="0.3" rev-constraint-dynamic="0.3" callerrev="0.1-SNAPSHOT" extra-sbtVersion="0.13" extra-scalaVersion="2.10"/>
+				<artifacts>
+					<artifact name="sbt-scct" type="jar" ext="jar" status="successful" details="" size="40088" time="486" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.sqality.scct/sbt-scct/jars/sbt-scct-0.3.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/com/sqality/scct/sbt-scct_2.10_0.13/0.3/sbt-scct-0.3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.sqality.scct" name="scct_2.10">
+			<revision name="0.3" status="release" pubdate="20140124133327" resolver="public" artresolver="public" homepage="http://sqality.com" downloaded="true" searched="true" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="8">
+				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="successful" details="" size="2777" time="329" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/ivy-0.3.xml" searched="true" original-local-location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/ivy-0.3.xml.original" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/sqality/scct/scct_2.10/0.3/scct_2.10-0.3.pom"/>
+				<caller organisation="com.sqality.scct" name="sbt-scct" conf="default, compile, runtime, master" rev="0.3" rev-constraint-default="0.3" rev-constraint-dynamic="0.3" callerrev="0.3"/>
+				<artifacts>
+					<artifact name="scct_2.10" type="jar" ext="jar" status="successful" details="" size="248181" time="448" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/jars/scct_2.10-0.3.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/com/sqality/scct/scct_2.10/0.3/scct_2.10-0.3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="de.johoop" name="jacoco4sbt">
+			<revision name="2.1.4" status="release" pubdate="20131223163306" resolver="sbt-chain" artresolver="sbt-chain" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="false" searched="false" default="false" conf="default(compile), compile" position="3">
+				<metadata-artifact status="no" details="" size="1993" time="0" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/de.johoop/jacoco4sbt/ivy-2.1.4.xml" searched="false" origin-is-local="false" origin-location="http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases/de.johoop/jacoco4sbt/scala_2.10/sbt_0.13/2.1.4/ivys/ivy.xml"/>
+				<caller organisation="plugins" name="plugins" conf="test, compile, runtime" rev="2.1.4" rev-constraint-default="2.1.4" rev-constraint-dynamic="2.1.4" callerrev="0.1-SNAPSHOT" extra-sbtVersion="0.13" extra-scalaVersion="2.10"/>
+				<artifacts>
+					<artifact name="jacoco4sbt" type="jar" ext="jar" status="no" details="" size="146448" time="0" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/de.johoop/jacoco4sbt/jars/jacoco4sbt-2.1.4.jar">
+						<origin-location is-local="false" location="http://repo.scala-sbt.org/scalasbt/sbt-plugin-releases/de.johoop/jacoco4sbt/scala_2.10/sbt_0.13/2.1.4/jars/jacoco4sbt.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jacoco" name="org.jacoco.report">
+			<revision name="0.6.4.201312101107" status="release" pubdate="20131210113741" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="default(compile), default, compile, runtime, master" position="6">
+				<metadata-artifact status="no" details="" size="7542" time="0" location="/home/mesos/.ivy2/cache/org.jacoco/org.jacoco.report/ivy-0.6.4.201312101107.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/org/jacoco/org.jacoco.report/0.6.4.201312101107/org.jacoco.report-0.6.4.201312101107.pom"/>
+				<caller organisation="de.johoop" name="jacoco4sbt" conf="compile" rev="0.6.4.201312101107" rev-constraint-default="0.6.4.201312101107" rev-constraint-dynamic="0.6.4.201312101107" callerrev="2.1.4"/>
+				<artifacts>
+					<artifact name="org.jacoco.report" type="jar" ext="jar" status="no" details="" size="140097" time="0" location="/home/mesos/.ivy2/cache/org.jacoco/org.jacoco.report/jars/org.jacoco.report-0.6.4.201312101107.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/org/jacoco/org.jacoco.report/0.6.4.201312101107/org.jacoco.report-0.6.4.201312101107.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.jacoco" name="org.jacoco.core">
+			<revision name="0.6.4.201312101107" status="release" pubdate="20131210113700" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="default(compile), default, compile, master(*), compile(*), runtime, runtime(*), master" position="4">
+				<metadata-artifact status="no" details="" size="7382" time="0" location="/home/mesos/.ivy2/cache/org.jacoco/org.jacoco.core/ivy-0.6.4.201312101107.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/org/jacoco/org.jacoco.core/0.6.4.201312101107/org.jacoco.core-0.6.4.201312101107.pom"/>
+				<caller organisation="org.jacoco" name="org.jacoco.report" conf="default, compile, runtime, master" rev="0.6.4.201312101107" rev-constraint-default="0.6.4.201312101107" rev-constraint-dynamic="0.6.4.201312101107" callerrev="0.6.4.201312101107"/>
+				<caller organisation="de.johoop" name="jacoco4sbt" conf="compile" rev="0.6.4.201312101107" rev-constraint-default="0.6.4.201312101107" rev-constraint-dynamic="0.6.4.201312101107" callerrev="2.1.4"/>
+				<artifacts>
+					<artifact name="org.jacoco.core" type="jar" ext="jar" status="no" details="" size="134043" time="0" location="/home/mesos/.ivy2/cache/org.jacoco/org.jacoco.core/jars/org.jacoco.core-0.6.4.201312101107.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/org/jacoco/org.jacoco.core/0.6.4.201312101107/org.jacoco.core-0.6.4.201312101107.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="org.ow2.asm" name="asm-all">
+			<revision name="4.1" status="release" pubdate="20121014153936" resolver="sbt-chain" artresolver="sbt-chain" homepage="" downloaded="false" searched="false" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="5">
+				<metadata-artifact status="no" details="" size="3752" time="0" location="/home/mesos/.ivy2/cache/org.ow2.asm/asm-all/ivy-4.1.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/org/ow2/asm/asm-all/4.1/asm-all-4.1.pom"/>
+				<caller organisation="org.jacoco" name="org.jacoco.report" conf="default, compile, runtime, master" rev="4.1" rev-constraint-default="4.1" rev-constraint-dynamic="4.1" callerrev="0.6.4.201312101107"/>
+				<caller organisation="org.jacoco" name="org.jacoco.core" conf="default, compile, runtime, master" rev="4.1" rev-constraint-default="4.1" rev-constraint-dynamic="4.1" callerrev="0.6.4.201312101107"/>
+				<artifacts>
+					<artifact name="asm-all" type="jar" ext="jar" status="no" details="" size="214592" time="0" location="/home/mesos/.ivy2/cache/org.ow2.asm/asm-all/jars/asm-all-4.1.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/org/ow2/asm/asm-all/4.1/asm-all-4.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="com.github.mpeltonen" name="sbt-idea">
+			<revision name="1.5.2" status="release" pubdate="20131013130137" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://your.project.url" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="false" searched="false" default="false" conf="default(compile), default, compile, runtime, master" position="1">
+				<license name="BSD-style" url="http://www.opensource.org/licenses/BSD-3-Clause"/>
+				<metadata-artifact status="no" details="" size="2986" time="0" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.github.mpeltonen/sbt-idea/ivy-1.5.2.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/github/mpeltonen/sbt-idea_2.10_0.13/1.5.2/sbt-idea-1.5.2.pom"/>
+				<caller organisation="plugins" name="plugins" conf="test, compile, runtime" rev="1.5.2" rev-constraint-default="1.5.2" rev-constraint-dynamic="1.5.2" callerrev="0.1-SNAPSHOT" extra-sbtVersion="0.13" extra-scalaVersion="2.10"/>
+				<artifacts>
+					<artifact name="sbt-idea" type="jar" ext="jar" status="no" details="" size="336778" time="0" location="/home/mesos/.ivy2/cache/scala_2.10/sbt_0.13/com.github.mpeltonen/sbt-idea/jars/sbt-idea-1.5.2.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/com/github/mpeltonen/sbt-idea_2.10_0.13/1.5.2/sbt-idea-1.5.2.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="commons-io" name="commons-io">
+			<revision name="2.0.1" status="release" pubdate="20101226171931" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://commons.apache.org/io/" downloaded="false" searched="false" default="false" conf="compile, master(*), runtime, compile(*), runtime(*), master" position="2">
+				<metadata-artifact status="no" details="" size="6238" time="0" location="/home/mesos/.ivy2/cache/commons-io/commons-io/ivy-2.0.1.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/commons-io/commons-io/2.0.1/commons-io-2.0.1.pom"/>
+				<caller organisation="com.github.mpeltonen" name="sbt-idea" conf="default, compile, runtime, master" rev="2.0.1" rev-constraint-default="2.0.1" rev-constraint-dynamic="2.0.1" callerrev="1.5.2"/>
+				<artifacts>
+					<artifact name="commons-io" type="jar" ext="jar" status="no" details="" size="159509" time="0" location="/home/mesos/.ivy2/cache/commons-io/commons-io/jars/commons-io-2.0.1.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/commons-io/commons-io/2.0.1/commons-io-2.0.1.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+		<module organisation="ca.seibelnet" name="sbt-simple-junit-xml-reporter-plugin">
+			<revision name="0.3" status="integration" pubdate="20140222130012" resolver="inter-project" artresolver="inter-project" extra-sbtVersion="0.13" extra-scalaVersion="2.10" downloaded="false" searched="false" default="false" conf="default(compile), compile" position="0">
+				<metadata-artifact status="failed" details="" size="0" time="0" searched="false"/>
+				<caller organisation="plugins" name="plugins" conf="test, compile, runtime" rev="0.3" rev-constraint-default="0.3" rev-constraint-dynamic="0.3" callerrev="0.1-SNAPSHOT" extra-sbtVersion="0.13" extra-scalaVersion="2.10"/>
+				<artifacts>
+				</artifacts>
+			</revision>
+		</module>
+	</dependencies>
+</ivy-report>

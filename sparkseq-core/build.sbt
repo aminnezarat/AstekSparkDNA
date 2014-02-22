@@ -1,6 +1,6 @@
 import scala.util.Properties
 
-name := "sparkseq"
+name := "sparkseq-core"
 
 version := "0.1"
 
