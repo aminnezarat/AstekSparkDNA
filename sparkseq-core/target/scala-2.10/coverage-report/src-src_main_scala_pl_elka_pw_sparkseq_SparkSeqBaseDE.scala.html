@@ -1,0 +1,1017 @@
+<table class="classes"><tbody><tr>
+      <td class="barContainerLeft"><a href="#">&#x200B;pl/&#x200B;elka/&#x200B;pw/&#x200B;sparkseq/<span class="header">&#x200B;SparkSeqBaseDE.scala</span></a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">0 %(0 out of 149)</div>
+        <div class="greenBar" style="width:0px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr><tr>
+      <td class="barContainerLeft"><a href="src-src_main_scala_pl_elka_pw_sparkseq_SparkSeqBaseDE.scala.html#Object_pl_elka_pw_sparkseq_SparkSeqBaseDE"><img src="object.png"/>SparkSeqBaseDE</a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">0 %(0 out of 149)</div>
+        <div class="greenBar" style="width:0px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr></tbody></table><table class="source"><tbody><tr>
+            <td class="black">1</td>
+            <td>package pl.elka.pw.sparkseq
+</td>
+          </tr><tr>
+            <td class="black">2</td>
+            <td>import pl.elka.pw.sparkseq.statisticalTests._
+</td>
+          </tr><tr>
+            <td class="black">3</td>
+            <td>import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
+</td>
+          </tr><tr>
+            <td class="black">4</td>
+            <td>import pl.elka.pw.sparkseq.statisticalTests._
+</td>
+          </tr><tr>
+            <td class="black">5</td>
+            <td>import org.apache.spark.SparkContext
+</td>
+          </tr><tr>
+            <td class="black">6</td>
+            <td>import org.apache.spark.SparkContext._
+</td>
+          </tr><tr>
+            <td class="black">7</td>
+            <td>import collection.mutable.ArrayBuffer
+</td>
+          </tr><tr>
+            <td class="black">8</td>
+            <td>import org.apache.hadoop.io.LongWritable
+</td>
+          </tr><tr>
+            <td class="black">9</td>
+            <td>import fi.tkk.ics.hadoop.bam.{BAMInputFormat, SAMRecordWritable}
+</td>
+          </tr><tr>
+            <td class="black">10</td>
+            <td>import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
+</td>
+          </tr><tr>
+            <td class="black">11</td>
+            <td>import scala.util.control._
+</td>
+          </tr><tr>
+            <td class="black">12</td>
+            <td>import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
+</td>
+          </tr><tr>
+            <td class="black">13</td>
+            <td>import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
+</td>
+          </tr><tr>
+            <td class="black">14</td>
+            <td>import scala.Array
+</td>
+          </tr><tr>
+            <td class="black">15</td>
+            <td>import org.apache.spark.RangePartitioner
+</td>
+          </tr><tr>
+            <td class="black">16</td>
+            <td>import org.apache.spark.HashPartitioner
+</td>
+          </tr><tr>
+            <td class="black">17</td>
+            <td>import org.apache.spark.SparkConf
+</td>
+          </tr><tr>
+            <td class="black">18</td>
+            <td>import java.io._
+</td>
+          </tr><tr>
+            <td class="black">19</td>
+            <td>import com.github.nscala_time.time._
+</td>
+          </tr><tr>
+            <td class="black">20</td>
+            <td>import com.github.nscala_time.time.Imports._
+</td>
+          </tr><tr>
+            <td class="black">21</td>
+            <td>/**
+</td>
+          </tr><tr>
+            <td class="black">22</td>
+            <td> * Created by marek on 2/8/14.
+</td>
+          </tr><tr>
+            <td class="black">23</td>
+            <td> */
+</td>
+          </tr><tr>
+            <td class="black">24</td>
+            <td><a id="Object_pl_elka_pw_sparkseq_SparkSeqBaseDE"/>object SparkSeqBaseDE {
+</td>
+          </tr><tr>
+            <td class="black">25</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">26</td>
+            <td>  def main(args: Array[String]) {
+</td>
+          </tr><tr>
+            <td class="black">27</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">28</td>
+            <td>    <span class="non">SparkSeqContexProperties.setupContexProperties()
+</span></td>
+          </tr><tr>
+            <td class="red">29</td>
+            <td>    <span class="non">SparkSeqKryoProperties.setupKryoContextProperties()
+</span></td>
+          </tr><tr>
+            <td class="red">30</td>
+            <td>    val conf = <span class="non">new SparkConf()
+</span></td>
+          </tr><tr>
+            <td class="black">31</td>
+            <td>      .setMaster(&quot;mesos://sparkseq001.cloudapp.net:5050&quot;)
+</td>
+          </tr><tr>
+            <td class="black">32</td>
+            <td>      .setAppName(&quot;SparkSeq&quot;)
+</td>
+          </tr><tr>
+            <td class="black">33</td>
+            <td>      .set(&quot;spark.executor.uri&quot;, &quot;hdfs:///frameworks/spark/0.9.0/spark-0.9.0-incubating-hadoop_1.2.1-bin.tar.gz&quot;)
+</td>
+          </tr><tr>
+            <td class="black">34</td>
+            <td>      .setJars(Seq(System.getenv(&quot;ADD_JARS&quot;)))
+</td>
+          </tr><tr>
+            <td class="black">35</td>
+            <td>      .setSparkHome(System.getenv(&quot;SPARK_HOME&quot;))
+</td>
+          </tr><tr>
+            <td class="red">36</td>
+            <td>    val sc = <span class="non">new SparkContext(conf)
+</span></td>
+          </tr><tr>
+            <td class="black">37</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">38</td>
+            <td>   //val sc = new  SparkContext(&quot;spark://sparkseq001.cloudapp.net:7077&quot;/*&quot;local[4]&quot;*/, &quot;sparkseq&quot;, System.getenv(&quot;SPARK_HOME&quot;),  Seq(System.getenv(&quot;ADD_JARS&quot;)))
+</td>
+          </tr><tr>
+            <td class="black">39</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">40</td>
+            <td>    val timeStamp=<span class="non">DateTime.now.toString()
+</span></td>
+          </tr><tr>
+            <td class="red">41</td>
+            <td>    val fileSplitSize = <span class="non">64
+</span></td>
+          </tr><tr>
+            <td class="red">42</td>
+            <td>    val rootPath=<span class="non">&quot;hdfs://sparkseq002.cloudapp.net:9000/BAM/&quot;
+</span></td>
+          </tr><tr>
+            <td class="black">43</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">44</td>
+            <td>    /*val pathFam1 = rootPath+fileSplitSize.toString+&quot;MB/condition_9/Fam1&quot;
+</td>
+          </tr><tr>
+            <td class="black">45</td>
+            <td>    val pathFam2 = rootPath+fileSplitSize.toString+&quot;MB/condition_9/Fam2&quot;
+</td>
+          </tr><tr>
+            <td class="black">46</td>
+            <td>    val bedFile = &quot;Equus_caballus.EquCab2.74_exons_chr_ordered.bed&quot;
+</td>
+          </tr><tr>
+            <td class="black">47</td>
+            <td>    val pathExonsList = rootPath+fileSplitSize.toString+&quot;MB/aux/&quot;+bedFile
+</td>
+          </tr><tr>
+            <td class="black">48</td>
+            <td>     val caseIdFam1 = Array(38,39,42,44,45,47,53)
+</td>
+          </tr><tr>
+            <td class="black">49</td>
+            <td>    val controlIdFam1 = Array(56,74,76,77,83,94)
+</td>
+          </tr><tr>
+            <td class="black">50</td>
+            <td>    val caseIdFam2:Array[Int] = Array(100,111,29,36,52,55,64,69)
+</td>
+          </tr><tr>
+            <td class="black">51</td>
+            <td>    //val controlIdFam2:Array[Int] = Array(110,30,31,51,54,58,63,91,99)
+</td>
+          </tr><tr>
+            <td class="black">52</td>
+            <td>    //val testSuff=&quot;_sort.bam&quot;
+</td>
+          </tr><tr>
+            <td class="black">53</td>
+            <td>    */
+</td>
+          </tr><tr>
+            <td class="black">54</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">55</td>
+            <td>    val pathFam1 = <span class="non">rootPath+fileSplitSize.toString+&quot;MB/GSE51403&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">56</td>
+            <td>    val pathFam2 = <span class="non">rootPath+fileSplitSize.toString+&quot;MB/GSE51403&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">57</td>
+            <td>    val bedFile = <span class="non">&quot;Homo_sapiens.GRCh37.74_exons_chr_ordered.bed&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">58</td>
+            <td>    val pathExonsList = <span class="non">rootPath+fileSplitSize.toString+&quot;MB/aux/&quot;+bedFile
+</span></td>
+          </tr><tr>
+            <td class="black">59</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">60</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">61</td>
+            <td>    val genExonsMapB = <span class="non">sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
+</span></td>
+          </tr><tr>
+            <td class="red">62</td>
+            <td>    val numTasks = <span class="non">16
+</span></td>
+          </tr><tr>
+            <td class="red">63</td>
+            <td>    val numPartitions = <span class="non">24
+</span></td>
+          </tr><tr>
+            <td class="black">64</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">65</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">66</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">67</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">68</td>
+            <td>    /*val caseIdFam1 = Array(950080,950082,950084,950086)
+</td>
+          </tr><tr>
+            <td class="black">69</td>
+            <td>    val controlIdFam1 = Array(950081,950083,950085,950087)*/
+</td>
+          </tr><tr>
+            <td class="red">70</td>
+            <td>    val caseIdFam1 = <span class="non">Array(1012920,1012922,1012924,1012927,1012930,1012933)
+</span></td>
+          </tr><tr>
+            <td class="red">71</td>
+            <td>    val controlIdFam1 = <span class="non">Array(1012938,1012942,1012945,1012948,1012951,1012954)
+</span></td>
+          </tr><tr>
+            <td class="black">72</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">73</td>
+            <td>    val caseIdFam2:Array[Int] = <span class="non">Array()
+</span></td>
+          </tr><tr>
+            <td class="red">74</td>
+            <td>    val controlIdFam2:Array[Int] = <span class="non">Array()
+</span></td>
+          </tr><tr>
+            <td class="black">75</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">76</td>
+            <td>    val caseSampSize = <span class="non">caseIdFam1.length + caseIdFam2.length + 1
+</span></td>
+          </tr><tr>
+            <td class="red">77</td>
+            <td>    val controlSampSize = <span class="non">controlIdFam1.length + controlIdFam2.length  + 1
+</span></td>
+          </tr><tr>
+            <td class="black">78</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">79</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">80</td>
+            <td>    val testSuff=<span class="non">&quot;_sort.bam&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">81</td>
+            <td>    val chr = <span class="non">args(0)
+</span></td>
+          </tr><tr>
+            <td class="red">82</td>
+            <td>    val posStart=<span class="non">1
+</span></td>
+          </tr><tr>
+            <td class="red">83</td>
+            <td>    val posEnd=<span class="non">300000000
+</span></td>
+          </tr><tr>
+            <td class="red">84</td>
+            <td>    val minAvgBaseCov = <span class="non">10
+</span></td>
+          </tr><tr>
+            <td class="red">85</td>
+            <td>    val minPval = <span class="non">0.05
+</span></td>
+          </tr><tr>
+            <td class="red">86</td>
+            <td>    val minRegLength= <span class="non">10
+</span></td>
+          </tr><tr>
+            <td class="black">87</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">88</td>
+            <td>    //./XCVMTest 7 7 | cut -f2,4 | sed 's/^\ \ //g' | grep &quot;^[[:digit:]]&quot; &gt;cm7_7_2.txt
+</td>
+          </tr><tr>
+            <td class="red">89</td>
+            <td>    val cmDistTable = <span class="non">sc.textFile(rootPath+fileSplitSize.toString+&quot;MB/aux/cm&quot;+caseSampSize+&quot;_&quot;+controlSampSize+&quot;_2.txt&quot;)
+</span></td>
+          </tr><tr>
+            <td class="red">90</td>
+            <td>      .map(l =&gt; <span class="non">l.split(&quot;\t&quot;))
+</span></td>
+          </tr><tr>
+            <td class="red">91</td>
+            <td>      .map(r=&gt;<span class="non">(r.array(0).toDouble,r.array(1).toDouble) )
+</span></td>
+          </tr><tr>
+            <td class="black">92</td>
+            <td>      .toArray
+</td>
+          </tr><tr>
+            <td class="red">93</td>
+            <td>    val cmDistTableB = <span class="non">sc.broadcast(cmDistTable)
+</span></td>
+          </tr><tr>
+            <td class="black">94</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">95</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">96</td>
+            <td>    /*val normArray=Array(1.0,8622606.0/19357579.0,8622606.0/14087644.0,8622606.0/18824924.0,8622606.0/9651030.0,8622606.0/22731556.0,
+</td>
+          </tr><tr>
+            <td class="black">97</td>
+            <td>      8622606.0/15975604.0,8622606.0/17681528.0, 8622606.0/16323269.0,  8622606.0/18408612.0, 8622606.0/15934054.0, 8622606.0/22329258.0,
+</td>
+          </tr><tr>
+            <td class="black">98</td>
+            <td>      8622606.0/14788631.0, 8622606.0/14346120.0, 8622606.0/ 16693869.0)
+</td>
+          </tr><tr>
+            <td class="black">99</td>
+            <td>*/
+</td>
+          </tr><tr>
+            <td class="black">100</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">101</td>
+            <td>    val seqAnalysisCase = <span class="non">new SparkSeqAnalysis(sc,pathFam1+&quot;/Case/Sample_1012918&quot;+testSuff,25,1,numTasks)
+</span></td>
+          </tr><tr>
+            <td class="red">102</td>
+            <td>    val bamFileCountCaseFirst= <span class="non">sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+&quot;/Case/Sample_1012918&quot;+testSuff).count()
+</span></td>
+          </tr><tr>
+            <td class="red">103</td>
+            <td>    for(<span class="non">i&lt;-caseIdFam1++caseIdFam2){
+</span></td>
+          </tr><tr>
+            <td class="red">104</td>
+            <td>      var path:String = <span class="non">&quot;&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">105</td>
+            <td>      if(<span class="non">caseIdFam1.contains(i))
+</span></td>
+          </tr><tr>
+            <td class="red">106</td>
+            <td>        <span class="non">path = pathFam1+&quot;/Case/Sample_&quot;+i.toString+testSuff
+</span></td>
+          </tr><tr>
+            <td class="black">107</td>
+            <td>      else
+</td>
+          </tr><tr>
+            <td class="red">108</td>
+            <td>        <span class="non">path = pathFam2+&quot;/Case/Sample_&quot;+i.toString+testSuff
+</span></td>
+          </tr><tr>
+            <td class="red">109</td>
+            <td>      val bamFileCount= <span class="non">sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
+</span></td>
+          </tr><tr>
+            <td class="red">110</td>
+            <td>      <span class="non">seqAnalysisCase.addBAM(sc,path,i,bamFileCountCaseFirst.toDouble/bamFileCount.toDouble)
+</span></td>
+          </tr><tr>
+            <td class="black">111</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="black">112</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">113</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">114</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">115</td>
+            <td>    val seqAnalysisControl = <span class="non">new SparkSeqAnalysis(sc,pathFam1+&quot;/Control/Sample_1012936&quot;+testSuff,26,1,numTasks)
+</span></td>
+          </tr><tr>
+            <td class="red">116</td>
+            <td>    val bamFileCountControlFirst= <span class="non">sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](pathFam1+&quot;/Control/Sample_1012936&quot;+testSuff).count()
+</span></td>
+          </tr><tr>
+            <td class="red">117</td>
+            <td>    for(<span class="non">i&lt;-controlIdFam1++controlIdFam2){
+</span></td>
+          </tr><tr>
+            <td class="red">118</td>
+            <td>      var path:String = <span class="non">&quot;&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">119</td>
+            <td>      if(<span class="non">controlIdFam1.contains(i))
+</span></td>
+          </tr><tr>
+            <td class="red">120</td>
+            <td>        <span class="non">path = pathFam1+&quot;/Control/Sample_&quot;+i.toString+testSuff
+</span></td>
+          </tr><tr>
+            <td class="black">121</td>
+            <td>      else
+</td>
+          </tr><tr>
+            <td class="red">122</td>
+            <td>        <span class="non">path = pathFam2+&quot;/Control/Sample_&quot;+i.toString+testSuff
+</span></td>
+          </tr><tr>
+            <td class="red">123</td>
+            <td>      val bamFileCount= <span class="non">sc.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](path).count()
+</span></td>
+          </tr><tr>
+            <td class="red">124</td>
+            <td>      <span class="non">seqAnalysisControl.addBAM(sc,path,i,bamFileCountControlFirst.toDouble/bamFileCount.toDouble)
+</span></td>
+          </tr><tr>
+            <td class="black">125</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">126</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="black">127</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">128</td>
+            <td>    //compute coverage + filer out bases with mean cov &lt; minAvgBaseCov + padding with 0 so that all vectors have the same length
+</td>
+          </tr><tr>
+            <td class="red">129</td>
+            <td>    val covCase = <span class="non">seqAnalysisCase.getCoverageBaseRegion(chr,posStart,posEnd)
+</span></td>
+          </tr><tr>
+            <td class="red">130</td>
+            <td>      .map(r=&gt;<span class="non">(r._1%1000000000000L,r._2))
+</span></td>
+          </tr><tr>
+            <td class="black">131</td>
+            <td>      .groupByKey()
+</td>
+          </tr><tr>
+            <td class="red">132</td>
+            <td>      .mapValues(c=&gt; if((<span class="non">caseSampSize-c.length)&gt;0)(c++ArrayBuffer.fill[Int](caseSampSize-c.length)(0)) else (c) )
+</span></td>
+          </tr><tr>
+            <td class="black">133</td>
+            <td>    //val covCasePart =   covCase.partitionBy(new HashPartitioner(numPartitions))
+</td>
+          </tr><tr>
+            <td class="black">134</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">135</td>
+            <td>          //.filter(r=&gt;(SparkSeqStats.mean(r._2) &gt; minAvgBaseCov &amp;&amp; r._2.length &gt; caseSampSize/2) )
+</td>
+          </tr><tr>
+            <td class="black">136</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">137</td>
+            <td>    val covControl = <span class="non">seqAnalysisControl.getCoverageBaseRegion(chr,posStart,posEnd)
+</span></td>
+          </tr><tr>
+            <td class="red">138</td>
+            <td>      .map(r=&gt;<span class="non">(r._1%1000000000000L,r._2))
+</span></td>
+          </tr><tr>
+            <td class="black">139</td>
+            <td>      .groupByKey()
+</td>
+          </tr><tr>
+            <td class="red">140</td>
+            <td>      .mapValues(c=&gt; if((<span class="non">controlSampSize-c.length)&gt;0)(c++ArrayBuffer.fill[Int](controlSampSize-c.length)(0)) else (c) )
+</span></td>
+          </tr><tr>
+            <td class="black">141</td>
+            <td>    //val covControlPart =   covControl.partitionBy(new HashPartitioner(numPartitions))
+</td>
+          </tr><tr>
+            <td class="black">142</td>
+            <td>        //.filter(r=&gt;(SparkSeqStats.mean(r._2) &gt; minAvgBaseCov &amp;&amp; r._2.length &gt; controlSampSize/2) )
+</td>
+          </tr><tr>
+            <td class="black">143</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">144</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">145</td>
+            <td>    val leftCovJoint = <span class="non">covCase.leftOuterJoin(covControl)
+</span></td>
+          </tr><tr>
+            <td class="black">146</td>
+            <td>      //.subtract(covCase.join(covControl.map(r=&gt;(r._1,Option(r._2)) ) ) )
+</td>
+          </tr><tr>
+            <td class="red">147</td>
+            <td>    val rightCovJoint = <span class="non">covCase.rightOuterJoin(covControl)
+</span></td>
+          </tr><tr>
+            <td class="red">148</td>
+            <td>   <span class="non">println(leftCovJoint.count() )
+</span></td>
+          </tr><tr>
+            <td class="red">149</td>
+            <td>    <span class="non">println(rightCovJoint.count() )
+</span></td>
+          </tr><tr>
+            <td class="black">150</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">151</td>
+            <td>//println(leftCovJoint)
+</td>
+          </tr><tr>
+            <td class="black">152</td>
+            <td>    //final join + compute Cramver von Mises test statistics + filtering
+</td>
+          </tr><tr>
+            <td class="red">153</td>
+            <td>    val finalcovJoint = <span class="non">leftCovJoint.map(r=&gt;(r._1,Option(r._2._1),r._2._2)).union(rightCovJoint.map(r=&gt;(r._1,r._2._1,Option(r._2._2))) ).map(r=&gt;(r._1,(r._2,r._3)))
+</span></td>
+          </tr><tr>
+            <td class="red">154</td>
+            <td>        .map( r=&gt; <span class="non">(r._1,(r._2._1 match {case Some(x) =&gt;x;case None =&gt;ArrayBuffer.fill[Int](caseSampSize)(0)},
+</span></td>
+          </tr><tr>
+            <td class="red">155</td>
+            <td>                         <span class="non">r._2._2 match {case Some(x) =&gt;x;case None =&gt;ArrayBuffer.fill[Int](controlSampSize)(0)}) ) ).distinct()
+</span></td>
+          </tr><tr>
+            <td class="black">156</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">157</td>
+            <td>      .filter(r=&gt; ( <span class="non">SparkSeqStats.mean(r._2._1) &gt; minAvgBaseCov || SparkSeqStats.mean(r._2._2) &gt; minAvgBaseCov ) )
+</span></td>
+          </tr><tr>
+            <td class="red">158</td>
+            <td>      .map(r=&gt;<span class="non">(r._1,r._2,SparkSeqCvM2STest.computeTestStat(r._2._1,r._2._2) ) )
+</span></td>
+          </tr><tr>
+            <td class="red">159</td>
+            <td>      .map(r=&gt;<span class="non">((r._1),(r._2,r._3,SparkSeqCvM2STest.getPValue(r._3,cmDistTableB ),SparkSeqStats.mean(r._2._1)/SparkSeqStats.mean(r._2._2)))  )
+</span></td>
+          </tr><tr>
+            <td class="red">160</td>
+            <td>      .map(r=&gt;<span class="non">(r._2._3,(r._1,r._2._4))) //pick position and p-value
+</span></td>
+          </tr><tr>
+            <td class="black">161</td>
+            <td>      //.map(r=&gt;(r._1,r._2,SparkSeqConversions.idToCoordinates(r._2)) )
+</td>
+          </tr><tr>
+            <td class="black">162</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">163</td>
+            <td>      .map(c=&gt;if(<span class="non">c._1&lt;0.001)(0.001,c._2) else if(c._1&gt;=0.001 &amp;&amp; c._1&lt;0.01) (0.01,c._2) else if(c._1&gt;=0.01 &amp;&amp; c._1&lt;0.05)(0.05,c._2) else (0.1,c._2) ) //make p-value discrete(OPTIMIZE!! it can be combined with getPval)!
+</span></td>
+          </tr><tr>
+            <td class="red">164</td>
+            <td>      .filter(r=&gt;<span class="non">r._1&lt;=minPval)
+</span></td>
+          </tr><tr>
+            <td class="black">165</td>
+            <td>    //println(finalcovJoint.count())
+</td>
+          </tr><tr>
+            <td class="black">166</td>
+            <td>     //.groupByKey()
+</td>
+          </tr><tr>
+            <td class="black">167</td>
+            <td>      .groupByKey(numTasks)
+</td>
+          </tr><tr>
+            <td class="red">168</td>
+            <td>     val f = <span class="non">finalcovJoint.partitionBy(new RangePartitioner[Double,Seq[(Long,Double)]](4,finalcovJoint))
+</span></td>
+          </tr><tr>
+            <td class="red">169</td>
+            <td>     .map(r=&gt;<span class="non">(r._1,r._2.sortBy(_._1).distinct)).map(r=&gt;(r._1,r._2.distinct) ) //2*x distinct workaround
+</span></td>
+          </tr><tr>
+            <td class="black">170</td>
+            <td>     //  println(f.first.toString)
+</td>
+          </tr><tr>
+            <td class="black">171</td>
+            <td>      .mapPartitions{partitionIterator =&gt;
+</td>
+          </tr><tr>
+            <td class="red">172</td>
+            <td>          var regLenArray:ArrayBuffer[(Double,Int,Long,Double)]=<span class="non">ArrayBuffer()
+</span></td>
+          </tr><tr>
+            <td class="red">173</td>
+            <td>       for (<span class="non">r &lt;- partitionIterator){
+</span></td>
+          </tr><tr>
+            <td class="red">174</td>
+            <td>          var regStart = <span class="non">r._2(0)._1
+</span></td>
+          </tr><tr>
+            <td class="red">175</td>
+            <td>          var regLength = <span class="non">1
+</span></td>
+          </tr><tr>
+            <td class="red">176</td>
+            <td>          var fcSum = <span class="non">0.0
+</span></td>
+          </tr><tr>
+            <td class="red">177</td>
+            <td>          var i = <span class="non">1
+</span></td>
+          </tr><tr>
+            <td class="red">178</td>
+            <td>          while(<span class="non">i&lt;r._2.length){
+</span></td>
+          </tr><tr>
+            <td class="red">179</td>
+            <td>          if(<span class="non">r._2(i)._1-1 != r._2(i-1)._1 ){
+</span></td>
+          </tr><tr>
+            <td class="red">180</td>
+            <td>            if(<span class="non">regLength&gt;=minRegLength)
+</span></td>
+          </tr><tr>
+            <td class="red">181</td>
+            <td>            <span class="non">regLenArray+=((r._1,regLength,regStart,fcSum/regLength))
+</span></td>
+          </tr><tr>
+            <td class="red">182</td>
+            <td>          <span class="non">regLength=1
+</span></td>
+          </tr><tr>
+            <td class="red">183</td>
+            <td>          <span class="non">fcSum = 0.0
+</span></td>
+          </tr><tr>
+            <td class="red">184</td>
+            <td>          <span class="non">regStart=r._2(i)._1
+</span></td>
+          </tr><tr>
+            <td class="black">185</td>
+            <td>          }
+</td>
+          </tr><tr>
+            <td class="black">186</td>
+            <td>          else{
+</td>
+          </tr><tr>
+            <td class="red">187</td>
+            <td>            <span class="non">regLength+=1
+</span></td>
+          </tr><tr>
+            <td class="red">188</td>
+            <td>            <span class="non">fcSum+=(r._2(i)._2)
+</span></td>
+          </tr><tr>
+            <td class="black">189</td>
+            <td>          }
+</td>
+          </tr><tr>
+            <td class="red">190</td>
+            <td>            <span class="non">i=i+1
+</span></td>
+          </tr><tr>
+            <td class="black">191</td>
+            <td>          }
+</td>
+          </tr><tr>
+            <td class="black">192</td>
+            <td>       }
+</td>
+          </tr><tr>
+            <td class="red">193</td>
+            <td>          <span class="non">Iterator(regLenArray.sortBy(-_._2) )
+</span></td>
+          </tr><tr>
+            <td class="red">194</td>
+            <td>    }.flatMap(r=&gt;<span class="non">r)
+</span></td>
+          </tr><tr>
+            <td class="black">195</td>
+            <td>    //.flatMap(r=&gt;r)
+</td>
+          </tr><tr>
+            <td class="black">196</td>
+            <td>    //.flatMap(r=&gt;(r._1,r._2 ) )
+</td>
+          </tr><tr>
+            <td class="red">197</td>
+            <td>   .map(r=&gt;<span class="non">(r._1,r._2,SparkSeqConversions.idToCoordinates(r._3),r._4) )
+</span></td>
+          </tr><tr>
+            <td class="black">198</td>
+            <td>    .map(r=&gt;
+</td>
+          </tr><tr>
+            <td class="red">199</td>
+            <td>      if(<span class="non">genExonsMapB.value.contains(r._3._1) ){
+</span></td>
+          </tr><tr>
+            <td class="red">200</td>
+            <td>          val exons = <span class="non">genExonsMapB.value(r._3._1)
+</span></td>
+          </tr><tr>
+            <td class="red">201</td>
+            <td>          var exId = <span class="non">0
+</span></td>
+          </tr><tr>
+            <td class="red">202</td>
+            <td>          var genId = <span class="non">&quot;&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">203</td>
+            <td>          val id = <span class="non">r._3._2/10000
+</span></td>
+          </tr><tr>
+            <td class="red">204</td>
+            <td>          var exonOverlapPct = <span class="non">0.0
+</span></td>
+          </tr><tr>
+            <td class="red">205</td>
+            <td>          val loop = <span class="non">new Breaks
+</span></td>
+          </tr><tr>
+            <td class="red">206</td>
+            <td>          <span class="non">loop.breakable{
+</span></td>
+          </tr><tr>
+            <td class="red">207</td>
+            <td>               if(<span class="non">exons(id) != null){
+</span></td>
+          </tr><tr>
+            <td class="red">208</td>
+            <td>               for(<span class="non">e&lt;-exons(id)){
+</span></td>
+          </tr><tr>
+            <td class="red">209</td>
+            <td>                 val exonIntersect = <span class="non">Range(r._3._2,r._3._2+r._2).intersect(Range(e._3,e._4))
+</span></td>
+          </tr><tr>
+            <td class="red">210</td>
+            <td>                 if( <span class="non">exonIntersect.length&gt;0 ){
+</span></td>
+          </tr><tr>
+            <td class="red">211</td>
+            <td>                   <span class="non">exonOverlapPct = (exonIntersect.max-exonIntersect.min).toDouble/(e._4-e._3)
+</span></td>
+          </tr><tr>
+            <td class="red">212</td>
+            <td>                   <span class="non">exId = e._2
+</span></td>
+          </tr><tr>
+            <td class="red">213</td>
+            <td>                   <span class="non">genId = e._1
+</span></td>
+          </tr><tr>
+            <td class="black">214</td>
+            <td>                   //loop.break() //because there are some overlapping regions
+</td>
+          </tr><tr>
+            <td class="black">215</td>
+            <td>                  }
+</td>
+          </tr><tr>
+            <td class="black">216</td>
+            <td>                }
+</td>
+          </tr><tr>
+            <td class="black">217</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">218</td>
+            <td>               }
+</td>
+          </tr><tr>
+            <td class="black">219</td>
+            <td>          }
+</td>
+          </tr><tr>
+            <td class="red">220</td>
+            <td>        <span class="non">(r._1,r._2,r._3,r._4,genId,exId,math.round(exonOverlapPct*10000).toDouble/10000)
+</span></td>
+          </tr><tr>
+            <td class="black">221</td>
+            <td>        }
+</td>
+          </tr><tr>
+            <td class="black">222</td>
+            <td>        else
+</td>
+          </tr><tr>
+            <td class="red">223</td>
+            <td>          <span class="non">(r._1,r._2,r._3,r._4,&quot;ChrNotFound&quot;,0,0.0)
+</span></td>
+          </tr><tr>
+            <td class="black">224</td>
+            <td>      )
+</td>
+          </tr><tr>
+            <td class="black">225</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">226</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">227</td>
+            <td>  val a =<span class="non">f.toArray()
+</span></td>
+          </tr><tr>
+            <td class="red">228</td>
+            <td>    .map(r=&gt;<span class="non">(r._1,r._2,r._3,if(r._4&lt;1.0) -1/r._4;else r._4,r._5,r._6,r._7))
+</span></td>
+          </tr><tr>
+            <td class="red">229</td>
+            <td>    .sortBy(r=&gt;<span class="non">(r._1,-(math.abs(r._4)),-r._2))
+</span></td>
+          </tr><tr>
+            <td class="black">230</td>
+            <td>//    val b = finalcovJoint.take(10)
+</td>
+          </tr><tr>
+            <td class="black">231</td>
+            <td> //   b.foreach(println)
+</td>
+          </tr><tr>
+            <td class="red">232</td>
+            <td>  <span class="non">sc.stop()
+</span></td>
+          </tr><tr>
+            <td class="red">233</td>
+            <td>  <span class="non">Thread.sleep(100)
+</span></td>
+          </tr><tr>
+            <td class="red">234</td>
+            <td>  val writer = <span class="non">new PrintWriter(new File(timeStamp+&quot;exp.txt&quot; ))
+</span></td>
+          </tr><tr>
+            <td class="red">235</td>
+            <td>  val header=<span class="non">&quot;p-value&quot;.toString.padTo(10,' ')+&quot;foldChange&quot;.padTo(15, ' ')+&quot;length&quot;.padTo(10, ' ')+&quot;Coordinates&quot;.padTo(20, ' ')+&quot;geneId&quot;.padTo(25,' ')+&quot;exonId&quot;.padTo(10, ' ')+&quot;exonOverlapPct&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">236</td>
+            <td>  <span class="non">println(&quot;=======================================Results======================================&quot;)
+</span></td>
+          </tr><tr>
+            <td class="red">237</td>
+            <td>  <span class="non">println(header)
+</span></td>
+          </tr><tr>
+            <td class="red">238</td>
+            <td>  <span class="non">writer.write(header+&quot;\n&quot;)
+</span></td>
+          </tr><tr>
+            <td class="black">239</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">240</td>
+            <td>  for(<span class="non">r&lt;-a){
+</span></td>
+          </tr><tr>
+            <td class="red">241</td>
+            <td>    var rec = <span class="non">r._1.toString.padTo(10,' ')+(math.round(r._4*10000).toDouble/10000).toString.padTo(15, ' ')+r._2.toString.padTo(10, ' ')+r._3.toString.padTo(20, ' ')+r._5.toString.padTo(25,' ')+r._6.toString.padTo(10, ' ')+r._7
+</span></td>
+          </tr><tr>
+            <td class="red">242</td>
+            <td>    <span class="non">println(rec)
+</span></td>
+          </tr><tr>
+            <td class="red">243</td>
+            <td>    <span class="non">writer.write(rec+&quot;\n&quot;)
+</span></td>
+          </tr><tr>
+            <td class="black">244</td>
+            <td>  }
+</td>
+          </tr><tr>
+            <td class="red">245</td>
+            <td>  <span class="non">writer.close()
+</span></td>
+          </tr><tr>
+            <td class="black">246</td>
+            <td>    //println(rightCovJoin
+</td>
+          </tr><tr>
+            <td class="black">247</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">248</td>
+            <td>  }
+</td>
+          </tr><tr>
+            <td class="black">249</td>
+            <td>  //System.exit(0)
+</td>
+          </tr><tr>
+            <td class="black">250</td>
+            <td>}
+</td>
+          </tr></tbody></table>

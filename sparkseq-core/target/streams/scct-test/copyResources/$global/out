@@ -1,0 +1,4 @@
+[0m[[0mdebug[0m] [0mCopy resource mappings: [0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/test/resources/sample_1.bed,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-test-classes/sample_1.bed)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/test/resources/sample_1.bam.bai,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-test-classes/sample_1.bam.bai)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/test/resources/sample_1.bam,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-test-classes/sample_1.bam)[0m

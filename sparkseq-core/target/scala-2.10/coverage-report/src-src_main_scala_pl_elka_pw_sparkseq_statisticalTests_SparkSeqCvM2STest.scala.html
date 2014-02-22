@@ -1,0 +1,581 @@
+<table class="classes"><tbody><tr>
+      <td class="barContainerLeft"><a href="#">&#x200B;pl/&#x200B;elka/&#x200B;pw/&#x200B;sparkseq/&#x200B;statisticalTests/<span class="header">&#x200B;SparkSeqCvM2STest.scala</span></a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">0 %(0 out of 66)</div>
+        <div class="greenBar" style="width:0px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr><tr>
+      <td class="barContainerLeft"><a href="src-src_main_scala_pl_elka_pw_sparkseq_statisticalTests_SparkSeqCvM2STest.scala.html#Object_pl_elka_pw_sparkseq_statisticalTests_SparkSeqCvM2STest"><img src="object.png"/>SparkSeqCvM2STest</a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">0 %(0 out of 66)</div>
+        <div class="greenBar" style="width:0px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr></tbody></table><table class="source"><tbody><tr>
+            <td class="black">1</td>
+            <td>/**
+</td>
+          </tr><tr>
+            <td class="black">2</td>
+            <td> * Copyright (c) 2014. [insert your company or name here]
+</td>
+          </tr><tr>
+            <td class="black">3</td>
+            <td> *
+</td>
+          </tr><tr>
+            <td class="black">4</td>
+            <td> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</td>
+          </tr><tr>
+            <td class="black">5</td>
+            <td> * you may not use this file except in compliance with the License.
+</td>
+          </tr><tr>
+            <td class="black">6</td>
+            <td> * You may obtain a copy of the License at
+</td>
+          </tr><tr>
+            <td class="black">7</td>
+            <td> *
+</td>
+          </tr><tr>
+            <td class="black">8</td>
+            <td> *     http://www.apache.org/licenses/LICENSE-2.0
+</td>
+          </tr><tr>
+            <td class="black">9</td>
+            <td> *
+</td>
+          </tr><tr>
+            <td class="black">10</td>
+            <td> * Unless required by applicable law or agreed to in writing, software
+</td>
+          </tr><tr>
+            <td class="black">11</td>
+            <td> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</td>
+          </tr><tr>
+            <td class="black">12</td>
+            <td> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</td>
+          </tr><tr>
+            <td class="black">13</td>
+            <td> * See the License for the specific language governing permissions and
+</td>
+          </tr><tr>
+            <td class="black">14</td>
+            <td> * limitations under the License.
+</td>
+          </tr><tr>
+            <td class="black">15</td>
+            <td> */
+</td>
+          </tr><tr>
+            <td class="black">16</td>
+            <td>package pl.elka.pw.sparkseq.statisticalTests
+</td>
+          </tr><tr>
+            <td class="black">17</td>
+            <td>import scala.util.control._
+</td>
+          </tr><tr>
+            <td class="black">18</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">19</td>
+            <td>/**
+</td>
+          </tr><tr>
+            <td class="black">20</td>
+            <td> * Object for computing two-sample Cramer-von Mises test
+</td>
+          </tr><tr>
+            <td class="black">21</td>
+            <td> */
+</td>
+          </tr><tr>
+            <td class="black">22</td>
+            <td><a id="Object_pl_elka_pw_sparkseq_statisticalTests_SparkSeqCvM2STest"/>object SparkSeqCvM2STest extends Serializable{
+</td>
+          </tr><tr>
+            <td class="black">23</td>
+            <td>  /**
+</td>
+          </tr><tr>
+            <td class="black">24</td>
+            <td>   * Method for computing test statistics of two-sample Cramer von Mises test
+</td>
+          </tr><tr>
+            <td class="black">25</td>
+            <td>   * @param x Value from the first sample.
+</td>
+          </tr><tr>
+            <td class="black">26</td>
+            <td>   * @param y Valure from the other sample.
+</td>
+          </tr><tr>
+            <td class="black">27</td>
+            <td>   * @return Test statistics.
+</td>
+          </tr><tr>
+            <td class="black">28</td>
+            <td>   */
+</td>
+          </tr><tr>
+            <td class="black">29</td>
+            <td>  def computeTestStat(x:Seq[Int],y:Seq[Int]) : Double ={
+</td>
+          </tr><tr>
+            <td class="black">30</td>
+            <td>    
+</td>
+          </tr><tr>
+            <td class="red">31</td>
+            <td>    var T2 = <span class="non">0.0
+</span></td>
+          </tr><tr>
+            <td class="red">32</td>
+            <td>    val n = <span class="non">x.length
+</span></td>
+          </tr><tr>
+            <td class="red">33</td>
+            <td>    val m = <span class="non">y.length
+</span></td>
+          </tr><tr>
+            <td class="red">34</td>
+            <td>    val mn = <span class="non">n+m
+</span></td>
+          </tr><tr>
+            <td class="red">35</td>
+            <td>    val xSort = <span class="non">x.sortBy(x=&gt;x)
+</span></td>
+          </tr><tr>
+            <td class="red">36</td>
+            <td>    val ySort = <span class="non">y.sortBy(y=&gt;y)
+</span></td>
+          </tr><tr>
+            <td class="red">37</td>
+            <td>    val xyComb = <span class="non">x++y
+</span></td>
+          </tr><tr>
+            <td class="red">38</td>
+            <td>    val xySort = <span class="non">xyComb.sortBy(x=&gt;x)
+</span></td>
+          </tr><tr>
+            <td class="red">39</td>
+            <td>    var xRank = <span class="non">Array.fill[Double](n)(0.0)
+</span></td>
+          </tr><tr>
+            <td class="red">40</td>
+            <td>    var yRank = <span class="non">Array.fill[Double](m)(0.0)
+</span></td>
+          </tr><tr>
+            <td class="red">41</td>
+            <td>    var searchVal = <span class="non">0.0
+</span></td>
+          </tr><tr>
+            <td class="red">42</td>
+            <td>    var k = <span class="non">0
+</span></td>
+          </tr><tr>
+            <td class="red">43</td>
+            <td>    while(<span class="non">k &lt; mn){
+</span></td>
+          </tr><tr>
+            <td class="red">44</td>
+            <td>    <span class="non">searchVal = xySort(k)  
+</span></td>
+          </tr><tr>
+            <td class="red">45</td>
+            <td>      if( <span class="non">k == mn-1 || (xySort(k) != xySort(k+1)) ){
+</span></td>
+          </tr><tr>
+            <td class="red">46</td>
+            <td>        val loop = <span class="non">new Breaks;
+</span></td>
+          </tr><tr>
+            <td class="red">47</td>
+            <td>           <span class="non">loop.breakable {
+</span></td>
+          </tr><tr>
+            <td class="red">48</td>
+            <td>             for(<span class="non">i&lt;- 0 to n-1){
+</span></td>
+          </tr><tr>
+            <td class="red">49</td>
+            <td>               if(<span class="non">xSort(i) == searchVal){
+</span></td>
+          </tr><tr>
+            <td class="red">50</td>
+            <td>                 <span class="non">xRank(i) = k+1
+</span></td>
+          </tr><tr>
+            <td class="red">51</td>
+            <td>                 <span class="non">loop.break
+</span></td>
+          </tr><tr>
+            <td class="black">52</td>
+            <td>               }
+</td>
+          </tr><tr>
+            <td class="black">53</td>
+            <td>               
+</td>
+          </tr><tr>
+            <td class="black">54</td>
+            <td>             }
+</td>
+          </tr><tr>
+            <td class="red">55</td>
+            <td>             for(<span class="non">j &lt;- 0 to m-1){
+</span></td>
+          </tr><tr>
+            <td class="red">56</td>
+            <td>               if(<span class="non">ySort(j) == searchVal){
+</span></td>
+          </tr><tr>
+            <td class="red">57</td>
+            <td>                 <span class="non">yRank(j) = k+1
+</span></td>
+          </tr><tr>
+            <td class="red">58</td>
+            <td>                 <span class="non">loop.break
+</span></td>
+          </tr><tr>
+            <td class="black">59</td>
+            <td>               }
+</td>
+          </tr><tr>
+            <td class="black">60</td>
+            <td>             }
+</td>
+          </tr><tr>
+            <td class="black">61</td>
+            <td>           }
+</td>
+          </tr><tr>
+            <td class="red">62</td>
+            <td>           <span class="non">k+=1
+</span></td>
+          </tr><tr>
+            <td class="black">63</td>
+            <td>      }
+</td>
+          </tr><tr>
+            <td class="red">64</td>
+            <td>      else if( (<span class="non">k &lt; mn-1) &amp;&amp; (xySort(k) == xySort(k+1) ) ){
+</span></td>
+          </tr><tr>
+            <td class="black">65</td>
+            <td>        //find no of duplicates
+</td>
+          </tr><tr>
+            <td class="red">66</td>
+            <td>           var p = <span class="non">k+1
+</span></td>
+          </tr><tr>
+            <td class="red">67</td>
+            <td>           var dupCount = <span class="non">2
+</span></td>
+          </tr><tr>
+            <td class="red">68</td>
+            <td>           val loop = <span class="non">new Breaks;
+</span></td>
+          </tr><tr>
+            <td class="red">69</td>
+            <td>             <span class="non">loop.breakable {
+</span></td>
+          </tr><tr>
+            <td class="red">70</td>
+            <td>               while( <span class="non">p&lt; mn-1){
+</span></td>
+          </tr><tr>
+            <td class="red">71</td>
+            <td>                 if(<span class="non">xySort(p) == xySort(p+1))
+</span></td>
+          </tr><tr>
+            <td class="red">72</td>
+            <td>                   <span class="non">dupCount+=1
+</span></td>
+          </tr><tr>
+            <td class="black">73</td>
+            <td>                  else
+</td>
+          </tr><tr>
+            <td class="red">74</td>
+            <td>                    <span class="non">loop.break
+</span></td>
+          </tr><tr>
+            <td class="red">75</td>
+            <td>                 <span class="non">p+=1
+</span></td>
+          </tr><tr>
+            <td class="black">76</td>
+            <td>               }  
+</td>
+          </tr><tr>
+            <td class="black">77</td>
+            <td>             }
+</td>
+          </tr><tr>
+            <td class="black">78</td>
+            <td>           //set the average value to (k+p)/2  in both xRanks and yRanks
+</td>
+          </tr><tr>
+            <td class="red">79</td>
+            <td>           var avgVal = (<span class="non">k.toDouble+p.toDouble+2.0)/2
+</span></td>
+          </tr><tr>
+            <td class="red">80</td>
+            <td>          for(<span class="non">i&lt;- 0 to n-1){
+</span></td>
+          </tr><tr>
+            <td class="red">81</td>
+            <td>            if(<span class="non">xSort(i) == searchVal)
+</span></td>
+          </tr><tr>
+            <td class="red">82</td>
+            <td>               <span class="non">xRank(i) = avgVal
+</span></td>
+          </tr><tr>
+            <td class="black">83</td>
+            <td>             
+</td>
+          </tr><tr>
+            <td class="black">84</td>
+            <td>           }
+</td>
+          </tr><tr>
+            <td class="red">85</td>
+            <td>           for(<span class="non">j &lt;- 0 to m-1){
+</span></td>
+          </tr><tr>
+            <td class="red">86</td>
+            <td>             if(<span class="non">ySort(j) == searchVal)
+</span></td>
+          </tr><tr>
+            <td class="red">87</td>
+            <td>               <span class="non">yRank(j) =   avgVal
+</span></td>
+          </tr><tr>
+            <td class="black">88</td>
+            <td>           }
+</td>
+          </tr><tr>
+            <td class="red">89</td>
+            <td>        <span class="non">k=p+1
+</span></td>
+          </tr><tr>
+            <td class="black">90</td>
+            <td>      }
+</td>
+          </tr><tr>
+            <td class="black">91</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="black">92</td>
+            <td>    /*compute T2 statistics, T2 = U/(N*M*(M+N)) - (4*M*N-1)/(6*(M+N))*/
+</td>
+          </tr><tr>
+            <td class="black">93</td>
+            <td>    //
+</td>
+          </tr><tr>
+            <td class="black">94</td>
+            <td>/*    xRank.foreach(x =&gt;println(x))
+</td>
+          </tr><tr>
+            <td class="black">95</td>
+            <td>    println(&quot;****&quot;)
+</td>
+          </tr><tr>
+            <td class="black">96</td>
+            <td>    yRank.foreach(x =&gt;println(x))*/
+</td>
+          </tr><tr>
+            <td class="red">97</td>
+            <td>    var U = <span class="non">0.0
+</span></td>
+          </tr><tr>
+            <td class="red">98</td>
+            <td>    var sumXRank = <span class="non">0.0
+</span></td>
+          </tr><tr>
+            <td class="red">99</td>
+            <td>    var sumYRank = <span class="non">0.0
+</span></td>
+          </tr><tr>
+            <td class="red">100</td>
+            <td>    for(<span class="non">i &lt;- 0 to n-1){
+</span></td>
+          </tr><tr>
+            <td class="red">101</td>
+            <td>      <span class="non">sumXRank +=(xRank(i)-(i+1))*(xRank(i)-(i+1))
+</span></td>
+          </tr><tr>
+            <td class="black">102</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="red">103</td>
+            <td>    for(<span class="non">j &lt;- 0 to m-1){
+</span></td>
+          </tr><tr>
+            <td class="red">104</td>
+            <td>      <span class="non">sumYRank +=(yRank(j)-(j+1))*(yRank(j)-(j+1))
+</span></td>
+          </tr><tr>
+            <td class="black">105</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="red">106</td>
+            <td>    <span class="non">U = n*sumXRank + m*sumYRank
+</span></td>
+          </tr><tr>
+            <td class="red">107</td>
+            <td>    <span class="non">T2 = U/(n.toDouble*m.toDouble*(m.toDouble+n.toDouble)) - (4*n.toDouble*m.toDouble-1)/(6*(m.toDouble+n.toDouble))
+</span></td>
+          </tr><tr>
+            <td class="red">108</td>
+            <td>    <span class="non">return(T2)
+</span></td>
+          </tr><tr>
+            <td class="black">109</td>
+            <td>  }
+</td>
+          </tr><tr>
+            <td class="black">110</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">111</td>
+            <td>  /**
+</td>
+          </tr><tr>
+            <td class="black">112</td>
+            <td>   * Method for computing p-value for a given Cramer von Mises test statistics and distance Table
+</td>
+          </tr><tr>
+            <td class="black">113</td>
+            <td>   * @param t2 Test statistics
+</td>
+          </tr><tr>
+            <td class="black">114</td>
+            <td>   * @param distTable Distance table
+</td>
+          </tr><tr>
+            <td class="black">115</td>
+            <td>   * @return p-value
+</td>
+          </tr><tr>
+            <td class="black">116</td>
+            <td>   */
+</td>
+          </tr><tr>
+            <td class="black">117</td>
+            <td>  def getPValue(t2:Double,distTable:org.apache.spark.broadcast.Broadcast[Array[(Double,Double)]]):Double ={
+</td>
+          </tr><tr>
+            <td class="black">118</td>
+            <td>    
+</td>
+          </tr><tr>
+            <td class="red">119</td>
+            <td>    var pvalue:Double = <span class="non">1.0
+</span></td>
+          </tr><tr>
+            <td class="red">120</td>
+            <td>    val loop = <span class="non">new Breaks;
+</span></td>
+          </tr><tr>
+            <td class="black">121</td>
+            <td>   // println(t2)
+</td>
+          </tr><tr>
+            <td class="red">122</td>
+            <td>    if(<span class="non">t2 == 0.0) return(1.0)
+</span></td>
+          </tr><tr>
+            <td class="red">123</td>
+            <td>      <span class="non">loop.breakable {
+</span></td>
+          </tr><tr>
+            <td class="black">124</td>
+            <td>      for(i &lt;- 0 to distTable.value.length-1){
+</td>
+          </tr><tr>
+            <td class="red">125</td>
+            <td>        if(<span class="non">t2&lt;=distTable.value(i)._1 &amp;&amp; i &gt;1 ){
+</span></td>
+          </tr><tr>
+            <td class="red">126</td>
+            <td>          <span class="non">pvalue = 1-distTable.value(i-1)._2
+</span></td>
+          </tr><tr>
+            <td class="red">127</td>
+            <td>           <span class="non">loop.break
+</span></td>
+          </tr><tr>
+            <td class="black">128</td>
+            <td>        }
+</td>
+          </tr><tr>
+            <td class="black">129</td>
+            <td>      /* if(t2&lt;=distTable(i)._1 &amp;&amp; distTable(i)._2&lt;0.5 &amp;&amp; i &gt;1){
+</td>
+          </tr><tr>
+            <td class="black">130</td>
+            <td>            pvalue = distTable(i-1)._2
+</td>
+          </tr><tr>
+            <td class="black">131</td>
+            <td>            loop.break
+</td>
+          </tr><tr>
+            <td class="black">132</td>
+            <td>        }
+</td>
+          </tr><tr>
+            <td class="black">133</td>
+            <td>        else if (t2&lt;=distTable(i)._1 &amp;&amp;  distTable(i)._2&gt;=0.5 &amp;&amp; i&gt;=1){
+</td>
+          </tr><tr>
+            <td class="black">134</td>
+            <td>          pvalue = 1-distTable(i-1)._2
+</td>
+          </tr><tr>
+            <td class="black">135</td>
+            <td>          loop.break
+</td>
+          </tr><tr>
+            <td class="black">136</td>
+            <td>        }*/
+</td>
+          </tr><tr>
+            <td class="black">137</td>
+            <td>      }
+</td>
+          </tr><tr>
+            <td class="black">138</td>
+            <td>      }
+</td>
+          </tr><tr>
+            <td class="red">139</td>
+            <td>    <span class="non">return(pvalue)
+</span></td>
+          </tr><tr>
+            <td class="black">140</td>
+            <td>  }
+</td>
+          </tr><tr>
+            <td class="black">141</td>
+            <td>}
+</td>
+          </tr></tbody></table>

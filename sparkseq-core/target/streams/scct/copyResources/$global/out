@@ -1,0 +1,9 @@
+[0m[[0mdebug[0m] [0mCopy resource mappings: [0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm3_3_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm3_3_2.txt)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm10_10_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm10_10_2.txt)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm5_5_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm5_5_2.txt)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm4_4_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm4_4_2.txt)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm7_7_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm7_7_2.txt)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm8_7_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm8_7_2.txt)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm6_6_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm6_6_2.txt)[0m
+[0m[[0mdebug[0m] [0m	(/home/mesos/phd/sparkseq/sparkseq-core/src/main/resources/cm4_5_2.txt,/home/mesos/phd/sparkseq/sparkseq-core/target/scala-2.10/scct-classes/cm4_5_2.txt)[0m

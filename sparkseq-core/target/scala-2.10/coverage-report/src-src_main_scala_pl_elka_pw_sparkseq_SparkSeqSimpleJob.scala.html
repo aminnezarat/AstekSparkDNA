@@ -1,0 +1,789 @@
+<table class="classes"><tbody><tr>
+      <td class="barContainerLeft"><a href="#">&#x200B;pl/&#x200B;elka/&#x200B;pw/&#x200B;sparkseq/<span class="header">&#x200B;SparkSeqSimpleJob.scala</span></a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">0 %(0 out of 50)</div>
+        <div class="greenBar" style="width:0px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr><tr>
+      <td class="barContainerLeft"><a href="src-src_main_scala_pl_elka_pw_sparkseq_SparkSeqSimpleJob.scala.html#Object_pl_elka_pw_sparkseq_SparkSeqSimpleJob"><img src="object.png"/>SparkSeqSimpleJob</a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">0 %(0 out of 50)</div>
+        <div class="greenBar" style="width:0px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr></tbody></table><table class="source"><tbody><tr>
+            <td class="black">1</td>
+            <td>/*** SimpleJob.scala ***/
+</td>
+          </tr><tr>
+            <td class="black">2</td>
+            <td>package pl.elka.pw.sparkseq
+</td>
+          </tr><tr>
+            <td class="black">3</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">4</td>
+            <td>import org.apache.spark.SparkContext
+</td>
+          </tr><tr>
+            <td class="black">5</td>
+            <td>import org.apache.spark.SparkContext._
+</td>
+          </tr><tr>
+            <td class="black">6</td>
+            <td>import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
+</td>
+          </tr><tr>
+            <td class="black">7</td>
+            <td>import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
+</td>
+          </tr><tr>
+            <td class="black">8</td>
+            <td>import pl.elka.pw.sparkseq.conversions.SparkSeqConversions._
+</td>
+          </tr><tr>
+            <td class="black">9</td>
+            <td>import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
+</td>
+          </tr><tr>
+            <td class="black">10</td>
+            <td>import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
+</td>
+          </tr><tr>
+            <td class="black">11</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">12</td>
+            <td>//import org.apache.spark.SparkConf
+</td>
+          </tr><tr>
+            <td class="black">13</td>
+            <td>//import org.apache.spark._
+</td>
+          </tr><tr>
+            <td class="black">14</td>
+            <td>import org.apache.spark.storage._
+</td>
+          </tr><tr>
+            <td class="black">15</td>
+            <td>//import SparkContext._
+</td>
+          </tr><tr>
+            <td class="black">16</td>
+            <td>//import spark._
+</td>
+          </tr><tr>
+            <td class="black">17</td>
+            <td>import org.apache.spark.HashPartitioner
+</td>
+          </tr><tr>
+            <td class="black">18</td>
+            <td>import org.apache.spark.rdd._
+</td>
+          </tr><tr>
+            <td class="black">19</td>
+            <td>import fi.tkk.ics.hadoop.bam.BAMInputFormat
+</td>
+          </tr><tr>
+            <td class="black">20</td>
+            <td>import fi.tkk.ics.hadoop.bam.SAMRecordWritable
+</td>
+          </tr><tr>
+            <td class="black">21</td>
+            <td>import org.apache.hadoop.io.LongWritable
+</td>
+          </tr><tr>
+            <td class="black">22</td>
+            <td>import org.apache.spark.SparkContext.rddToPairRDDFunctions
+</td>
+          </tr><tr>
+            <td class="black">23</td>
+            <td>import com.esotericsoftware.kryo.Kryo
+</td>
+          </tr><tr>
+            <td class="black">24</td>
+            <td>import collection.mutable.ArrayBuffer
+</td>
+          </tr><tr>
+            <td class="black">25</td>
+            <td>import pl.elka.pw.sparkseq.statisticalTests._
+</td>
+          </tr><tr>
+            <td class="black">26</td>
+            <td>import java.util.HashMap
+</td>
+          </tr><tr>
+            <td class="black">27</td>
+            <td>import scala.collection.mutable.Map
+</td>
+          </tr><tr>
+            <td class="black">28</td>
+            <td>import java.io.File
+</td>
+          </tr><tr>
+            <td class="black">29</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">30</td>
+            <td>/**
+</td>
+          </tr><tr>
+            <td class="black">31</td>
+            <td> * An example of a simple job implemented using SparkSeq.
+</td>
+          </tr><tr>
+            <td class="black">32</td>
+            <td> */
+</td>
+          </tr><tr>
+            <td class="black">33</td>
+            <td><a id="Object_pl_elka_pw_sparkseq_SparkSeqSimpleJob"/>object SparkSeqSimpleJob {
+</td>
+          </tr><tr>
+            <td class="black">34</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">35</td>
+            <td> def main(args: Array[String]) {
+</td>
+          </tr><tr>
+            <td class="black">36</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">37</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">38</td>
+            <td>       <span class="non">SparkSeqContexProperties.setupContexProperties()
+</span></td>
+          </tr><tr>
+            <td class="red">39</td>
+            <td>       <span class="non">SparkSeqKryoProperties.setupKryoContextProperties()
+</span></td>
+          </tr><tr>
+            <td class="black">40</td>
+            <td>        //  val sparkConf = new SparkConf().setMaster(&quot;local[8]&quot;).setAppName(&quot;SparkSeq&quot;)
+</td>
+          </tr><tr>
+            <td class="black">41</td>
+            <td>        //   val sc = new SparkContext(&quot;local&quot;,&quot;My app&quot;,sparkConf)
+</td>
+          </tr><tr>
+            <td class="black">42</td>
+            <td>    //spark://hadoop-jobtracker001:7077
+</td>
+          </tr><tr>
+            <td class="red">43</td>
+            <td>     val sc = <span class="non">new  SparkContext(&quot;spark://MarekNotebook:7077&quot;, &quot;sparkseq&quot;, System.getenv(&quot;SPARK_HOME&quot;),  Seq(System.getenv(&quot;ADD_JARS&quot;)))
+</span></td>
+          </tr><tr>
+            <td class="black">44</td>
+            <td>    // , List(&quot;target/scala-2.9.3/sparkseq_2.9.3-0.1.jar&quot;,&quot;/opt/hadoop-classpath/hadoop-bam-6.1-SNAPSHOT.jar&quot;,&quot;/opt/hadoop-classpath/picard-1.106.jar&quot;,&quot;/opt/hadoop-classpath/sam-1.106.jar&quot;, &quot;/opt/hadoop-classpath/variant-1.106.jar&quot;,&quot;/opt/hadoop-classpath/tribble-1.106.jar&quot;,&quot;/opt/hadoop-classpath/commons-jexl-2.1.1.jar&quot;))
+</td>
+          </tr><tr>
+            <td class="black">45</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">46</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">47</td>
+            <td>    /*val seqAnalysisCase = new SparkSeqAnalysis(sc,&quot;hdfs://hadoop-name001:9000/HG/16MB/HG00096.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam&quot;,1,&quot;NULL&quot;,1,40)
+</td>
+          </tr><tr>
+            <td class="black">48</td>
+            <td>    val out=seqAnalysisCase.getCoverageBase()
+</td>
+          </tr><tr>
+            <td class="black">49</td>
+            <td>    out.persist(StorageLevel.MEMORY_ONLY_SER)
+</td>
+          </tr><tr>
+            <td class="black">50</td>
+            <td>    println(out.count() )
+</td>
+          </tr><tr>
+            <td class="black">51</td>
+            <td>    println(out.count() )
+</td>
+          </tr><tr>
+            <td class="black">52</td>
+            <td>    */
+</td>
+          </tr><tr>
+            <td class="black">53</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">54</td>
+            <td>    //val (initMax,initFree):(Long,Long) = sc.getExecutorMemoryStatus.values.take(1)
+</td>
+          </tr><tr>
+            <td class="red">55</td>
+            <td>    val startTimeLoad = <span class="non">System.currentTimeMillis
+</span></td>
+          </tr><tr>
+            <td class="black">56</td>
+            <td>    //val CMTest = new SparkSeqCvM2STest()
+</td>
+          </tr><tr>
+            <td class="red">57</td>
+            <td>    val fileSplitSize = <span class="non">64
+</span></td>
+          </tr><tr>
+            <td class="black">58</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">59</td>
+            <td>    val rootPath=<span class="non">&quot;/mnt/software/Phd_datastore/RAO/&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">60</td>
+            <td>    val pathFam1 = <span class="non">rootPath+fileSplitSize.toString+&quot;MB/condition_9/Fam1&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">61</td>
+            <td>    val pathFam2 = <span class="non">rootPath+fileSplitSize.toString+&quot;MB/condition_9/Fam2&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">62</td>
+            <td>    val bedFile = <span class="non">&quot;Equus_caballus.EquCab2.73_exons_chr2.bed&quot;
+</span></td>
+          </tr><tr>
+            <td class="red">63</td>
+            <td>    val pathExonsList = <span class="non">rootPath+fileSplitSize.toString+&quot;MB/aux/&quot;+bedFile
+</span></td>
+          </tr><tr>
+            <td class="black">64</td>
+            <td>    //val pathExonsList=&quot;/hdfs_temp/Equus_caballus.EquCab2.73_exons_chr.bed&quot;
+</td>
+          </tr><tr>
+            <td class="black">65</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">66</td>
+            <td>    //val pathFam1 = &quot;hdfs://hadoop-name001:9000/RAO/&quot;+fileSplitSize.toString+&quot;MB/condition_9/Fam1&quot;
+</td>
+          </tr><tr>
+            <td class="black">67</td>
+            <td>    //val pathFam2 = &quot;hdfs://hadoop-name001:9000/RAO/&quot;+fileSplitSize.toString+&quot;MB/condition_9/Fam2&quot;
+</td>
+          </tr><tr>
+            <td class="black">68</td>
+            <td>    //val pathExonsList=&quot;hdfs://hadoop-name001:9000/RAO/conversions/Equus_caballus.EquCab2.73_exons_chr.bed&quot;
+</td>
+          </tr><tr>
+            <td class="black">69</td>
+            <td>    //val pathExonsList=&quot;/hdfs_temp/Equus_caballus.EquCab2.73_exons_chr.bed&quot;
+</td>
+          </tr><tr>
+            <td class="black">70</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">71</td>
+            <td>    // val cmDistTable = sc.textFile(&quot;hdfs://hadoop-name001:9000/RAO/cm8_7_2.txt&quot;).map(l =&gt; l.split(&quot;\t&quot;)).map(r=&gt;(r.array(0).toDouble,r.array(1).toDouble) ).toArray
+</td>
+          </tr><tr>
+            <td class="black">72</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">73</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">74</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">75</td>
+            <td>    val genExonsMapB = <span class="non">sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
+</span></td>
+          </tr><tr>
+            <td class="red">76</td>
+            <td>    val numTasks = <span class="non">30
+</span></td>
+          </tr><tr>
+            <td class="red">77</td>
+            <td>    val caseIdFam1 = <span class="non">Array(38,39/*,42,44,45,47,53*/)
+</span></td>
+          </tr><tr>
+            <td class="red">78</td>
+            <td>    val controlIdFam1 = <span class="non">Array(56,74/*,76,77,83,94*/)
+</span></td>
+          </tr><tr>
+            <td class="black">79</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">80</td>
+            <td>    val caseIdFam2 = <span class="non">Array(100,111/*,29,36,52,55,64,69*/)
+</span></td>
+          </tr><tr>
+            <td class="red">81</td>
+            <td>    val controlIdFam2 = <span class="non">Array(110,30/*,31,51,54,58,63,91,99*/)
+</span></td>
+          </tr><tr>
+            <td class="black">82</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">83</td>
+            <td>    //val normArray = Array(1.0,8622606.0/19357579.0,8622606.0/14087644)
+</td>
+          </tr><tr>
+            <td class="black">84</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">85</td>
+            <td>    //val normArray=Array(1.0,8622606.0/19357579.0,8622606.0/14087644.0,8622606.0/18824924.0,8622606.0/9651030.0,8622606.0/22731556.0,
+</td>
+          </tr><tr>
+            <td class="black">86</td>
+            <td>    //             8622606.0/15975604.0,8622606.0/17681528.0, 8622606.0/16323269.0,  8622606.0/18408612.0, 8622606.0/15934054.0, 8622606.0/22329258.0,
+</td>
+          </tr><tr>
+            <td class="black">87</td>
+            <td>    //             8622606.0/14788631.0, 8622606.0/14346120.0, 8622606.0/ 16693869.0)
+</td>
+          </tr><tr>
+            <td class="red">88</td>
+            <td>    val minCount = <span class="non">10
+</span></td>
+          </tr><tr>
+            <td class="red">89</td>
+            <td>    val minRegLength= <span class="non">10
+</span></td>
+          </tr><tr>
+            <td class="red">90</td>
+            <td>    val minCoverageRatio = <span class="non">0.33
+</span></td>
+          </tr><tr>
+            <td class="red">91</td>
+            <td>    val pval = <span class="non">0.1
+</span></td>
+          </tr><tr>
+            <td class="red">92</td>
+            <td>    val caseSampSize = <span class="non">caseIdFam1.length + caseIdFam2.length + 1
+</span></td>
+          </tr><tr>
+            <td class="red">93</td>
+            <td>    val controlSampSize = <span class="non">controlIdFam1.length + controlIdFam2.length  + 1
+</span></td>
+          </tr><tr>
+            <td class="black">94</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">95</td>
+            <td>    val seqAnalysisCase = <span class="non">new SparkSeqAnalysis(sc,pathFam1+&quot;/Case/Sample_25_sort.bam&quot;,25,1,numTasks)
+</span></td>
+          </tr><tr>
+            <td class="black">96</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">97</td>
+            <td>    var id = <span class="non">1
+</span></td>
+          </tr><tr>
+            <td class="red">98</td>
+            <td>    for(<span class="non">i&lt;-caseIdFam1){
+</span></td>
+          </tr><tr>
+            <td class="black">99</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">100</td>
+            <td>      <span class="non">seqAnalysisCase.addBAM(sc,pathFam1+&quot;/Case/Sample_&quot;+i.toString+&quot;*_sort.bam&quot;,i,1)
+</span></td>
+          </tr><tr>
+            <td class="red">101</td>
+            <td>      <span class="non">id+=1
+</span></td>
+          </tr><tr>
+            <td class="black">102</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="black">103</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">104</td>
+            <td>    for(<span class="non">i&lt;-caseIdFam2){
+</span></td>
+          </tr><tr>
+            <td class="black">105</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">106</td>
+            <td>      <span class="non">seqAnalysisCase.addBAM(sc,pathFam2+&quot;/Case/Sample_&quot;+i.toString+&quot;*_sort.bam&quot;,i,1)
+</span></td>
+          </tr><tr>
+            <td class="red">107</td>
+            <td>      <span class="non">id+=1
+</span></td>
+          </tr><tr>
+            <td class="black">108</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="black">109</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">110</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">111</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">112</td>
+            <td>    val seqAnalysisControl = <span class="non">new SparkSeqAnalysis(sc,pathFam1+&quot;/Control/Sample_26_sort.bam&quot;,26,1,numTasks)
+</span></td>
+          </tr><tr>
+            <td class="red">113</td>
+            <td>    for(<span class="non">i&lt;-controlIdFam1){
+</span></td>
+          </tr><tr>
+            <td class="red">114</td>
+            <td>        <span class="non">seqAnalysisControl.addBAM(sc,pathFam1+&quot;/Control/Sample_&quot;+i.toString+&quot;*_sort.bam&quot;,i,1 ); id+=1}
+</span></td>
+          </tr><tr>
+            <td class="black">115</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">116</td>
+            <td>    for(<span class="non">i&lt;-controlIdFam2){
+</span></td>
+          </tr><tr>
+            <td class="red">117</td>
+            <td>        <span class="non">seqAnalysisControl.addBAM(sc,pathFam2+&quot;/Control/Sample_&quot;+i.toString+&quot;*_sort.bam&quot;,i,1 ); id+=1}
+</span></td>
+          </tr><tr>
+            <td class="black">118</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">119</td>
+            <td>    /*TEST Basecount */
+</td>
+          </tr><tr>
+            <td class="black">120</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">121</td>
+            <td>    /*
+</td>
+          </tr><tr>
+            <td class="black">122</td>
+            <td>    val covCase = seqAnalysisCase.getCoverageBase().map(r=&gt;(r._1%100000000000L,r._2)).groupByKey()
+</td>
+          </tr><tr>
+            <td class="black">123</td>
+            <td>    //  .map(c=&gt; if(caseSampSize-c._2.length&gt;0)(c._1,c._2++ArrayBuffer.fill[Int](caseSampSize-c._2.length)(0)) else (c._1,c._2) )
+</td>
+          </tr><tr>
+            <td class="black">124</td>
+            <td>    //  .map(c=&gt; if(mean(c._2) &lt; 1 )(c._1,ArrayBuffer.fill[Int](caseSampSize)(0)) else(c._1,c._2)  )
+</td>
+          </tr><tr>
+            <td class="black">125</td>
+            <td>    val covControl = seqAnalysisControl.getCoverageBase().map(r=&gt;(r._1%100000000000L,r._2)).groupByKey()
+</td>
+          </tr><tr>
+            <td class="black">126</td>
+            <td>    //  .map(c=&gt; if(caseSampSize-c._2.length&gt;0)(c._1,c._2++ArrayBuffer.fill[Int](caseSampSize-c._2.length)(0)) else (c._1,c._2) )
+</td>
+          </tr><tr>
+            <td class="black">127</td>
+            <td>    //        .map(c=&gt; if(mean(c._2) &lt; 1 )(c._1,ArrayBuffer.fill[Int](caseSampSize)(0)) else(c._1,c._2)  )
+</td>
+          </tr><tr>
+            <td class="black">128</td>
+            <td>    val covJoint = covCase.join(covControl)
+</td>
+          </tr><tr>
+            <td class="black">129</td>
+            <td>      .map(c=&gt;
+</td>
+          </tr><tr>
+            <td class="black">130</td>
+            <td>            if(c._2._2 == null)
+</td>
+          </tr><tr>
+            <td class="black">131</td>
+            <td>               (c._1,(c._2._1, ArrayBuffer.fill[Int](controlSampSize)(0)) )
+</td>
+          </tr><tr>
+            <td class="black">132</td>
+            <td>      else if (c._2._1 == null)
+</td>
+          </tr><tr>
+            <td class="black">133</td>
+            <td>               (c._1,(ArrayBuffer.fill[Int](caseSampSize)(0),c._2._2) )
+</td>
+          </tr><tr>
+            <td class="black">134</td>
+            <td>      else
+</td>
+          </tr><tr>
+            <td class="black">135</td>
+            <td>         (c._1,c._2) )
+</td>
+          </tr><tr>
+            <td class="black">136</td>
+            <td>            .map(c=&gt;if(c._2._1.length &lt; caseSampSize || c._2._2.length &lt; controlSampSize)
+</td>
+          </tr><tr>
+            <td class="black">137</td>
+            <td>         (c._1,(c._2._1++Array.fill[Int](caseSampSize-c._2._1.length)(0),c._2._2++Array.fill[Int](controlSampSize-c._2._2.length)(0) ) )
+</td>
+          </tr><tr>
+            <td class="black">138</td>
+            <td>      else
+</td>
+          </tr><tr>
+            <td class="black">139</td>
+            <td>         (c._1,c._2)  )
+</td>
+          </tr><tr>
+            <td class="black">140</td>
+            <td>    //  .map(r=&gt;(r._1,r._2,CMTest.computeTestStat(r._2(0),r._2(1)) ) ).map(r=&gt;(r._1,r._2,r._3,CMTest.getPValue(r._3,cmDistTable)) )
+</td>
+          </tr><tr>
+            <td class="black">141</td>
+            <td>    println(covJoint.first())
+</td>
+          </tr><tr>
+            <td class="black">142</td>
+            <td>    //cov.persist(StorageLevel.MEMORY_ONLY)
+</td>
+          </tr><tr>
+            <td class="black">143</td>
+            <td>    //println(cov.count() )
+</td>
+          </tr><tr>
+            <td class="black">144</td>
+            <td>    */
+</td>
+          </tr><tr>
+            <td class="black">145</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">146</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">147</td>
+            <td>    /*Test Exon counts*/
+</td>
+          </tr><tr>
+            <td class="red">148</td>
+            <td>    val covCase = <span class="non">seqAnalysisCase.getCoverageRegion(genExonsMapB).map(c=&gt;(c._1%100000000000L,c._2) ).groupByKey()
+</span></td>
+          </tr><tr>
+            <td class="red">149</td>
+            <td>      .map(c=&gt;<span class="non">(c._1,c._2 )) //.partitionBy(new HashPartitioner(15))
+</span></td>
+          </tr><tr>
+            <td class="red">150</td>
+            <td>    val covControl = <span class="non">seqAnalysisControl.getCoverageRegion(genExonsMapB).map(c=&gt;(c._1%100000000000L,c._2) ).groupByKey()
+</span></td>
+          </tr><tr>
+            <td class="red">151</td>
+            <td>      .map(c=&gt;<span class="non">(c._1,c._2 ))//.partitionBy(new HashPartitioner(15))
+</span></td>
+          </tr><tr>
+            <td class="black">152</td>
+            <td>    //val covJoint = covCase++covControl
+</td>
+          </tr><tr>
+            <td class="red">153</td>
+            <td>    val covJoint = <span class="non">covCase.join(covControl)
+</span></td>
+          </tr><tr>
+            <td class="black">154</td>
+            <td>    //val covCase = seqAnalysisCase.getCoverageRegion(genExonsMap)
+</td>
+          </tr><tr>
+            <td class="black">155</td>
+            <td>    //val covControl = seqAnalysisControl.getCoverageRegion(genExonsMap)
+</td>
+          </tr><tr>
+            <td class="black">156</td>
+            <td>    //val covUnion = seqAnalysisCase.getCoverageRegion(genExonsMap).union(seqAnalysisControl.getCoverageRegion(genExonsMap) )
+</td>
+          </tr><tr>
+            <td class="black">157</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">158</td>
+            <td>    //val covJoint = covUnion.groupByKey(numTasks)
+</td>
+          </tr><tr>
+            <td class="black">159</td>
+            <td>    //covCase.take(20).foreach(println)
+</td>
+          </tr><tr>
+            <td class="red">160</td>
+            <td>    <span class="non">println(&quot;*****************&quot;)
+</span></td>
+          </tr><tr>
+            <td class="black">161</td>
+            <td>    //covControl.take(20).foreach(println)
+</td>
+          </tr><tr>
+            <td class="black">162</td>
+            <td>    //covJoint.take(20).foreach(println)
+</td>
+          </tr><tr>
+            <td class="black">163</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">164</td>
+            <td>    <span class="non">println(&quot;*****************&quot;)
+</span></td>
+          </tr><tr>
+            <td class="black">165</td>
+            <td>    //covJoint.saveAsTextFile(&quot;hdfs://hadoop-name001:9000/RAO/out1.txt&quot;)
+</td>
+          </tr><tr>
+            <td class="red">166</td>
+            <td>    <span class="non">println(covJoint.count)
+</span></td>
+          </tr><tr>
+            <td class="black">167</td>
+            <td>    //println(covCase.count+covControl.count)
+</td>
+          </tr><tr>
+            <td class="black">168</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">169</td>
+            <td>    val endTimeLoad = <span class="non">System.currentTimeMillis
+</span></td>
+          </tr><tr>
+            <td class="black">170</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">171</td>
+            <td>    //val (endMax,endFree):(Long,Long) = sc.getExecutorMemoryStatus.values.take(1)
+</td>
+          </tr><tr>
+            <td class="black">172</td>
+            <td>    //val memSize = sc.getRDDStorageInfo(0).memSize
+</td>
+          </tr><tr>
+            <td class="black">173</td>
+            <td>    //val diskSize = sc.getRDDStorageInfo(0).diskSize
+</td>
+          </tr><tr>
+            <td class="black">174</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">175</td>
+            <td>    //println(&quot;########################After cache#########################&quot;)
+</td>
+          </tr><tr>
+            <td class="black">176</td>
+            <td>    //val startTimeCache = System.currentTimeMillis
+</td>
+          </tr><tr>
+            <td class="black">177</td>
+            <td>    //println(cov.count() )
+</td>
+          </tr><tr>
+            <td class="black">178</td>
+            <td>    //val endTimeCache  = System.currentTimeMillis
+</td>
+          </tr><tr>
+            <td class="black">179</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">180</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">181</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">182</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">183</td>
+            <td>    <span class="non">println(&quot;Summary:&quot;)
+</span></td>
+          </tr><tr>
+            <td class="red">184</td>
+            <td>    <span class="non">println((&quot;CacheLoadTime = %.3f secs&quot;).format((endTimeLoad-startTimeLoad)/1000.0) )
+</span></td>
+          </tr><tr>
+            <td class="black">185</td>
+            <td>    //println((&quot;CacheMemSize = %.3f GB&quot;).format((memSize)/(1024.0*1024.0*1024.0)) )
+</td>
+          </tr><tr>
+            <td class="black">186</td>
+            <td>    //println((&quot;CacheDiskSize = %.3f GB&quot;).format((diskSize)/(1024.0*1024.0*1024.0)) )
+</td>
+          </tr><tr>
+            <td class="black">187</td>
+            <td>    //println((&quot;CacheHitTime = %.5f secs&quot;).format((endTimeCache-startTimeCache)/1000.0) )
+</td>
+          </tr><tr>
+            <td class="black">188</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">189</td>
+            <td>  
+</td>
+          </tr><tr>
+            <td class="black">190</td>
+            <td>  
+</td>
+          </tr><tr>
+            <td class="black">191</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">192</td>
+            <td>}
+</td>
+          </tr><tr>
+            <td class="black">193</td>
+            <td>}
+</td>
+          </tr></tbody></table>

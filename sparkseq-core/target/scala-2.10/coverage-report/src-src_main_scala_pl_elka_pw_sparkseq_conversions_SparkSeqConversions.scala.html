@@ -1,0 +1,621 @@
+<table class="classes"><tbody><tr>
+      <td class="barContainerLeft"><a href="#">&#x200B;pl/&#x200B;elka/&#x200B;pw/&#x200B;sparkseq/&#x200B;conversions/<span class="header">&#x200B;SparkSeqConversions.scala</span></a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">11 %(14 out of 127)</div>
+        <div class="greenBar" style="width:22px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr><tr>
+      <td class="barContainerLeft"><a href="src-src_main_scala_pl_elka_pw_sparkseq_conversions_SparkSeqConversions.scala.html#Object_pl_elka_pw_sparkseq_conversions_SparkSeqConversions"><img src="object.png"/>SparkSeqConversions</a></td>
+      <td class="barContainerRight"><div class="percentages">
+      <div class="bar">
+        <div class="percentage">11 %(14 out of 127)</div>
+        <div class="greenBar" style="width:22px;">&nbsp;</div>
+      </div>
+    </div></td>
+    </tr></tbody></table><table class="source"><tbody><tr>
+            <td class="black">1</td>
+            <td>/**
+</td>
+          </tr><tr>
+            <td class="black">2</td>
+            <td> * Copyright (c) 2014. [insert your company or name here]
+</td>
+          </tr><tr>
+            <td class="black">3</td>
+            <td> *
+</td>
+          </tr><tr>
+            <td class="black">4</td>
+            <td> * Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+</td>
+          </tr><tr>
+            <td class="black">5</td>
+            <td> * you may not use this file except in compliance with the License.
+</td>
+          </tr><tr>
+            <td class="black">6</td>
+            <td> * You may obtain a copy of the License at
+</td>
+          </tr><tr>
+            <td class="black">7</td>
+            <td> *
+</td>
+          </tr><tr>
+            <td class="black">8</td>
+            <td> *     http://www.apache.org/licenses/LICENSE-2.0
+</td>
+          </tr><tr>
+            <td class="black">9</td>
+            <td> *
+</td>
+          </tr><tr>
+            <td class="black">10</td>
+            <td> * Unless required by applicable law or agreed to in writing, software
+</td>
+          </tr><tr>
+            <td class="black">11</td>
+            <td> * distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+</td>
+          </tr><tr>
+            <td class="black">12</td>
+            <td> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+</td>
+          </tr><tr>
+            <td class="black">13</td>
+            <td> * See the License for the specific language governing permissions and
+</td>
+          </tr><tr>
+            <td class="black">14</td>
+            <td> * limitations under the License.
+</td>
+          </tr><tr>
+            <td class="black">15</td>
+            <td> */
+</td>
+          </tr><tr>
+            <td class="black">16</td>
+            <td>package pl.elka.pw.sparkseq.conversions
+</td>
+          </tr><tr>
+            <td class="black">17</td>
+            <td>import org.apache.spark.SparkContext
+</td>
+          </tr><tr>
+            <td class="black">18</td>
+            <td>import scala.collection.mutable.ArrayBuffer
+</td>
+          </tr><tr>
+            <td class="black">19</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">20</td>
+            <td>/**
+</td>
+          </tr><tr>
+            <td class="black">21</td>
+            <td> * Object for doing various data conversions used by SparkSeq.
+</td>
+          </tr><tr>
+            <td class="black">22</td>
+            <td> */
+</td>
+          </tr><tr>
+            <td class="black">23</td>
+            <td><a id="Object_pl_elka_pw_sparkseq_conversions_SparkSeqConversions"/>object SparkSeqConversions {
+</td>
+          </tr><tr>
+            <td class="black">24</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">25</td>
+            <td>  /**
+</td>
+          </tr><tr>
+            <td class="black">26</td>
+            <td>   * Method for converting string chromosome name to Long representation. It is used for
+</td>
+          </tr><tr>
+            <td class="black">27</td>
+            <td>   * performance reasons.
+</td>
+          </tr><tr>
+            <td class="black">28</td>
+            <td>   *
+</td>
+          </tr><tr>
+            <td class="black">29</td>
+            <td>   * @param iRefName Chromosome name (e.g. chr1).
+</td>
+          </tr><tr>
+            <td class="black">30</td>
+            <td>   * @return Chromosome name encoded as Long number.
+</td>
+          </tr><tr>
+            <td class="black">31</td>
+            <td>   */
+</td>
+          </tr><tr>
+            <td class="black">32</td>
+            <td>  def chrToLong(iRefName:String):Long = {
+</td>
+          </tr><tr>
+            <td class="black">33</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="green">34</td>
+            <td>    val id = iRefName  match{
+</td>
+          </tr><tr>
+            <td class="red">35</td>
+            <td>      case &quot;chr1&quot; =&gt; <span class="non">1000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">36</td>
+            <td>      case &quot;chr2&quot; =&gt; <span class="non">2000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">37</td>
+            <td>      case &quot;chr3&quot; =&gt; <span class="non">3000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">38</td>
+            <td>      case &quot;chr4&quot; =&gt; <span class="non">4000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">39</td>
+            <td>      case &quot;chr5&quot; =&gt; <span class="non">5000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">40</td>
+            <td>      case &quot;chr6&quot; =&gt; <span class="non">6000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">41</td>
+            <td>      case &quot;chr7&quot; =&gt; <span class="non">7000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">42</td>
+            <td>      case &quot;chr8&quot; =&gt; <span class="non">8000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">43</td>
+            <td>      case &quot;chr9&quot; =&gt; <span class="non">9000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">44</td>
+            <td>      case &quot;chr10&quot; =&gt; <span class="non">10000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">45</td>
+            <td>      case &quot;chr11&quot; =&gt; <span class="non">11000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">46</td>
+            <td>      case &quot;chr12&quot; =&gt; <span class="non">12000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">47</td>
+            <td>      case &quot;chr13&quot; =&gt; <span class="non">13000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">48</td>
+            <td>      case &quot;chr14&quot; =&gt; <span class="non">14000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">49</td>
+            <td>      case &quot;chr15&quot; =&gt; <span class="non">15000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">50</td>
+            <td>      case &quot;chr16&quot; =&gt; <span class="non">16000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">51</td>
+            <td>      case &quot;chr17&quot; =&gt; <span class="non">17000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">52</td>
+            <td>      case &quot;chr18&quot; =&gt; <span class="non">18000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">53</td>
+            <td>      case &quot;chr19&quot; =&gt; <span class="non">19000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">54</td>
+            <td>      case &quot;chr20&quot; =&gt; <span class="non">20000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">55</td>
+            <td>      case &quot;chr21&quot; =&gt; <span class="non">21000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">56</td>
+            <td>      case &quot;chr22&quot; =&gt; <span class="non">22000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">57</td>
+            <td>      case &quot;chr23&quot; =&gt; <span class="non">23000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">58</td>
+            <td>      case &quot;chr24&quot; =&gt; <span class="non">24000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">59</td>
+            <td>      case &quot;chr25&quot; =&gt; <span class="non">25000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">60</td>
+            <td>      case &quot;chr26&quot; =&gt; <span class="non">26000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">61</td>
+            <td>      case &quot;chr27&quot; =&gt; <span class="non">27000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">62</td>
+            <td>      case &quot;chr28&quot; =&gt; <span class="non">28000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">63</td>
+            <td>      case &quot;chr29&quot; =&gt; <span class="non">29000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">64</td>
+            <td>      case &quot;chr30&quot; =&gt; <span class="non">30000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">65</td>
+            <td>      case &quot;chr31&quot; =&gt; <span class="non">31000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">66</td>
+            <td>      case &quot;chr32&quot; =&gt; <span class="non">32000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">67</td>
+            <td>      case &quot;chr33&quot; =&gt; <span class="non">33000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">68</td>
+            <td>      case &quot;chrX&quot; =&gt; <span class="non">100000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">69</td>
+            <td>      case &quot;chrY&quot; =&gt; <span class="non">110000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">70</td>
+            <td>      case &quot;chrMT&quot; =&gt;<span class="non">120000000000L
+</span></td>
+          </tr><tr>
+            <td class="red">71</td>
+            <td>      case _       =&gt; <span class="non">900000000000L
+</span></td>
+          </tr><tr>
+            <td class="black">72</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">73</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="green">74</td>
+            <td>    return id
+</td>
+          </tr><tr>
+            <td class="black">75</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">76</td>
+            <td>  }
+</td>
+          </tr><tr>
+            <td class="black">77</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">78</td>
+            <td>  /**
+</td>
+          </tr><tr>
+            <td class="black">79</td>
+            <td>   * Method for converting SparSeq internal gen position representation to tuple (chromosome, position)
+</td>
+          </tr><tr>
+            <td class="black">80</td>
+            <td>   * @param id SparSeq internal gen position representation as Long number
+</td>
+          </tr><tr>
+            <td class="black">81</td>
+            <td>   * @return Tuple (chromosome, position)
+</td>
+          </tr><tr>
+            <td class="black">82</td>
+            <td>   */
+</td>
+          </tr><tr>
+            <td class="black">83</td>
+            <td>  def idToCoordinates(id:Long) :(String,Int) ={
+</td>
+          </tr><tr>
+            <td class="black">84</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="red">85</td>
+            <td>    var coord = <span class="non">id match {
+</span></td>
+          </tr><tr>
+            <td class="red">86</td>
+            <td>      case x if (<span class="non">x &gt;= 1000000000L &amp;&amp; x &lt; 2000000000L) =&gt; (&quot;chr1&quot;,(x-1000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">87</td>
+            <td>      case x if (<span class="non">x &gt;= 2000000000L &amp;&amp; x &lt; 3000000000L) =&gt; (&quot;chr2&quot;,(x-2000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">88</td>
+            <td>      case x if (<span class="non">x &gt;= 3000000000L &amp;&amp; x &lt; 4000000000L) =&gt; (&quot;chr3&quot;,(x-3000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">89</td>
+            <td>      case x if (<span class="non">x &gt;= 4000000000L &amp;&amp; x &lt; 5000000000L) =&gt; (&quot;chr4&quot;,(x-4000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">90</td>
+            <td>      case x if (<span class="non">x &gt;= 5000000000L &amp;&amp; x &lt; 6000000000L) =&gt; (&quot;chr5&quot;,(x-5000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">91</td>
+            <td>      case x if (<span class="non">x &gt;= 6000000000L &amp;&amp; x &lt; 7000000000L) =&gt; (&quot;chr6&quot;,(x-6000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">92</td>
+            <td>      case x if (<span class="non">x &gt;= 7000000000L &amp;&amp; x &lt; 8000000000L) =&gt; (&quot;chr7&quot;,(x-7000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">93</td>
+            <td>      case x if (<span class="non">x &gt;= 8000000000L &amp;&amp; x &lt; 9000000000L) =&gt; (&quot;chr8&quot;,(x-8000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">94</td>
+            <td>      case x if (<span class="non">x &gt;= 9000000000L &amp;&amp; x &lt; 10000000000L) =&gt; (&quot;chr9&quot;,(x-9000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">95</td>
+            <td>      case x if (<span class="non">x &gt;= 10000000000L &amp;&amp; x &lt; 11000000000L) =&gt; (&quot;chr10&quot;,(x-10000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">96</td>
+            <td>      case x if (<span class="non">x &gt;= 11000000000L &amp;&amp; x &lt; 12000000000L) =&gt; (&quot;chr11&quot;,(x-11000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">97</td>
+            <td>      case x if (<span class="non">x &gt;= 12000000000L &amp;&amp; x &lt; 13000000000L) =&gt; (&quot;chr12&quot;,(x-12000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">98</td>
+            <td>      case x if (<span class="non">x &gt;= 13000000000L &amp;&amp; x &lt; 14000000000L) =&gt; (&quot;chr13&quot;,(x-13000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">99</td>
+            <td>      case x if (<span class="non">x &gt;= 14000000000L &amp;&amp; x &lt; 15000000000L) =&gt; (&quot;chr14&quot;,(x-14000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">100</td>
+            <td>      case x if (<span class="non">x &gt;= 15000000000L &amp;&amp; x &lt; 16000000000L) =&gt; (&quot;chr15&quot;,(x-15000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">101</td>
+            <td>      case x if (<span class="non">x &gt;= 16000000000L &amp;&amp; x &lt; 17000000000L) =&gt; (&quot;chr16&quot;,(x-16000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">102</td>
+            <td>      case x if (<span class="non">x &gt;= 17000000000L &amp;&amp; x &lt; 18000000000L) =&gt; (&quot;chr17&quot;,(x-17000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">103</td>
+            <td>      case x if (<span class="non">x &gt;= 18000000000L &amp;&amp; x &lt; 19000000000L) =&gt; (&quot;chr18&quot;,(x-18000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">104</td>
+            <td>      case x if (<span class="non">x &gt;= 19000000000L &amp;&amp; x &lt; 20000000000L) =&gt; (&quot;chr19&quot;,(x-19000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">105</td>
+            <td>      case x if (<span class="non">x &gt;= 20000000000L &amp;&amp; x &lt; 21000000000L) =&gt; (&quot;chr20&quot;,(x-20000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">106</td>
+            <td>      case x if (<span class="non">x &gt;= 21000000000L &amp;&amp; x &lt; 22000000000L) =&gt; (&quot;chr21&quot;,(x-21000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">107</td>
+            <td>      case x if (<span class="non">x &gt;= 22000000000L &amp;&amp; x &lt; 23000000000L) =&gt; (&quot;chr22&quot;,(x-22000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">108</td>
+            <td>      case x if (<span class="non">x &gt;= 23000000000L &amp;&amp; x &lt; 24000000000L) =&gt; (&quot;chr23&quot;,(x-23000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">109</td>
+            <td>      case x if (<span class="non">x &gt;= 24000000000L &amp;&amp; x &lt; 25000000000L) =&gt; (&quot;chr24&quot;,(x-24000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">110</td>
+            <td>      case x if (<span class="non">x &gt;= 2500000000L &amp;&amp; x &lt; 26000000000L) =&gt; (&quot;chr25&quot;,(x-25000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">111</td>
+            <td>      case x if (<span class="non">x &gt;= 2600000000L &amp;&amp; x &lt; 27000000000L) =&gt; (&quot;chr26&quot;,(x-26000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">112</td>
+            <td>      case x if (<span class="non">x &gt;= 2700000000L &amp;&amp; x &lt; 28000000000L) =&gt; (&quot;chr27&quot;,(x-27000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">113</td>
+            <td>      case x if (<span class="non">x &gt;= 2800000000L &amp;&amp; x &lt; 29000000000L) =&gt; (&quot;chr28&quot;,(x-28000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">114</td>
+            <td>      case x if (<span class="non">x &gt;= 2900000000L &amp;&amp; x &lt; 30000000000L) =&gt; (&quot;chr29&quot;,(x-29000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">115</td>
+            <td>      case x if (<span class="non">x &gt;= 3000000000L &amp;&amp; x &lt; 31000000000L) =&gt; (&quot;chr30&quot;,(x-30000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">116</td>
+            <td>      case x if (<span class="non">x &gt;= 3100000000L &amp;&amp; x &lt; 32000000000L) =&gt; (&quot;chr31&quot;,(x-31000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">117</td>
+            <td>      case x if (<span class="non">x &gt;= 3200000000L &amp;&amp; x &lt; 33000000000L) =&gt; (&quot;chr32&quot;,(x-32000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">118</td>
+            <td>      case x if (<span class="non">x &gt;= 3300000000L &amp;&amp; x &lt; 34000000000L) =&gt; (&quot;chr33&quot;,(x-33000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">119</td>
+            <td>      case x if (<span class="non">x &gt;= 100000000000L &amp;&amp; x &lt; 101000000000L) =&gt; (&quot;chrX&quot;,(x-100000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">120</td>
+            <td>      case x if (<span class="non">x &gt;= 110000000000L &amp;&amp; x &lt; 111000000000L) =&gt; (&quot;chrY&quot;,(x-110000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">121</td>
+            <td>      case x if (<span class="non">x &gt;= 120000000000L &amp;&amp; x &lt; 121000000000L) =&gt; (&quot;chrMT&quot;,(x-120000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="red">122</td>
+            <td>      case x if (<span class="non">x &gt;= 900000000000L &amp;&amp; x &lt; 901000000000L) =&gt; (&quot;NA&quot;,(x-900000000000L).toInt)
+</span></td>
+          </tr><tr>
+            <td class="black">123</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="red">124</td>
+            <td>    <span class="non">return coord
+</span></td>
+          </tr><tr>
+            <td class="black">125</td>
+            <td>  }
+</td>
+          </tr><tr>
+            <td class="black">126</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="black">127</td>
+            <td>  /**
+</td>
+          </tr><tr>
+            <td class="black">128</td>
+            <td>   * Method for converting BED file to SparSeq internal HashMap
+</td>
+          </tr><tr>
+            <td class="black">129</td>
+            <td>   * @param sc Apache Spark context.
+</td>
+          </tr><tr>
+            <td class="black">130</td>
+            <td>   * @param bedFile Path to BED file.
+</td>
+          </tr><tr>
+            <td class="black">131</td>
+            <td>   * @return SparkSeq internal representation of a BED as a HashMap
+</td>
+          </tr><tr>
+            <td class="black">132</td>
+            <td>   */
+</td>
+          </tr><tr>
+            <td class="black">133</td>
+            <td>  def BEDFileToHashMap(sc:SparkContext,bedFile:String) : scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(String,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]={
+</td>
+          </tr><tr>
+            <td class="black">134</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="green">135</td>
+            <td>    val genExons = sc.textFile(bedFile)
+</td>
+          </tr><tr>
+            <td class="green">136</td>
+            <td>      .map(l =&gt; l.split(&quot;\t&quot;))
+</td>
+          </tr><tr>
+            <td class="green">137</td>
+            <td>      .map(r=&gt;(r.array(4).trim,r.array(5).trim.toInt,r.array(0).trim,r.array(1).trim.toInt,r.array(2).trim.toInt,r.array(3).trim) ).toArray
+</td>
+          </tr><tr>
+            <td class="black">138</td>
+            <td>    /*genExons format: (genId,ExonId,chr,start,end,strand)*/
+</td>
+          </tr><tr>
+            <td class="black">139</td>
+            <td>
+</td>
+          </tr><tr>
+            <td class="green">140</td>
+            <td>    var genExonsMap = scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(String,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]()
+</td>
+          </tr><tr>
+            <td class="green">141</td>
+            <td>    for(ge &lt;-genExons){
+</td>
+          </tr><tr>
+            <td class="green">142</td>
+            <td>      if(!genExonsMap.contains(ge._3))
+</td>
+          </tr><tr>
+            <td class="green">143</td>
+            <td>        genExonsMap(ge._3) = new Array[ArrayBuffer[(String,Int,Int,Int)]](25000)
+</td>
+          </tr><tr>
+            <td class="green">144</td>
+            <td>      var idIn = ge._4/10000
+</td>
+          </tr><tr>
+            <td class="green">145</td>
+            <td>      if( genExonsMap(ge._3)(idIn) == null)
+</td>
+          </tr><tr>
+            <td class="green">146</td>
+            <td>        genExonsMap(ge._3)(idIn) =  new  ArrayBuffer[(String,Int,Int,Int)]()
+</td>
+          </tr><tr>
+            <td class="green">147</td>
+            <td>      genExonsMap(ge._3)(idIn)+=((ge._1,ge._2,ge._4,ge._5))
+</td>
+          </tr><tr>
+            <td class="black">148</td>
+            <td>    }
+</td>
+          </tr><tr>
+            <td class="green">149</td>
+            <td>    return genExonsMap
+</td>
+          </tr><tr>
+            <td class="black">150</td>
+            <td>  }
+</td>
+          </tr><tr>
+            <td class="black">151</td>
+            <td>}
+</td>
+          </tr></tbody></table>

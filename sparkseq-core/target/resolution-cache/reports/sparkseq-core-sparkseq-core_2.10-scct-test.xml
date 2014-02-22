@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="ivy-report.xsl"?>
+<ivy-report version="1.0">
+	<info
+		organisation="sparkseq-core"
+		module="sparkseq-core_2.10"
+		revision="0.1"
+		conf="scct-test"
+		confs="compile, runtime, test, provided, optional, compile-internal, runtime-internal, test-internal, plugin, sources, docs, pom, scala-tool, scct, scct-test"
+		date="20140222131038"/>
+	<dependencies>
+		<module organisation="com.sqality.scct" name="scct_2.10">
+			<revision name="0.3" status="release" pubdate="20140124133327" resolver="sbt-chain" artresolver="sbt-chain" homepage="http://sqality.com" downloaded="false" searched="false" default="false" conf="default(compile), default, compile, runtime, master" position="0">
+				<license name="Apache License, Version 2.0" url="http://www.apache.org/licenses/LICENSE-2.0.html"/>
+				<metadata-artifact status="no" details="" size="3201" time="0" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/ivy-0.3.xml" searched="false" origin-is-local="false" origin-location="http://repo1.maven.org/maven2/com/sqality/scct/scct_2.10/0.3/scct_2.10-0.3.pom"/>
+				<caller organisation="sparkseq-core" name="sparkseq-core_2.10" conf="scct-test, scct" rev="0.3" rev-constraint-default="0.3" rev-constraint-dynamic="0.3" callerrev="0.1"/>
+				<artifacts>
+					<artifact name="scct_2.10" type="jar" ext="jar" status="no" details="" size="248181" time="0" location="/home/mesos/.ivy2/cache/com.sqality.scct/scct_2.10/jars/scct_2.10-0.3.jar">
+						<origin-location is-local="false" location="http://repo1.maven.org/maven2/com/sqality/scct/scct_2.10/0.3/scct_2.10-0.3.jar"/>
+					</artifact>
+				</artifacts>
+			</revision>
+		</module>
+	</dependencies>
+</ivy-report>
