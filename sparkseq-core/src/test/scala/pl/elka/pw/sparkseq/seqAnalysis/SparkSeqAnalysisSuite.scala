@@ -11,7 +11,7 @@ import org.scalatest.FunSuite
     class SparkSeqAnalysisSuite extends  SparkFunSuite{
 
       sparkSeqTest("Test region count"){
-        val pathExonsList = "sparkseq/sparkseq-core/src/test/resources/sample_1.bed"
+        val pathExonsList = "sparkseq-core/src/test/resources/sample_1.bed"
         val genExonsMapB = sc.broadcast(SparkSeqConversions.BEDFileToHashMap(sc,pathExonsList ))
         val seqAnalysis = new SparkSeqAnalysis(sc,"sparkseq-core/src/test/resources/sample_1.bam",25,1,4)
         val cov = seqAnalysis.getCoverageRegion(genExonsMapB)
