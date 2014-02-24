@@ -21,13 +21,14 @@ import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
 import org.apache.spark.rdd._
 import scala.collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.statisticalTests._
+import org.apache.spark.RangePartitioner
 
 /**
  * Created by mwiewior on 2/24/14.
  */
 class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAnalControl: SparkSeqAnalysis, iChr: String,
                        iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Int = 10, iMinRegionLen: Int = 1,
-                       iMaxPval: Double = 0.1, iReduceWorkers: Int = 8, confDir: String) extends Serializable {
+                       iMaxPval: Double = 0.1, iNumTasks: Int = 8, confDir: String) extends Serializable {
 
   private val caseSampleNum: Int = iSeqAnalCase.bamFile.count.toInt
   private val controlSampleNum: Int = iSeqAnalControl.bamFile.count.toInt
@@ -56,7 +57,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (finalSeqJoint)
   }
 
-  private def computeTwoSampleCvMTest(iSeqCC: RDD[(Long, (Seq[Int], Seq[Int]))]): RDD[(Double, (Long, Int))] = {
+  private def computeTwoSampleCvMTest(iSeqCC: RDD[(Long, (Seq[Int], Seq[Int]))]): RDD[(Double, (Long, Double))] = {
     val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
       .map(l => l.split("\t"))
       .map(r => (r.array(0).toDouble, r.array(1).toDouble))
@@ -66,8 +67,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       .map(r => (r._1, r._2, SparkSeqCvM2STest.computeTestStat(r._2._1, r._2._2)))
       .map(r => ((r._1), (r._2, r._3, SparkSeqCvM2STest.getPValue(r._3, cmDistTableB), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))))
       .map(r => (r._2._3, (r._1, r._2._4))) //pick position and p-value
-
+    return (twoSampleTests)
   }
+
+  private def findContRegionsEqual()
+
+  private def findContRegionsLessEqual() = {}
+
+  private def mapRegionsToExons() = {}
 
   def computeDiffExpr(): RDD[(Double, Double, Int, (String, Int), String, Int, Double)] = {
 
@@ -75,7 +82,12 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqGroupControl = groupSeqAnalysis(iSeqAnalControl, controlSampleNum)
     val seqJointCC = joinSeqAnalysisGroup(seqGroupCase, seqGroupControl)
     val seqFilterCC = seqJointCC.filter(r => (SparkSeqStats.mean(r._2._1) > iMinCoverage || SparkSeqStats.mean(r._2._2) > iMinCoverage))
-    val seqcompTest = computeTwoSampleCvMTest(seqFilterCC)
+    val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
+      .filter(r => r._1 <= iMaxPval)
+    val seqPValGroup = seqCompTest.groupByKey(iNumTasks)
+
+    val seqPValPartition = seqPValGroup.partitionBy(new RangePartitioner[Double, Seq[(Long, Double)]](4, seqPValGroup))
+      .map(r => (r._1, r._2.sortBy(_._1).distinct)).map(r => (r._1, r._2.distinct)) //2*x distinct workaround
 
   }
 
