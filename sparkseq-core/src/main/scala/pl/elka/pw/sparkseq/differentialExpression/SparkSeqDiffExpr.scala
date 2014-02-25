@@ -98,12 +98,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
           var k = 0
           while (i < r._2.length) {
             if (r._2(i)._1 - 1 != r._2(i - 1)._1) {
-              if (regLength >= iMinRegionLen)
+              if (regLength >= iMinRegionLen) {
                 regLenArray(k) = ((r._1, regLength, regStart, fcSum / regLength))
+                k += 1
+              }
               regLength = 1
               fcSum = 0.0
               regStart = r._2(i)._1
-              k += 1
+
             }
             else {
               regLength += 1
