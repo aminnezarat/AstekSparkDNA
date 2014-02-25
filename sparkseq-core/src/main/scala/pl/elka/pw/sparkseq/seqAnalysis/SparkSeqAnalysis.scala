@@ -52,19 +52,9 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
    */
   	var bamFile= iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile).map(r=>(iSampleId,r))
   	private var bamFileFilter = bamFile
-    //val bedFile= iSC.textFile(iBEDFile)
-      
-   // val genExons = iSC.textFile(iBEDFile)
-//		   			.map(l => l.split("\t"))
-//		   			.map(r=>(r.array(4).trim,r.array(5).toInt,r.array(0),r.array(1).toInt,r.array(2).toInt,r.array(3)) ).toArray
-		   											/*genExons format: (genId,ExonId,chr,start,end,strand)*/
-   /* val genExonsMap = scala.collection.mutable.HashMap[(String,Int,Int),(String,Int)]()
-    for(ge <- genExons)
-      genExonsMap((ge._3,ge._4,ge._5)) = ((ge._1,ge._2))*/
-    //print(genExons.count)
-    //iSC.broadcast(genExons)
-		   			
-    private var normFactor = scala.collection.mutable.HashMap[Int,Double]()
+  var sampleNum = 1
+
+  private var normFactor = scala.collection.mutable.HashMap[Int,Double]()
     normFactor(iSampleId) = iNormFactor
 	//var bedFile:RDD[String] = null
 	//val fastaFile = iFASTAFile
@@ -120,6 +110,7 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
     bamFile=bamFile++iSC.newAPIHadoopFile[LongWritable,SAMRecordWritable,BAMInputFormat](iBAMFile).map(r=>(iSampleId,r))
     normFactor(iSampleId) = iNormFactor
     bamFileFilter = bamFile
+    sampleNum += 1
   }
 
   /**
