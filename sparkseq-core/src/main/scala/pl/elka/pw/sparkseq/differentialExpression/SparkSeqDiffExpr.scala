@@ -34,9 +34,15 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                        iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Int = 10, iMinRegionLen: Int = 1,
                        iMaxPval: Double = 0.1, iNumTasks: Int = 8, iNumReducers: Int = 8, confDir: String) extends Serializable {
 
-  private val caseSampleNum: Int = iSeqAnalCase.bamFile.count.toInt
-  private val controlSampleNum: Int = iSeqAnalControl.bamFile.count.toInt
+  private val caseSampleNum: Int = iSeqAnalCase.sampleNum
+  private val controlSampleNum: Int = iSeqAnalControl.sampleNum
   var diffExprRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
+  val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
+    .map(l => l.split("\t"))
+    .map(r => (r.array(0).toDouble, r.array(1).toDouble))
+    .toArray
+  val cmDistTableB = iSC.broadcast(cmDistTable)
+  val genExonsMapB = iSC.broadcast(SparkSeqConversions.BEDFileToHashMap(iSC, confDir + iBEDFile))
 
   private def groupSeqAnalysis(iSeqAnalysis: SparkSeqAnalysis, iSampleNum: Int): RDD[(Long, Seq[Int])] = {
     val seqGrouped = iSeqAnalysis.getCoverageBaseRegion(iChr, iStartPos, iEndPos)
@@ -63,11 +69,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   }
 
   private def computeTwoSampleCvMTest(iSeqCC: RDD[(Long, (Seq[Int], Seq[Int]))]): RDD[(Double, (Long, Double))] = {
-    val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
-      .map(l => l.split("\t"))
-      .map(r => (r.array(0).toDouble, r.array(1).toDouble))
-      .toArray
-    val cmDistTableB = iSC.broadcast(cmDistTable)
+
     val twoSampleTests = iSeqCC
       .map(r => (r._1, r._2, SparkSeqCvM2STest.computeTestStat(r._2._1, r._2._2)))
       .map(r => ((r._1), (r._2, r._3, SparkSeqCvM2STest.getPValue(r._3, cmDistTableB), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))))
@@ -108,7 +110,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   private def findContRegionsLessEqual() = {}
 
   private def mapRegionsToExons(iSeqReg: RDD[(Double, Int, Long, Double)]) = {
-    val genExonsMapB = iSC.broadcast(SparkSeqConversions.BEDFileToHashMap(iSC, confDir + iBEDFile))
+
     iSeqReg.map(r => (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4))
       .map(r =>
       if (genExonsMapB.value.contains(r._3._1)) {
@@ -148,12 +150,9 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
       .filter(r => r._1 <= iMaxPval)
     val seqPValGroup = seqCompTest.groupByKey(iNumTasks)
-
-    val seqPValPartition = seqPValGroup
-      .partitionBy(new RangePartitioner[Double, Seq[(Long, Double)]](iNumTasks, seqPValGroup))
+    val seqPValPartition = seqPValGroup.partitionBy(new RangePartitioner[Double, Seq[(Long, Double)]](iNumTasks * 3, seqPValGroup))
     val seqReg = findContRegionsEqual(seqPValPartition)
     val seqRegExon = mapRegionsToExons(seqReg)
-
     diffExprRDD = seqRegExon
     return (seqRegExon)
   }
@@ -162,9 +161,6 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val results = diffExprRDD.toArray()
       .map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
       .sortBy(r => (r._1, -(math.abs(r._4)), -r._2))
-    //    val b = finalcovJoint.take(10)
-    //   b.foreach(println)
-    iSC.stop()
     Thread.sleep(100)
     return (results)
   }
@@ -178,7 +174,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     println(header)
 
     for (r <- a) {
-      val rec = r._1.toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(15, ' ') +
+      val rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(15, ' ') +
         r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7
       println(rec)
     }
@@ -188,12 +184,13 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   def saveResults(iFilePath: String) = {
     val a = fetchReults()
     val writer = new PrintWriter(new File(iFilePath))
-    val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(15, ' ') + "length".padTo(10, ' ') + "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
+    val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(15, ' ') + "length".padTo(10, ' ') +
+      "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
     println("=======================================Results======================================")
     writer.write(header + "\n")
     for (r <- a) {
-      var rec = r._1.toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(15, ' ') + r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7
-      println(rec)
+      var rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(25, ' ') +
+        r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7
       writer.write(rec + "\n")
     }
     writer.close()
