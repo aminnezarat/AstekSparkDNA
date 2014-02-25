@@ -82,19 +82,21 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     iSeqPart.map(r => (r._1, r._2.sortBy(_._1).distinct)).map(r => (r._1, r._2.distinct)) //2*x distinct workaround
       .mapPartitions {
       partitionIterator =>
-        var regLenArray: ArrayBuffer[(Double, Int, Long, Double)] = ArrayBuffer()
+        var regLenArray = new Array[(Double, Int, Long, Double)](1000000)
         for (r <- partitionIterator) {
           var regStart = r._2(0)._1
           var regLength = 1
           var fcSum = 0.0
           var i = 1
+          var k = 0
           while (i < r._2.length) {
             if (r._2(i)._1 - 1 != r._2(i - 1)._1) {
               if (regLength >= iMinRegionLen)
-                regLenArray += ((r._1, regLength, regStart, fcSum / regLength))
+                regLenArray(k) = ((r._1, regLength, regStart, fcSum / regLength))
               regLength = 1
               fcSum = 0.0
               regStart = r._2(i)._1
+              k += 1
             }
             else {
               regLength += 1
@@ -103,7 +105,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
             i = i + 1
           }
         }
-        Iterator(regLenArray.sortBy(-_._2))
+        Iterator(regLenArray.filter(r => r != null).sortBy(-_._2))
     }.flatMap(r => r)
   }
 
@@ -149,9 +151,12 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqFilterCC = seqJointCC.filter(r => (SparkSeqStats.mean(r._2._1) > iMinCoverage || SparkSeqStats.mean(r._2._2) > iMinCoverage))
     val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
       .filter(r => r._1 <= iMaxPval)
-    val seqPValGroup = seqCompTest.groupByKey(iNumTasks)
+      .map(r => (r._1 + (r._2._1 / 1000000000L).toDouble, (r._2._1, r._2._2))) //for better partitioning suml p-val and chrnum ;)
+    val seqPValGroup = seqCompTest
+        .groupByKey(iNumTasks)
     val seqPValPartition = seqPValGroup.partitionBy(new RangePartitioner[Double, Seq[(Long, Double)]](iNumTasks * 3, seqPValGroup))
     val seqReg = findContRegionsEqual(seqPValPartition)
+      .map(r => (r._1 % 1, r._2, r._3, r._4)) //clear sum of p-val chrname and leave only p-val
     val seqRegExon = mapRegionsToExons(seqReg)
     diffExprRDD = seqRegExon
     return (seqRegExon)
