@@ -53,9 +53,16 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   }
 
   private def joinSeqAnalysisGroup(iSeqAnalysisGroup1: RDD[(Long, Seq[Int])], iSeqAnalysisGroup2: RDD[(Long, Seq[Int])]): RDD[(Long, (Seq[Int], Seq[Int]))] = {
-    val leftSeqJoint = iSeqAnalysisGroup1.leftOuterJoin(iSeqAnalysisGroup2)
-    val rightSeqJoint = iSeqAnalysisGroup1.rightOuterJoin(iSeqAnalysisGroup2)
-    val finalSeqJoint = leftSeqJoint.map(r => (r._1, Option(r._2._1), r._2._2)).union(rightSeqJoint
+    //val leftSeqJoint = iSeqAnalysisGroup1.leftOuterJoin(iSeqAnalysisGroup2)
+    //val rightSeqJoint = iSeqAnalysisGroup1.rightOuterJoin(iSeqAnalysisGroup2)
+    val seqJoint: RDD[(Long, (Seq[Seq[Int]], Seq[Seq[Int]]))] = iSeqAnalysisGroup1.cogroup(iSeqAnalysisGroup2)
+    val finalSeqJoint = seqJoint
+      // .mapValues(r=>(r._1(0),r._2(0)))
+      .mapValues(r =>
+      (if (r._1.length == 0) ArrayBuffer.fill[Int](caseSampleNum)(0) else r._1(0),
+        if (r._2.length == 0) ArrayBuffer.fill[Int](controlSampleNum)(0) else r._2(0))
+      )
+    /*val finalSeqJoint = leftSeqJoint.map(r => (r._1, Option(r._2._1), r._2._2)).union(rightSeqJoint
       .map(r => (r._1, r._2._1, Option(r._2._2)))).map(r => (r._1, (r._2, r._3)))
       .map(r => (r._1, (r._2._1 match {
       case Some(x) => x;
@@ -64,7 +71,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       r._2._2 match {
         case Some(x) => x;
         case None => ArrayBuffer.fill[Int](controlSampleNum)(0)
-      }))).distinct()
+      })))*/
     return (finalSeqJoint)
   }
 
