@@ -15,13 +15,12 @@
  */
 package pl.elka.pw.sparkseq.differentialExpression
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{HashPartitioner, SparkContext, RangePartitioner}
 import org.apache.spark.SparkContext._
 import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
 import org.apache.spark.rdd._
 import scala.collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.statisticalTests._
-import org.apache.spark.RangePartitioner
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
 import scala.util.control._
 import com.github.nscala_time.time.Imports._
@@ -75,27 +74,30 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (finalSeqJoint)
   }
 
-  private def computeTwoSampleCvMTest(iSeqCC: RDD[(Long, (Seq[Int], Seq[Int]))]): RDD[(Double, (Long, Double))] = {
+  private def computeTwoSampleCvMTest(iSeqCC: RDD[(Long, (Seq[Int], Seq[Int]))]): RDD[((Int, Double), (Long, Double))] = {
 
     val twoSampleTests = iSeqCC
       .map(r => (r._1, r._2, SparkSeqCvM2STest.computeTestStat(r._2._1, r._2._2)))
       .map(r => ((r._1), (r._2, r._3, SparkSeqCvM2STest.getPValue(r._3, cmDistTableB), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))))
-      .map(r => (r._2._3, (r._1, r._2._4))) //pick position and p-value
+      //.map(r => (r._2._3, (r._1, r._2._4))) //pick position and p-value
+      .map(r => (((r._1 / 1000000000L).toInt, r._2._3), (r._1, r._2._4)))
+      .filter(r => r._1._2 <= iMaxPval)
     return (twoSampleTests)
   }
 
-  private def findContRegionsEqual(iSeqPart: RDD[(Double, Seq[(Long, Double)])]): RDD[(Double, Int, Long, Double)] = {
+  private def findContRegionsEqual(iSeqPart: RDD[((Int, Double), Seq[(Long, Double)])]): RDD[(Double, Int, Long, Double)] = {
 
-    iSeqPart.map(r => (r._1, r._2.sortBy(_._1).distinct)).map(r => (r._1, r._2.distinct)) //2*x distinct workaround
+    iSeqPart.map(r => (r._1._2, r._2.sortBy(_._1)))
+      //.map(r => (r._1, r._2.distinct)) //2*x distinct workaround
       .mapPartitions {
       partitionIterator =>
         var regLenArray = new Array[(Double, Int, Long, Double)](1000000)
+        var k = 0
         for (r <- partitionIterator) {
           var regStart = r._2(0)._1
           var regLength = 1
           var fcSum = 0.0
           var i = 1
-          var k = 0
           while (i < r._2.length) {
             if (r._2(i)._1 - 1 != r._2(i - 1)._1) {
               if (regLength >= iMinRegionLen) {
@@ -159,13 +161,17 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqJointCC = joinSeqAnalysisGroup(seqGroupCase, seqGroupControl)
     val seqFilterCC = seqJointCC.filter(r => (SparkSeqStats.mean(r._2._1) > iMinCoverage || SparkSeqStats.mean(r._2._2) > iMinCoverage))
     val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
-      .filter(r => r._1 <= iMaxPval)
-      .map(r => (r._1 + (r._2._1 / 1000000000L).toDouble, (r._2._1, r._2._2))) //for better partitioning suml p-val and chrnum ;)
+
+    // .map(r => (r._1 + (r._2._1 / 1000000000L).toDouble, (r._2._1, r._2._2))) //for better partitioning suml p-val and chrnum ;)
     val seqPValGroup = seqCompTest
-        .groupByKey(iNumTasks)
-    val seqPValPartition = seqPValGroup.partitionBy(new RangePartitioner[Double, Seq[(Long, Double)]](iNumTasks * 3, seqPValGroup))
-    val seqReg = findContRegionsEqual(seqPValPartition)
-      .map(r => (r._1 % 1, r._2, r._3, r._4)) //clear sum of p-val chrname and leave only p-val
+      .groupByKey()
+    //.coalesce(iNumReducers)
+    //.map(r=>((r._1._1,r._1._2), r._2) )
+    //val seqPValPartition = seqPValGroup.partitionBy(new RangePartitioner[ (Int,Double), Seq[(Long, Double)]](iNumTasks, seqPValGroup))
+
+    //val seqPValPartition = seqPValGroup.partitionBy(new HashPartitioner(iNumTasks))
+    val seqReg = findContRegionsEqual(seqPValGroup)
+    // .map(r => (r._1 % 1, r._2, r._3, r._4)) //clear sum of p-val chrname and leave only p-val
     val seqRegExon = mapRegionsToExons(seqReg)
     diffExprRDD = seqRegExon
     return (seqRegExon)
@@ -208,7 +214,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       writer.write(rec + "\n")
     }
     writer.close()
-
+    //diffExprRDD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/de_whole.txt")
   }
 
 }
