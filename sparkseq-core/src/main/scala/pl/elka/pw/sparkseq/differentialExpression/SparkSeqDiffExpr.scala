@@ -122,6 +122,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   private def findContRegionsLessEqual() = {}
 
+  private def getRangeIntersect(r1Start: Int, r1End: Int, r2Start: Int, r2End: Int): (Int, Int) = {
+    //val minStart = math.min(r1Start,r2Start)
+    val maxStart = math.max(r1Start, r2Start)
+    val minEnd = math.min(r1End, r2End)
+    //val maxEnd = math.max(r1End,r2End)
+    (maxStart, minEnd)
+  }
+
   private def mapRegionsToExons(iSeqReg: RDD[(Double, Int, Long, Double)]) = {
 
     iSeqReg.map(r => (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4))
@@ -136,9 +144,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
         loop.breakable {
           if (exons(id) != null) {
             for (e <- exons(id)) {
-              val exonIntersect = Range(r._3._2, r._3._2 + r._2).intersect(Range(e._3, e._4))
-              if (exonIntersect.length > 0) {
-                exonOverlapPct = (exonIntersect.max - exonIntersect.min).toDouble / (e._4 - e._3)
+              val exonIntersect = getRangeIntersect(r._3._2, r._3._2 + r._2, e._3, e._4)
+              val exonIntersectLen = exonIntersect._2 - exonIntersect._1
+              if (exonIntersectLen > 0) {
+                exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
                 exId = e._2
                 genId = e._1
                 //loop.break() //because there are some overlapping regions
