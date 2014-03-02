@@ -85,13 +85,16 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (twoSampleTests)
   }
 
-  private def findContRegionsEqual(iSeqPart: RDD[((Int, Double), Seq[(Long, Double)])]): RDD[(Double, Int, Long, Double)] = {
+  private def findContRegionsEqual(iSeq: RDD[((Int, Double), Seq[(Long, Double)])]): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
 
-    iSeqPart.map(r => (r._1._2, r._2.sortBy(_._1)))
+
+    val iSeqPart = iSeq.map(r => (r._1._2, r._2.sortBy(_._1)))
+      .partitionBy(new HashPartitioner(iNumTasks * 3))
+    iSeqPart
       //.map(r => (r._1, r._2.distinct)) //2*x distinct workaround
       .mapPartitions {
       partitionIterator =>
-        var regLenArray = new Array[(Double, Int, Long, Double)](1000000)
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double)](1000000)
         var k = 0
         for (r <- partitionIterator) {
           var regStart = r._2(0)._1
@@ -101,7 +104,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
           while (i < r._2.length) {
             if (r._2(i)._1 - 1 != r._2(i - 1)._1) {
               if (regLength >= iMinRegionLen) {
-                regLenArray(k) = ((r._1, regLength, regStart, fcSum / regLength))
+                regLenArray(k) = (mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength)))
                 k += 1
               }
               regLength = 1
@@ -130,21 +133,20 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     (maxStart, minEnd)
   }
 
-  private def mapRegionsToExons(iSeqReg: RDD[(Double, Int, Long, Double)]) = {
+  private def mapRegionsToExons(r: (Double, Int, Long, Double)): (Double, Int, (String, Int), Double, String, Int, Double) = {
 
-    iSeqReg.map(r => (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4))
-      .map(r =>
-      if (genExonsMapB.value.contains(r._3._1)) {
-        val exons = genExonsMapB.value(r._3._1)
-        var exId = 0
+    val reg = (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4)
+    if (genExonsMapB.value.contains(reg._3._1)) {
+      val exons = genExonsMapB.value(reg._3._1)
+      var exId = 0
         var genId = ""
-        val id = r._3._2 / 10000
-        var exonOverlapPct = 0.0
+      val id = reg._3._2 / 10000
+      var exonOverlapPct = 0.0
         val loop = new Breaks
         loop.breakable {
           if (exons(id) != null) {
             for (e <- exons(id)) {
-              val exonIntersect = getRangeIntersect(r._3._2, r._3._2 + r._2, e._3, e._4)
+              val exonIntersect = getRangeIntersect(reg._3._2, reg._3._2 + reg._2, e._3, e._4)
               val exonIntersectLen = exonIntersect._2 - exonIntersect._1
               if (exonIntersectLen > 0) {
                 exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
@@ -156,11 +158,11 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
           }
         }
-        (r._1, r._2, r._3, r._4, genId, exId, math.round(exonOverlapPct * 10000).toDouble / 10000)
-      }
+      (reg._1, reg._2, reg._3, reg._4, genId, exId, math.round(exonOverlapPct * 10000).toDouble / 10000)
+    }
       else
-        (r._1, r._2, r._3, r._4, "ChrNotFound", 0, 0.0)
-      )
+        (reg._1, reg._2, reg._3, reg._4, "ChrNotFound", 0, 0.0)
+
   }
 
   def computeDiffExpr(): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
@@ -170,7 +172,6 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqJointCC = joinSeqAnalysisGroup(seqGroupCase, seqGroupControl)
     val seqFilterCC = seqJointCC.filter(r => (SparkSeqStats.mean(r._2._1) > iMinCoverage || SparkSeqStats.mean(r._2._2) > iMinCoverage))
     val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
-
     // .map(r => (r._1 + (r._2._1 / 1000000000L).toDouble, (r._2._1, r._2._2))) //for better partitioning suml p-val and chrnum ;)
     val seqPValGroup = seqCompTest
       .groupByKey()
@@ -178,25 +179,29 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     //.map(r=>((r._1._1,r._1._2), r._2) )
     //val seqPValPartition = seqPValGroup.partitionBy(new RangePartitioner[ (Int,Double), Seq[(Long, Double)]](iNumTasks, seqPValGroup))
 
-    //val seqPValPartition = seqPValGroup.partitionBy(new HashPartitioner(iNumTasks))
+
     val seqReg = findContRegionsEqual(seqPValGroup)
+      .map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
+
+    /* val seqRegCoal= seqReg.coalesce(iNumTasks*2)
+     val seqRegPart = seqRegCoal*/
+    //val seqRegPart = seqReg.partitionBy(new HashPartitioner(iNumTasks))
     // .map(r => (r._1 % 1, r._2, r._3, r._4)) //clear sum of p-val chrname and leave only p-val
-    val seqRegExon = mapRegionsToExons(seqReg)
-    diffExprRDD = seqRegExon
-    return (seqRegExon)
+    //val seqRegExon = mapRegionsToExons(seqReg)
+    diffExprRDD = seqReg
+    return (seqReg)
   }
 
-  private def fetchReults(): Array[(Double, Int, (String, Int), Double, String, Int, Double)] = {
-    val results = diffExprRDD.toArray()
-      .map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
-      .sortBy(r => (r._1, -(math.abs(r._4)), -r._2))
+  private def fetchReults(num: Int): Array[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+    val results = diffExprRDD.coalesce(1).takeOrdered(num)(Ordering[(Double, Double, Int)]
+      .on(r => (r._1, -(math.abs(r._4)), -r._2)))
     Thread.sleep(100)
     return (results)
   }
 
-  def printResults = {
+  def printResults(iNum: Int = 10000) = {
 
-    val a = fetchReults()
+    val a = fetchReults(iNum)
     val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(15, ' ') + "length".padTo(10, ' ') +
       "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
     println("=======================================Results======================================")
@@ -210,20 +215,22 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   }
 
-  def saveResults(iFilePath: String) = {
-    val a = fetchReults()
-    val writer = new PrintWriter(new File(iFilePath))
-    val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(15, ' ') + "length".padTo(10, ' ') +
-      "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
-    println("=======================================Results======================================")
-    writer.write(header + "\n")
-    for (r <- a) {
-      var rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(25, ' ') +
-        r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7
-      writer.write(rec + "\n")
+  def saveResults(iNum: Int = 10000, iFilePathLacal: String = "sparkseq_10000.txt", iFilePathRemote: String) = {
+    if (iNum <= 10000) {
+      val a = fetchReults(iNum)
+      val writer = new PrintWriter(new File(iFilePathLacal))
+      val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(15, ' ') + "length".padTo(10, ' ') +
+        "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
+      println("=======================================Results======================================")
+      writer.write(header + "\n")
+      for (r <- a) {
+        var rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(25, ' ') +
+          r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7
+        writer.write(rec + "\n")
+      }
+      writer.close()
     }
-    writer.close()
-    //diffExprRDD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/de_whole.txt")
+    diffExprRDD.saveAsTextFile(iFilePathRemote)
   }
 
 }
