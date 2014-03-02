@@ -163,6 +163,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   }
 
+  /**
+   *
+   * @return RDD of tuples(p-value,regionLength, (chrom,starPosition),foldChange,genId,exonId,exonRegionOverlap)
+   */
   def computeDiffExpr(): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
 
     val seqGroupCase = groupSeqAnalysis(iSeqAnalCase, caseSampleNum)
@@ -185,6 +189,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (results)
   }
 
+  /**
+   *
+   * @param iNum Number of top regions sorted  by p-value asc, foldChange desc and region length desc to be printed (default 10000).
+   */
   def printResults(iNum: Int = 10000) = {
 
     val a = fetchReults(iNum)
@@ -201,6 +209,12 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   }
 
+  /**
+   *
+   * @param iNum Number of top regions sorted  by p-value asc, foldChange desc and region length desc to be saved to file (default 10000).
+   * @param iFilePathLacal Local path to save top iNum regions locally.
+   * @param iFilePathRemote Remote path to HDFS storage to save all the results.
+   */
   def saveResults(iNum: Int = 10000, iFilePathLacal: String = "sparkseq_10000.txt", iFilePathRemote: String) = {
     if (iNum <= 10000) {
       val a = fetchReults(iNum)
