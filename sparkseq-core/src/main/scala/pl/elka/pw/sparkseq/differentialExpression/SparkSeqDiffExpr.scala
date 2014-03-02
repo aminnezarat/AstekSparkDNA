@@ -40,7 +40,7 @@ import java.io._
  * @param iEndPos End position in a chromosome (default 300000000).
  * @param iMinCoverage Minimal base-coverage (default 10).
  * @param iMinRegionLen Minimal region length (default 2).
- * @param iMaxPval Maximum p-value for base differential expression (default 0.05).
+ * @param iMaxPval Maximum p-value for base differential expression (default 0.1).
  * @param iNumTasks Number of tasks and partitions (default 8).
  * @param iNumReducers Number of reducer workers (default 8).
  * @param confDir Configuration directory.
@@ -51,13 +51,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
-  var diffExprRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
-  val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
+  private var diffExprRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
+  var seqRegCont: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
+  private val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
     .map(l => l.split("\t"))
     .map(r => (r.array(0).toDouble, r.array(1).toDouble))
     .toArray
-  val cmDistTableB = iSC.broadcast(cmDistTable)
-  val genExonsMapB = iSC.broadcast(SparkSeqConversions.BEDFileToHashMap(iSC, confDir + iBEDFile))
+  private val cmDistTableB = iSC.broadcast(cmDistTable)
+  private val genExonsMapB = iSC.broadcast(SparkSeqConversions.BEDFileToHashMap(iSC, confDir + iBEDFile))
 
   private def groupSeqAnalysis(iSeqAnalysis: SparkSeqAnalysis, iSampleNum: Int): RDD[(Long, Seq[Int])] = {
     val seqGrouped = iSeqAnalysis.getCoverageBaseRegion(iChr, iStartPos, iEndPos)
@@ -123,7 +124,45 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     }.flatMap(r => r)
   }
 
-  private def findContRegionsLessEqual() = {}
+  private def findContRegionsLessEqual(iSeq: RDD[(Int, Seq[(Double, Long, Double)])]) /*(chrId,(pval,position,foldChange) */
+  : RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+    val iSeqPart = iSeq.mapValues(r => (r.sortBy(_._2)))
+    // .partitionBy(new HashPartitioner(iNumTasks * 3))
+    iSeqPart
+      .mapPartitions {
+      partitionIterator =>
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double)](1000000)
+        var k = 0
+        for (r <- partitionIterator) {
+          var regStart = r._2(0)._2
+          var regLength = 1
+          var fcSum = 0.0
+          var i = 1
+          var maxPval = 0.0
+          while (i < r._2.length) {
+            if (r._2(i)._2 - 1 != r._2(i - 1)._2) {
+              if (regLength >= iMinRegionLen) {
+                maxPval = r._2(i - 1)._1
+                regLenArray(k) = (mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength)))
+                k += 1
+              }
+              regLength = 1
+              fcSum = 0.0
+              regStart = r._2(i)._2
+              maxPval = 0.0
+
+            }
+            else {
+              regLength += 1
+              fcSum += r._2(i)._3
+              maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
+            }
+            i = i + 1
+          }
+        }
+        Iterator(regLenArray.filter(r => r != null).sortBy(-_._2))
+    }.flatMap(r => r)
+  }
 
   private def getRangeIntersect(r1Start: Int, r1End: Int, r2Start: Int, r2End: Int): (Int, Int) = {
     val maxStart = math.max(r1Start, r2Start)
@@ -165,9 +204,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   /**
    *
+   * @param iCoalesceReg If continuous regions of different p-value <=iMaxPval should be coalesed (default false).
    * @return RDD of tuples(p-value,regionLength, (chrom,starPosition),foldChange,genId,exonId,exonRegionOverlap)
    */
-  def computeDiffExpr(): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+  def computeDiffExpr(iCoalesceReg: Boolean = false): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
 
     val seqGroupCase = groupSeqAnalysis(iSeqAnalCase, caseSampleNum)
     val seqGroupControl = groupSeqAnalysis(iSeqAnalControl, controlSampleNum)
@@ -175,9 +215,23 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqFilterCC = seqJointCC.filter(r => (SparkSeqStats.mean(r._2._1) > iMinCoverage || SparkSeqStats.mean(r._2._2) > iMinCoverage))
     val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
     val seqPValGroup = seqCompTest
-      .groupByKey()
-    val seqReg = findContRegionsEqual(seqPValGroup)
-      .map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
+
+
+    if (iCoalesceReg == false)
+      seqRegCont = findContRegionsEqual(seqPValGroup.groupByKey())
+    else {
+      val seqPrePart = seqPValGroup
+        .map(r => (r._1._1, (r._1._2, r._2._1, r._2._2)))
+        .groupByKey()
+
+      val seqPostPar = {
+        seqPrePart.partitionBy(new RangePartitioner[Int, Seq[(Double, Long, Double)]](iNumTasks, seqPrePart))
+      }
+      seqRegCont = findContRegionsLessEqual(seqPostPar)
+    }
+    val seqReg = {
+      seqRegCont.map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
+    }
     diffExprRDD = seqReg
     return (seqReg)
   }
