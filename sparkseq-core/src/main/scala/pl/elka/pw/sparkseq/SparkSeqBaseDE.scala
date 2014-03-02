@@ -114,7 +114,7 @@ object SparkSeqBaseDE {
       seqAnalysisControl.addBAM(sc,path,i,bamFileCountControlFirst.toDouble/bamFileCount.toDouble)
 
     }
-    val minRegLen = 1
+    val minRegLen = 2
     val diffExp = new SparkSeqDiffExpr(sc, seqAnalysisCase, seqAnalysisControl,
       iChr = args(0).mkString, confDir = rootPath + fileSplitSize.toString + "MB/aux/", iNumTasks = 24, iBEDFile = bedFile, iMaxPval = 0.05, iMinRegionLen = minRegLen)
     val t = diffExp.computeDiffExpr(iCoalesceReg = true)
