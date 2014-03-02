@@ -29,8 +29,24 @@ import java.io._
 /**
  * Created by mwiewior on 2/24/14.
  */
+/**
+ *
+ * @param iSC Apache Spark context.
+ * @param iSeqAnalCase SparkSeqAnalysis object for case samples.
+ * @param iSeqAnalControl SparkSeqAnalysis object for control samples.
+ * @param iBEDFile Filepath to BED-like file with exon annotations.
+ * @param iChr Chromosome (eg. chr1)
+ * @param iStartPos Starting position in a chromosome (default 1).
+ * @param iEndPos End position in a chromosome (default 300000000).
+ * @param iMinCoverage Minimal base-coverage (default 10).
+ * @param iMinRegionLen Minimal region length (default 2).
+ * @param iMaxPval Maximum p-value for base differential expression (default 0.05).
+ * @param iNumTasks Number of tasks and partitions (default 8).
+ * @param iNumReducers Number of reducer workers (default 8).
+ * @param confDir Configuration directory.
+ */
 class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAnalControl: SparkSeqAnalysis, iBEDFile: String, iChr: String = "*",
-                       iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Int = 10, iMinRegionLen: Int = 1,
+                       iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Int = 10, iMinRegionLen: Int = 2,
                        iMaxPval: Double = 0.1, iNumTasks: Int = 8, iNumReducers: Int = 8, confDir: String) extends Serializable {
 
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
@@ -52,8 +68,6 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   }
 
   private def joinSeqAnalysisGroup(iSeqAnalysisGroup1: RDD[(Long, Seq[Int])], iSeqAnalysisGroup2: RDD[(Long, Seq[Int])]): RDD[(Long, (Seq[Int], Seq[Int]))] = {
-    //val leftSeqJoint = iSeqAnalysisGroup1.leftOuterJoin(iSeqAnalysisGroup2)
-    //val rightSeqJoint = iSeqAnalysisGroup1.rightOuterJoin(iSeqAnalysisGroup2)
     val seqJoint: RDD[(Long, (Seq[Seq[Int]], Seq[Seq[Int]]))] = iSeqAnalysisGroup1.cogroup(iSeqAnalysisGroup2)
     val finalSeqJoint = seqJoint
       // .mapValues(r=>(r._1(0),r._2(0)))
@@ -61,16 +75,6 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       (if (r._1.length == 0) ArrayBuffer.fill[Int](caseSampleNum)(0) else r._1(0),
         if (r._2.length == 0) ArrayBuffer.fill[Int](controlSampleNum)(0) else r._2(0))
       )
-    /*val finalSeqJoint = leftSeqJoint.map(r => (r._1, Option(r._2._1), r._2._2)).union(rightSeqJoint
-      .map(r => (r._1, r._2._1, Option(r._2._2)))).map(r => (r._1, (r._2, r._3)))
-      .map(r => (r._1, (r._2._1 match {
-      case Some(x) => x;
-      case None => ArrayBuffer.fill[Int](caseSampleNum)(0)
-    },
-      r._2._2 match {
-        case Some(x) => x;
-        case None => ArrayBuffer.fill[Int](controlSampleNum)(0)
-      })))*/
     return (finalSeqJoint)
   }
 
@@ -79,19 +83,15 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val twoSampleTests = iSeqCC
       .map(r => (r._1, r._2, SparkSeqCvM2STest.computeTestStat(r._2._1, r._2._2)))
       .map(r => ((r._1), (r._2, r._3, SparkSeqCvM2STest.getPValue(r._3, cmDistTableB), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))))
-      //.map(r => (r._2._3, (r._1, r._2._4))) //pick position and p-value
       .map(r => (((r._1 / 1000000000L).toInt, r._2._3), (r._1, r._2._4)))
       .filter(r => r._1._2 <= iMaxPval)
     return (twoSampleTests)
   }
 
   private def findContRegionsEqual(iSeq: RDD[((Int, Double), Seq[(Long, Double)])]): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
-
-
     val iSeqPart = iSeq.map(r => (r._1._2, r._2.sortBy(_._1)))
       .partitionBy(new HashPartitioner(iNumTasks * 3))
     iSeqPart
-      //.map(r => (r._1, r._2.distinct)) //2*x distinct workaround
       .mapPartitions {
       partitionIterator =>
         var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double)](1000000)
@@ -126,10 +126,8 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   private def findContRegionsLessEqual() = {}
 
   private def getRangeIntersect(r1Start: Int, r1End: Int, r2Start: Int, r2End: Int): (Int, Int) = {
-    //val minStart = math.min(r1Start,r2Start)
     val maxStart = math.max(r1Start, r2Start)
     val minEnd = math.min(r1End, r2End)
-    //val maxEnd = math.max(r1End,r2End)
     (maxStart, minEnd)
   }
 
@@ -172,22 +170,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqJointCC = joinSeqAnalysisGroup(seqGroupCase, seqGroupControl)
     val seqFilterCC = seqJointCC.filter(r => (SparkSeqStats.mean(r._2._1) > iMinCoverage || SparkSeqStats.mean(r._2._2) > iMinCoverage))
     val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
-    // .map(r => (r._1 + (r._2._1 / 1000000000L).toDouble, (r._2._1, r._2._2))) //for better partitioning suml p-val and chrnum ;)
     val seqPValGroup = seqCompTest
       .groupByKey()
-    //.coalesce(iNumReducers)
-    //.map(r=>((r._1._1,r._1._2), r._2) )
-    //val seqPValPartition = seqPValGroup.partitionBy(new RangePartitioner[ (Int,Double), Seq[(Long, Double)]](iNumTasks, seqPValGroup))
-
-
     val seqReg = findContRegionsEqual(seqPValGroup)
       .map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
-
-    /* val seqRegCoal= seqReg.coalesce(iNumTasks*2)
-     val seqRegPart = seqRegCoal*/
-    //val seqRegPart = seqReg.partitionBy(new HashPartitioner(iNumTasks))
-    // .map(r => (r._1 % 1, r._2, r._3, r._4)) //clear sum of p-val chrname and leave only p-val
-    //val seqRegExon = mapRegionsToExons(seqReg)
     diffExprRDD = seqReg
     return (seqReg)
   }
