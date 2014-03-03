@@ -51,8 +51,8 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
-  private var diffExprRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
-  var seqRegCont: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
+  private var seqRegDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
+  private var seqRegContDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
   private val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
     .map(l => l.split("\t"))
     .map(r => (r.array(0).toDouble, r.array(1).toDouble))
@@ -215,10 +215,8 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqFilterCC = seqJointCC.filter(r => (SparkSeqStats.mean(r._2._1) > iMinCoverage || SparkSeqStats.mean(r._2._2) > iMinCoverage))
     val seqCompTest = computeTwoSampleCvMTest(seqFilterCC)
     val seqPValGroup = seqCompTest
-
-
     if (iCoalesceReg == false)
-      seqRegCont = findContRegionsEqual(seqPValGroup.groupByKey())
+      seqRegContDERDD = findContRegionsEqual(seqPValGroup.groupByKey())
     else {
       val seqPrePart = seqPValGroup
         .map(r => (r._1._1, (r._1._2, r._2._1, r._2._2)))
@@ -227,17 +225,17 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       val seqPostPar = {
         seqPrePart.partitionBy(new RangePartitioner[Int, Seq[(Double, Long, Double)]](iNumTasks, seqPrePart))
       }
-      seqRegCont = findContRegionsLessEqual(seqPostPar)
+      seqRegContDERDD = findContRegionsLessEqual(seqPostPar)
     }
     val seqReg = {
-      seqRegCont.map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
+      seqRegContDERDD.map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
     }
-    diffExprRDD = seqReg
+    seqRegDERDD = seqReg
     return (seqReg)
   }
 
   private def fetchReults(num: Int): Array[(Double, Int, (String, Int), Double, String, Int, Double)] = {
-    val results = diffExprRDD.coalesce(1).takeOrdered(num)(Ordering[(Double, Double, Int)]
+    val results = seqRegDERDD.coalesce(1).takeOrdered(num)(Ordering[(Double, Double, Int)]
       .on(r => (r._1, -(math.abs(r._4)), -r._2)))
     Thread.sleep(100)
     return (results)
@@ -250,13 +248,13 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   def printResults(iNum: Int = 10000) = {
 
     val a = fetchReults(iNum)
-    val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(15, ' ') + "length".padTo(10, ' ') +
+    val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(25, ' ') + "length".padTo(10, ' ') +
       "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
     println("=======================================Results======================================")
     println(header)
 
     for (r <- a) {
-      val rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(15, ' ') +
+      val rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 10000).toDouble / 10000).toString.padTo(25, ' ') +
         r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7
       println(rec)
     }
@@ -273,7 +271,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     if (iNum <= 10000) {
       val a = fetchReults(iNum)
       val writer = new PrintWriter(new File(iFilePathLacal))
-      val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(15, ' ') + "length".padTo(10, ' ') +
+      val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(25, ' ') + "length".padTo(10, ' ') +
         "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
       println("=======================================Results======================================")
       writer.write(header + "\n")
@@ -284,7 +282,35 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       }
       writer.close()
     }
-    diffExprRDD.saveAsTextFile(iFilePathRemote)
+    seqRegDERDD.saveAsTextFile(iFilePathRemote)
   }
 
+  def getDistExonCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
+
+    val exonCand = seqRegDERDD /*genExons format: (genId,ExonId,chr,start,end,strand)*/
+      .filter(r => (r._6 > 0)) //filter out uknown regions
+      .map(r => (r._5, r._6, r._3._1, r._3._2, r._3._2 + r._2, ".")).distinct().toArray()
+    val exonCandHashMap = SparkSeqConversions.exonsToHashMap(exonCand)
+    return (exonCandHashMap)
+  }
+
+
+  def getRegionCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
+    val unRegionCand = seqRegDERDD /*genExons format: (genId,ExonId,chr,start,end,strand)*/
+      .filter(r => (r._6 == 0))
+      .map(r => ("", 0, r._3._1, r._3._2, r._3._2 + r._2, ".")).distinct().toArray()
+    var i: Int = 1
+    val newRegPreffix = "NEWREG"
+    val nameLenth = 15
+    for (k <- 0 to unRegionCand.length) {
+      val newRegId: String = newRegPreffix.padTo(nameLenth - newRegPreffix.length - i.toString.length, '0') + i.toString
+      val t = unRegionCand(k)
+      unRegionCand(k) = (newRegId, t._2, t._3, t._4, t._5, t._6)
+      i += 1
+    }
+
+    val unRegionCandHashMap = SparkSeqConversions.exonsToHashMap(unRegionCand)
+    return (unRegionCandHashMap)
+
+  }
 }

@@ -147,7 +147,7 @@ object SparkSeqConversions {
    * @param iExons
    * @return
    */
-  def exonsToHashMap(iExons: Array[(String, Int, String, Int, Int, String)]): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) = {
+  def exonsToHashMap(iExons: Array[(String, Int, String, Int, Int, String)]): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int)]]] = {
 
     val genExons = iExons
     var genExonsMap = scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]]()
@@ -160,8 +160,9 @@ object SparkSeqConversions {
       genExonsMap(ge._3)(idIn) += ((ge._1, ge._2, ge._4, ge._5))
     }
     return genExonsMap
+  }
 
-    /**
+  /**
      *
      * @param iRegionId
      * @return
@@ -184,8 +185,6 @@ object SparkSeqConversions {
       }
       return (geneExonId)
     }
-
-  }
 
 
 }

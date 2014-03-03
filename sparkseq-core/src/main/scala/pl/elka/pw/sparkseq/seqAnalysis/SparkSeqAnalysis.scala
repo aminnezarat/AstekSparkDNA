@@ -119,12 +119,10 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
    * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
    * @return RDD of tuples (regionId, coverage)
    */
-def getCoverageRegion(iGenExons:org.apache.spark.broadcast.Broadcast[scala.collection.mutable.HashMap[String,Array[scala.collection.mutable.ArrayBuffer[(String, Int, Int, Int)]]]]):RDD[(Long,Int)] ={
+  def getCoverageRegion(iGenExons: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, Int, Int, Int)]]]]): RDD[(Long, Int)] = {
 
-//iGenExons:scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(Int,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]):RDD[(Long,Int)] = {
-
-         //val genExonsB=iGenExons.value 
-	 val coverage = (bamFileFilter.mapPartitions{
+    val coverage = (bamFileFilter.mapPartitions{
 	    partitionIterator =>
 	 	//var exonsCountArray = new Array[(Long,Int)](3000000)
 		var exonsCountMap = scala.collection.mutable.HashMap[Long,Int]()
