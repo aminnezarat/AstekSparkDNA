@@ -16,6 +16,7 @@
 package pl.elka.pw.sparkseq.conversions
 import org.apache.spark.SparkContext
 import scala.collection.mutable.ArrayBuffer
+import org.apache.spark.rdd.RDD
 
 /**
  * Object for doing various data conversions used by SparkSeq.
@@ -137,15 +138,54 @@ object SparkSeqConversions {
       .map(r=>(r.array(4).trim,r.array(5).trim.toInt,r.array(0).trim,r.array(1).trim.toInt,r.array(2).trim.toInt,r.array(3).trim) ).toArray
     /*genExons format: (genId,ExonId,chr,start,end,strand)*/
 
-    var genExonsMap = scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(String,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]()
-    for(ge <-genExons){
-      if(!genExonsMap.contains(ge._3))
-        genExonsMap(ge._3) = new Array[ArrayBuffer[(String,Int,Int,Int)]](25000)
-      var idIn = ge._4/10000
-      if( genExonsMap(ge._3)(idIn) == null)
-        genExonsMap(ge._3)(idIn) =  new  ArrayBuffer[(String,Int,Int,Int)]()
-      genExonsMap(ge._3)(idIn)+=((ge._1,ge._2,ge._4,ge._5))
-    }
+    val genExonsMap = exonsToHashMap(genExons)
     return genExonsMap
   }
+
+  /**
+   *
+   * @param iExons
+   * @return
+   */
+  def exonsToHashMap(iExons: Array[(String, Int, String, Int, Int, String)]): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) = {
+
+    val genExons = iExons
+    var genExonsMap = scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]]()
+    for (ge <- genExons) {
+      if (!genExonsMap.contains(ge._3))
+        genExonsMap(ge._3) = new Array[ArrayBuffer[(String, Int, Int, Int)]](25000)
+      var idIn = ge._4 / 10000
+      if (genExonsMap(ge._3)(idIn) == null)
+        genExonsMap(ge._3)(idIn) = new ArrayBuffer[(String, Int, Int, Int)]()
+      genExonsMap(ge._3)(idIn) += ((ge._1, ge._2, ge._4, ge._5))
+    }
+    return genExonsMap
+
+    /**
+     *
+     * @param iRegionId
+     * @return
+     */
+    def regionIdToGenExonId(iRegionId: Long): (String, Int) = {
+
+      //remove sampleId header
+      val regId = iRegionId % 1000000000000L
+      var geneExonId: (String, Int) = ("", 0)
+      val newRegPreffix = "NEWREG"
+      val knowGenPreffix = "ENSG"
+      val nameLenth = 15
+      //check if exonId=0 =>new region
+      val exonId = (regId % 1000).toInt
+      val genId = (regId / 100000).toString
+      if (exonId == 0)
+        geneExonId = (newRegPreffix.padTo(nameLenth - newRegPreffix.length - genId.length, '0') + genId, exonId)
+      else {
+        geneExonId = (knowGenPreffix.padTo(nameLenth - knowGenPreffix.length - genId.length, '0') + genId, exonId)
+      }
+      return (geneExonId)
+    }
+
+  }
+
+
 }
