@@ -86,7 +86,7 @@ object SparkSeqBaseDE {
     val chr = args(0)
     val posStart = 1
     val posEnd = 300000000
-    val minAvgBaseCov = 10
+    val minAvgBaseCov = 3
     val minPval = 0.05
     val minRegLength = 10
 

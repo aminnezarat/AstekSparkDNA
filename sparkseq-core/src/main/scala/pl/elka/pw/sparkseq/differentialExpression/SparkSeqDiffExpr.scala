@@ -46,12 +46,13 @@ import java.io._
  * @param confDir Configuration directory.
  */
 class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAnalControl: SparkSeqAnalysis, iBEDFile: String, iChr: String = "*",
-                       iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Int = 10, iMinRegionLen: Int = 2,
+                       iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Int = 3, iMinRegionLen: Int = 2,
                        iMaxPval: Double = 0.1, iNumTasks: Int = 8, iNumReducers: Int = 8, confDir: String) extends Serializable {
 
   private val maxPval = iMaxPval
   private val chrName = iChr
   private val minRegLen = iMinRegionLen
+  private val minExonPct = 0.000000001
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
   private var seqRegDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
@@ -216,7 +217,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
             for (e <- exons(id)) {
               val exonIntersect = getRangeIntersect(reg._3._2, reg._3._2 + reg._2, e._3, e._4)
               val exonIntersectLen = exonIntersect._2 - exonIntersect._1
-              if (exonIntersectLen > 0) {
+              if (exonIntersectLen > 1 || (exonIntersectLen == 1 && (exonIntersectLen.toDouble / (e._4 - e._3)) >= minExonPct)) {
                 exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
                 exId = e._2
                 genId = e._1
@@ -300,7 +301,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   /**
    *
    * @param iNum Number of top regions sorted  by p-value asc, foldChange desc and region length desc to be saved to file (default 10000).
-   * @param iFilePathLacal Local path to save top iNum regions locally.
+   * @param iFilePathLocal Local path to save top iNum regions locally.
    * @param iFilePathRemote Remote path to HDFS storage to save all the results.
    */
   def saveResults(iNum: Int = 10000, iFilePathLocal: String = "sparkseq_10000.txt", iFilePathRemote: String) = {
