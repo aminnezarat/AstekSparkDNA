@@ -34,7 +34,8 @@ object SparkSeqContexProperties {
     //	System.setProperty("spark.akka.timeout", "90000")
     //	System.setProperty("spark.worker.timeout", "90000")
     //	System.setProperty("spark.storage.blockManagerHeartBeatMs","30000")
-    //        System.setProperty("spark.cores.max","8")
+    //System.setProperty(" spark.mesos.coarse","true")
+    //System.setProperty("spark.cores.max","10")
     //      System.setProperty("spark.local.dir", "/home/ubuntu")
 
   }

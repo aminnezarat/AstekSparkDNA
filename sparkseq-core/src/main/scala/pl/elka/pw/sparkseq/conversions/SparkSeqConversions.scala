@@ -133,13 +133,26 @@ object SparkSeqConversions {
    */
   def BEDFileToHashMap(sc:SparkContext,bedFile:String) : scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(String,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]={
 
-    val genExons = sc.textFile(bedFile)
-      .map(l => l.split("\t"))
-      .map(r=>(r.array(4).trim,r.array(5).trim.toInt,r.array(0).trim,r.array(1).trim.toInt,r.array(2).trim.toInt,r.array(3).trim) ).toArray
+    val genExons = readBEDFile(sc, bedFile)
     /*genExons format: (genId,ExonId,chr,start,end,strand)*/
-
     val genExonsMap = exonsToHashMap(genExons)
     return genExonsMap
+  }
+
+  def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, Int), (Int, Int)] = {
+    val genExons = readBEDFile(sc, bedFile)
+    var genExonsMap = new scala.collection.mutable.HashMap[(String, Int), (Int, Int)]()
+    for (r <- genExons)
+      genExonsMap((r._1, r._2)) = (r._4, r._5)
+    return genExonsMap
+  }
+
+
+  private def readBEDFile(iSC: SparkContext, iBedFile: String): Array[(String, Int, String, Int, Int, String)] = {
+    val genExons = iSC.textFile(iBedFile)
+      .map(l => l.split("\t"))
+      .map(r => (r.array(4).trim, r.array(5).trim.toInt, r.array(0).trim, r.array(1).trim.toInt, r.array(2).trim.toInt, r.array(3).trim)).toArray
+    return genExons
   }
 
   /**
@@ -175,15 +188,17 @@ object SparkSeqConversions {
       val newRegPreffix = "NEWREG"
       val knowGenPreffix = "ENSG"
       val nameLenth = 15
-      //check if exonId=0 =>new region
-      val exonId = (regId % 1000).toInt
+
+    val exonId = (regId % 1000).toInt
       val genId = (regId / 100000).toString
-      if (exonId == 0)
-        geneExonId = (newRegPreffix.padTo(nameLenth - newRegPreffix.length - genId.length, '0') + genId, exonId)
+
+    if (exonId == 0) //check if exonId=0 =>new region
+      geneExonId = (newRegPreffix.padTo(nameLenth - newRegPreffix.length - genId.length, '0') + genId, exonId)
       else {
         geneExonId = (knowGenPreffix.padTo(nameLenth - knowGenPreffix.length - genId.length, '0') + genId, exonId)
       }
-      return (geneExonId)
+
+    return (geneExonId)
     }
 
 

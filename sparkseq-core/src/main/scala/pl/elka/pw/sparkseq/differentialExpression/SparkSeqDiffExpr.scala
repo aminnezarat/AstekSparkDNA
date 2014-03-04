@@ -59,6 +59,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     .toArray
   private val cmDistTableB = iSC.broadcast(cmDistTable)
   private val genExonsMapB = iSC.broadcast(SparkSeqConversions.BEDFileToHashMap(iSC, confDir + iBEDFile))
+  private val genExonsMapLookupB = iSC.broadcast(SparkSeqConversions.BEDFileToHashMapGeneExon(iSC, confDir + iBEDFile))
 
   private def groupSeqAnalysis(iSeqAnalysis: SparkSeqAnalysis, iSampleNum: Int): RDD[(Long, Seq[Int])] = {
     val seqGrouped = iSeqAnalysis.getCoverageBaseRegion(iChr, iStartPos, iEndPos)
@@ -170,6 +171,33 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     (maxStart, minEnd)
   }
 
+  private def getExonFromPosition(iChr: String, iStartPos: Int): (String, Int, Int, Int) = {
+    if (genExonsMapB.value.contains(iChr)) {
+      val id = iStartPos / 10000
+      val exons = genExonsMapB.value(iChr)
+      var exonTuple = ("", 0, 0, 0)
+      val loop = new Breaks
+      loop.breakable {
+        if (exons(id) != null) {
+          for (e <- exons(id)) {
+            if (iStartPos >= e._3 && iStartPos <= e._4) {
+              exonTuple = e
+              loop.break
+            }
+          }
+        }
+      }
+      return exonTuple
+    }
+    else
+      return ("ExonNotFound", 0, 0, 0)
+  }
+
+  private def getExongRange(iGeneId: String, iExonId: Int): (Int, Int) = {
+
+    return genExonsMapLookupB.value((iGeneId, iExonId))
+  }
+
   private def mapRegionsToExons(r: (Double, Int, Long, Double)): (Double, Int, (String, Int), Double, String, Int, Double) = {
 
     val reg = (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4)
@@ -231,6 +259,11 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       seqRegContDERDD.map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
     }
     seqRegDERDD = seqReg
+    val newRegCandidates = getRegionCandidates()
+    debugSaveCandidates(newRegCandidates, iFilePathLacal = "regions_candidates.txt")
+
+    val exonCandidtes = getDistExonCandidates()
+    debugSaveCandidates(exonCandidtes, iFilePathLacal = "exons_candidates.txt")
     return (seqReg)
   }
 
@@ -285,11 +318,26 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     seqRegDERDD.saveAsTextFile(iFilePathRemote)
   }
 
+  private def debugSaveCandidates(iCandMap: scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int)]]],
+                                  iFilePathLacal: String = "sparkseq_candidates.txt") = {
+    val writer = new PrintWriter(new File(iFilePathLacal))
+    for (r <- iCandMap) {
+      for (r1 <- r._2) {
+        if (r1 != null)
+          for (r3 <- r1)
+            writer.write(r._1 + "," + r3.toString() + "\n")
+      }
+    }
+    writer.close()
+  }
+
   def getDistExonCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
 
     val exonCand = seqRegDERDD /*genExons format: (genId,ExonId,chr,start,end,strand)*/
       .filter(r => (r._6 > 0)) //filter out uknown regions
-      .map(r => (r._5, r._6, r._3._1, r._3._2, r._3._2 + r._2, ".")).distinct().toArray()
+      .map {
+      r => val eRange = getExongRange(r._5, r._6); (r._5, r._6, r._3._1, eRange._1, eRange._2, ".")
+    }.distinct.toArray()
     val exonCandHashMap = SparkSeqConversions.exonsToHashMap(exonCand)
     return (exonCandHashMap)
   }
@@ -301,15 +349,17 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       .map(r => ("", 0, r._3._1, r._3._2, r._3._2 + r._2, ".")).distinct().toArray()
     var i: Int = 1
     val newRegPreffix = "NEWREG"
-    val nameLenth = 15
-    for (k <- 0 to unRegionCand.length) {
-      val newRegId: String = newRegPreffix.padTo(nameLenth - newRegPreffix.length - i.toString.length, '0') + i.toString
+    val nameLength = 15
+    for (k <- 0 to unRegionCand.length - 1) {
+      val newRegId: String = newRegPreffix.padTo(nameLength - newRegPreffix.length - i.toString.length, '0') + i.toString
       val t = unRegionCand(k)
       unRegionCand(k) = (newRegId, t._2, t._3, t._4, t._5, t._6)
       i += 1
     }
 
     val unRegionCandHashMap = SparkSeqConversions.exonsToHashMap(unRegionCand)
+
+
     return (unRegionCandHashMap)
 
   }
