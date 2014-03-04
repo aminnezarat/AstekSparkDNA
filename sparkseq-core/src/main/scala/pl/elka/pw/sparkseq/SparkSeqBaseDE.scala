@@ -117,11 +117,13 @@ object SparkSeqBaseDE {
       seqAnalysisControl.addBAM(sc, path, i, bamFileCountControlFirst.toDouble / bamFileCount.toDouble)
 
     }
-    val minRegLen = 2
+    val minRegLen = args(1).toInt
+    val maxPval = args(2).toDouble
     val diffExp = new SparkSeqDiffExpr(sc, seqAnalysisCase, seqAnalysisControl,
-      iChr = args(0).mkString, confDir = rootPath + fileSplitSize.toString + "MB/aux/", iNumTasks = 24, iBEDFile = bedFile, iMaxPval = 0.05, iMinRegionLen = minRegLen)
+      iChr = args(0).mkString, confDir = rootPath + fileSplitSize.toString + "MB/aux/", iNumTasks = 24, iBEDFile = bedFile, iMaxPval = maxPval, iMinRegionLen = minRegLen)
     val t = diffExp.computeDiffExpr(iCoalesceReg = true)
-    diffExp.saveResults(iFilePathRemote = "hdfs://sparkseq002.cloudapp.net:9000/BAM/sparkseq_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + ".txt")
+    diffExp.saveResults(iFilePathRemote = "hdfs://sparkseq002.cloudapp.net:9000/BAM/sparkseq_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt",
+      iFilePathLocal = "sparkseq_local_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt")
 
   }
 }

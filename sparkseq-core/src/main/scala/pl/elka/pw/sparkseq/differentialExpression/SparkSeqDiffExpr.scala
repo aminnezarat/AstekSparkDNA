@@ -49,6 +49,9 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                        iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Int = 10, iMinRegionLen: Int = 2,
                        iMaxPval: Double = 0.1, iNumTasks: Int = 8, iNumReducers: Int = 8, confDir: String) extends Serializable {
 
+  private val maxPval = iMaxPval
+  private val chrName = iChr
+  private val minRegLen = iMinRegionLen
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
   private var seqRegDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
@@ -260,10 +263,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     }
     seqRegDERDD = seqReg
     val newRegCandidates = getRegionCandidates()
-    debugSaveCandidates(newRegCandidates, iFilePathLacal = "regions_candidates.txt")
+    debugSaveCandidates(newRegCandidates, iFilePathLacal = "regions_candidates_" + minRegLen.toString + "_" + chrName + "_" + maxPval.toString + ".txt")
 
     val exonCandidtes = getDistExonCandidates()
-    debugSaveCandidates(exonCandidtes, iFilePathLacal = "exons_candidates.txt")
+    debugSaveCandidates(exonCandidtes, iFilePathLacal = "exons_candidates_" + minRegLen.toString + "_" + chrName + "_" + maxPval.toString + ".txt")
     return (seqReg)
   }
 
@@ -300,10 +303,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
    * @param iFilePathLacal Local path to save top iNum regions locally.
    * @param iFilePathRemote Remote path to HDFS storage to save all the results.
    */
-  def saveResults(iNum: Int = 10000, iFilePathLacal: String = "sparkseq_10000.txt", iFilePathRemote: String) = {
+  def saveResults(iNum: Int = 10000, iFilePathLocal: String = "sparkseq_10000.txt", iFilePathRemote: String) = {
     if (iNum <= 10000) {
       val a = fetchReults(iNum)
-      val writer = new PrintWriter(new File(iFilePathLacal))
+      val writer = new PrintWriter(new File(iFilePathLocal))
       val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(25, ' ') + "length".padTo(10, ' ') +
         "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
       println("=======================================Results======================================")
