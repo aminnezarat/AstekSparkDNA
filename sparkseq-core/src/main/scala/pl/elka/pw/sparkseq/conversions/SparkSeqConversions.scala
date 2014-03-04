@@ -187,16 +187,16 @@ object SparkSeqConversions {
       var geneExonId: (String, Int) = ("", 0)
       val newRegPreffix = "NEWREG"
       val knowGenPreffix = "ENSG"
-      val nameLenth = 15
+    val nameLength = 15
 
     val exonId = (regId % 1000).toInt
       val genId = (regId / 100000).toString
 
     if (exonId == 0) //check if exonId=0 =>new region
-      geneExonId = (newRegPreffix.padTo(nameLenth - newRegPreffix.length - genId.length, '0') + genId, exonId)
-      else {
-        geneExonId = (knowGenPreffix.padTo(nameLenth - knowGenPreffix.length - genId.length, '0') + genId, exonId)
-      }
+      geneExonId = (newRegPreffix.padTo(nameLength - genId.length, '0') + genId, exonId)
+    else {
+      geneExonId = (knowGenPreffix.padTo(nameLength - genId.length, '0') + genId, exonId)
+    }
 
     return (geneExonId)
     }

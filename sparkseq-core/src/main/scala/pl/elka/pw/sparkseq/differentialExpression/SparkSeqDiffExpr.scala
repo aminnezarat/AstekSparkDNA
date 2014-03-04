@@ -347,14 +347,12 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val unRegionCand = seqRegDERDD /*genExons format: (genId,ExonId,chr,start,end,strand)*/
       .filter(r => (r._6 == 0))
       .map(r => ("", 0, r._3._1, r._3._2, r._3._2 + r._2, ".")).distinct().toArray()
-    var i: Int = 1
     val newRegPreffix = "NEWREG"
     val nameLength = 15
     for (k <- 0 to unRegionCand.length - 1) {
-      val newRegId: String = newRegPreffix.padTo(nameLength - newRegPreffix.length - i.toString.length, '0') + i.toString
+      val newRegId = newRegPreffix.padTo(nameLength - (k + 1).toString.length, '0') + (k + 1).toString
       val t = unRegionCand(k)
       unRegionCand(k) = (newRegId, t._2, t._3, t._4, t._5, t._6)
-      i += 1
     }
 
     val unRegionCandHashMap = SparkSeqConversions.exonsToHashMap(unRegionCand)
