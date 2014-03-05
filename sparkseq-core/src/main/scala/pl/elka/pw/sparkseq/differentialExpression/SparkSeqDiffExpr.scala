@@ -94,9 +94,72 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (twoSampleTests)
   }
 
+  private def coalesceContRegions(iRegRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)]):
+  RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+    val coalRegions = iRegRDD.map(r => ((r._5, r._6, r._3._1), (r._1, r._2, r._3, r._4, r._7))) /*( (geneId,exonId,chrName), (pval,length,(chr,startPos), foldChange, pctOverlap) ) */
+      .groupByKey()
+      .mapValues(r => (r.sortBy(_._3._2)))
+      .mapPartitions {
+      var k = 0
+      partitionIterator =>
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double)](1000000)
+        for (r <- partitionIterator) {
+          var regStart = r._2(0)._3._2
+          var regLength = 0
+          var fcWeightSum = 0.0
+          var pctOverlapSum = 0.0
+
+          var i = 0
+          while (i < r._2.length) {
+            if (i == (r._2.length - 1)) {
+              if ((r._2.length == 1) || ((r._2(i)._3._2 - 1 != (r._2(i - 1)._3._2 + r._2(i - 1)._2) || (r._2(i)._1 != r._2(i - 1)._1) ||
+                (math.signum(r._2(i)._4) != math.signum(r._2(i - 1)._4))))) {
+
+                regLenArray(k) = (r._2(i)._1, r._2(i)._2, (r._2(i)._3), r._2(i)._4, r._1._1, r._1._2,
+                  math.round(r._2(i)._5 * 10000).toDouble / 10000)
+              }
+              else {
+                fcWeightSum = (fcWeightSum * regLength + r._2(i)._4 * r._2(i)._2) / (regLength + r._2(i)._2).toDouble
+                regLength += r._2(i)._2
+                pctOverlapSum += r._2(i)._5
+                regLenArray(k) = (r._2(i)._1, regLength, (r._2(i)._3._1, regStart), fcWeightSum, r._1._1, r._1._2,
+                  math.round(pctOverlapSum * 10000).toDouble / 10000)
+              }
+              k += 1
+            }
+
+            else if (r._2(i + 1)._3._2 - 1 != (r._2(i)._3._2 + r._2(i)._2) || (r._2(i + 1)._1 != r._2(i)._1) ||
+              (math.signum(r._2(i + 1)._4) != math.signum(r._2(i)._4))) {
+
+              fcWeightSum = (fcWeightSum * regLength + r._2(i)._4 * r._2(i)._2) / (regLength + r._2(i)._2).toDouble
+              regLength += r._2(i)._2
+              pctOverlapSum += r._2(i)._5
+              regLenArray(k) = (r._2(i)._1, regLength, (r._2(i)._3._1, regStart), fcWeightSum, r._1._1, r._1._2,
+                math.round(pctOverlapSum * 10000).toDouble / 10000)
+              k += 1
+
+              regLength = 0
+              fcWeightSum = 0.0
+              regStart = r._2(i + 1)._3._2
+              pctOverlapSum = 0.0
+            }
+            else {
+              fcWeightSum = (fcWeightSum * regLength + r._2(i)._4 * r._2(i)._2) / (regLength + r._2(i)._2).toDouble
+              regLength += r._2(i)._2
+              pctOverlapSum += r._2(i)._5
+
+            }
+            i += 1
+          }
+        }
+        Iterator(regLenArray.filter(r => r != null).sortBy(-_._2))
+    }.flatMap(r => r)
+    return coalRegions
+  }
+
   private def findContRegionsEqual(iSeq: RDD[((Int, Double), Seq[(Long, Double)])]): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
     val iSeqPart = iSeq.map(r => (r._1._2, r._2.sortBy(_._1)))
-      .partitionBy(new HashPartitioner(iNumTasks * 3))
+    //.partitionBy(new HashPartitioner(iNumTasks * 3))
     iSeqPart
       .mapPartitions {
       partitionIterator =>
@@ -166,7 +229,9 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
           }
         }
         Iterator(regLenArray.filter(r => r != null).sortBy(-_._2))
-    }.flatMap(r => r)
+    }.flatMap(r => r) /*(chrId,(pval,position,foldChange) */
+
+
   }
 
   private def getRangeIntersect(r1Start: Int, r1End: Int, r2Start: Int, r2End: Int): (Int, Int) = {
@@ -208,29 +273,29 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     if (genExonsMapB.value.contains(reg._3._1)) {
       val exons = genExonsMapB.value(reg._3._1)
       var exId = 0
-        var genId = ""
+      var genId = ""
       val id = reg._3._2 / 10000
       var exonOverlapPct = 0.0
-        val loop = new Breaks
-        loop.breakable {
-          if (exons(id) != null) {
-            for (e <- exons(id)) {
-              val exonIntersect = getRangeIntersect(reg._3._2, reg._3._2 + reg._2, e._3, e._4)
-              val exonIntersectLen = exonIntersect._2 - exonIntersect._1
-              if (exonIntersectLen > 1 || (exonIntersectLen == 1 && (exonIntersectLen.toDouble / (e._4 - e._3)) >= minExonPct)) {
-                exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
-                exId = e._2
-                genId = e._1
-                //loop.break() //because there are some overlapping regions
-              }
+      val loop = new Breaks
+      loop.breakable {
+        if (exons(id) != null) {
+          for (e <- exons(id)) {
+            val exonIntersect = getRangeIntersect(reg._3._2, reg._3._2 + reg._2, e._3, e._4)
+            val exonIntersectLen = exonIntersect._2 - exonIntersect._1
+            if (exonIntersectLen > 1 || (exonIntersectLen == 1 && (exonIntersectLen.toDouble / (e._4 - e._3)) >= minExonPct)) {
+              exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
+              exId = e._2
+              genId = e._1
+              //loop.break() //because there are some overlapping regions
             }
-
           }
+
         }
+      }
       (reg._1, reg._2, reg._3, reg._4, genId, exId, math.round(exonOverlapPct * 10000).toDouble / 10000)
     }
-      else
-        (reg._1, reg._2, reg._3, reg._4, "ChrNotFound", 0, 0.0)
+    else
+      (reg._1, reg._2, reg._3, reg._4, "ChrNotFound", 0, 0.0)
 
   }
 
@@ -262,7 +327,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val seqReg = {
       seqRegContDERDD.map(r => (r._1, r._2, r._3, if (r._4 < 1.0) -1 / r._4; else r._4, r._5, r._6, r._7))
     }
-    seqRegDERDD = seqReg
+    seqRegDERDD = coalesceContRegions(seqReg)
     val newRegCandidates = getRegionCandidates()
     debugSaveCandidates(newRegCandidates, iFilePathLacal = "regions_candidates_" + minRegLen.toString + "_" + chrName + "_" + maxPval.toString + ".txt")
 
