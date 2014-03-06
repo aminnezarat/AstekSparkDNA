@@ -37,7 +37,7 @@ object SparkSeqBaseDE {
       .setJars(Seq(System.getenv("ADD_JARS")))
       .setSparkHome(System.getenv("SPARK_HOME"))
       .set("spark.mesos.coarse", "true")
-      .set("spark.cores.max", "24")
+    //.set("spark.cores.max", "24")
     val sc = new SparkContext(conf)
 
     //val sc = new  SparkContext("spark://sparkseq001.cloudapp.net:7077"/*"local[4]"*/, "sparkseq", System.getenv("SPARK_HOME"),  Seq(System.getenv("ADD_JARS")))
@@ -86,7 +86,7 @@ object SparkSeqBaseDE {
     val chr = args(0)
     val posStart = 1
     val posEnd = 300000000
-    val minAvgBaseCov = 3
+    val minAvgBaseCov = 10
     val minPval = 0.05
     val minRegLength = 10
 
@@ -117,13 +117,21 @@ object SparkSeqBaseDE {
       seqAnalysisControl.addBAM(sc, path, i, bamFileCountControlFirst.toDouble / bamFileCount.toDouble)
 
     }
+    /*    val seqGrouped = seqAnalysisControl.getCoverageBaseRegion("chr21", 40000000 , 50000000)
+          .map(r => (r._1 % 1000000000000L, r._2))
+          .groupByKey()
+          .mapValues(c => if ((7 - c.length) > 0) (c ++ ArrayBuffer.fill[Int](7 - c.length)(0)) else (c))
+          .filter(r=>r._1>=21043782390L && r._1<=21043782490L)
+          .sortByKey()
+          .toArray()
+           for(a<-seqGrouped)
+             println(a)*/
     val minRegLen = args(1).toInt
     val maxPval = args(2).toDouble
     val diffExp = new SparkSeqDiffExpr(sc, seqAnalysisCase, seqAnalysisControl,
-      iChr = args(0).mkString, confDir = rootPath + fileSplitSize.toString + "MB/aux/", iNumTasks = 24, iBEDFile = bedFile, iMaxPval = maxPval, iMinRegionLen = minRegLen)
+      iChr = args(0).mkString, confDir = rootPath + fileSplitSize.toString + "MB/aux/", iNumTasks = 24, iBEDFile = bedFile, iMaxPval = maxPval, iMinRegionLen = minRegLen, iMinCoverage = 0.1)
     val t = diffExp.computeDiffExpr(iCoalesceReg = true)
     diffExp.saveResults(iFilePathRemote = "hdfs://sparkseq002.cloudapp.net:9000/BAM/sparkseq_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt",
       iFilePathLocal = "sparkseq_local_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt")
-
   }
 }

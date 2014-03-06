@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package pl.elka.pw.sparkseq.conversions
+
 import org.apache.spark.SparkContext
 import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.rdd.RDD
@@ -30,9 +31,9 @@ object SparkSeqConversions {
    * @param iRefName Chromosome name (e.g. chr1).
    * @return Chromosome name encoded as Long number.
    */
-  def chrToLong(iRefName:String):Long = {
+  def chrToLong(iRefName: String): Long = {
 
-    val id = iRefName  match{
+    val id = iRefName match {
       case "chr1" => 1000000000L
       case "chr2" => 2000000000L
       case "chr3" => 3000000000L
@@ -68,8 +69,8 @@ object SparkSeqConversions {
       case "chr33" => 33000000000L
       case "chrX" => 100000000000L
       case "chrY" => 110000000000L
-      case "chrMT" =>120000000000L
-      case _ 	    => 900000000000L
+      case "chrMT" => 120000000000L
+      case _ => 900000000000L
 
     }
     return id
@@ -81,46 +82,46 @@ object SparkSeqConversions {
    * @param id SparSeq internal gen position representation as Long number
    * @return Tuple (chromosome, position)
    */
-  def idToCoordinates(id:Long) :(String,Int) ={
+  def idToCoordinates(id: Long): (String, Int) = {
 
     var coord = id match {
-      case x if (x >= 1000000000L && x < 2000000000L) => ("chr1",(x-1000000000L).toInt)
-      case x if (x >= 2000000000L && x < 3000000000L) => ("chr2",(x-2000000000L).toInt)
-      case x if (x >= 3000000000L && x < 4000000000L) => ("chr3",(x-3000000000L).toInt)
-      case x if (x >= 4000000000L && x < 5000000000L) => ("chr4",(x-4000000000L).toInt)
-      case x if (x >= 5000000000L && x < 6000000000L) => ("chr5",(x-5000000000L).toInt)
-      case x if (x >= 6000000000L && x < 7000000000L) => ("chr6",(x-6000000000L).toInt)
-      case x if (x >= 7000000000L && x < 8000000000L) => ("chr7",(x-7000000000L).toInt)
-      case x if (x >= 8000000000L && x < 9000000000L) => ("chr8",(x-8000000000L).toInt)
-      case x if (x >= 9000000000L && x < 10000000000L) => ("chr9",(x-9000000000L).toInt)
-      case x if (x >= 10000000000L && x < 11000000000L) => ("chr10",(x-10000000000L).toInt)
-      case x if (x >= 11000000000L && x < 12000000000L) => ("chr11",(x-11000000000L).toInt)
-      case x if (x >= 12000000000L && x < 13000000000L) => ("chr12",(x-12000000000L).toInt)
-      case x if (x >= 13000000000L && x < 14000000000L) => ("chr13",(x-13000000000L).toInt)
-      case x if (x >= 14000000000L && x < 15000000000L) => ("chr14",(x-14000000000L).toInt)
-      case x if (x >= 15000000000L && x < 16000000000L) => ("chr15",(x-15000000000L).toInt)
-      case x if (x >= 16000000000L && x < 17000000000L) => ("chr16",(x-16000000000L).toInt)
-      case x if (x >= 17000000000L && x < 18000000000L) => ("chr17",(x-17000000000L).toInt)
-      case x if (x >= 18000000000L && x < 19000000000L) => ("chr18",(x-18000000000L).toInt)
-      case x if (x >= 19000000000L && x < 20000000000L) => ("chr19",(x-19000000000L).toInt)
-      case x if (x >= 20000000000L && x < 21000000000L) => ("chr20",(x-20000000000L).toInt)
-      case x if (x >= 21000000000L && x < 22000000000L) => ("chr21",(x-21000000000L).toInt)
-      case x if (x >= 22000000000L && x < 23000000000L) => ("chr22",(x-22000000000L).toInt)
-      case x if (x >= 23000000000L && x < 24000000000L) => ("chr23",(x-23000000000L).toInt)
-      case x if (x >= 24000000000L && x < 25000000000L) => ("chr24",(x-24000000000L).toInt)
-      case x if (x >= 2500000000L && x < 26000000000L) => ("chr25",(x-25000000000L).toInt)
-      case x if (x >= 2600000000L && x < 27000000000L) => ("chr26",(x-26000000000L).toInt)
-      case x if (x >= 2700000000L && x < 28000000000L) => ("chr27",(x-27000000000L).toInt)
-      case x if (x >= 2800000000L && x < 29000000000L) => ("chr28",(x-28000000000L).toInt)
-      case x if (x >= 2900000000L && x < 30000000000L) => ("chr29",(x-29000000000L).toInt)
-      case x if (x >= 3000000000L && x < 31000000000L) => ("chr30",(x-30000000000L).toInt)
-      case x if (x >= 3100000000L && x < 32000000000L) => ("chr31",(x-31000000000L).toInt)
-      case x if (x >= 3200000000L && x < 33000000000L) => ("chr32",(x-32000000000L).toInt)
-      case x if (x >= 3300000000L && x < 34000000000L) => ("chr33",(x-33000000000L).toInt)
-      case x if (x >= 100000000000L && x < 101000000000L) => ("chrX",(x-100000000000L).toInt)
-      case x if (x >= 110000000000L && x < 111000000000L) => ("chrY",(x-110000000000L).toInt)
-      case x if (x >= 120000000000L && x < 121000000000L) => ("chrMT",(x-120000000000L).toInt)
-      case x if (x >= 900000000000L && x < 901000000000L) => ("NA",(x-900000000000L).toInt)
+      case x if (x >= 1000000000L && x < 2000000000L) => ("chr1", (x - 1000000000L).toInt)
+      case x if (x >= 2000000000L && x < 3000000000L) => ("chr2", (x - 2000000000L).toInt)
+      case x if (x >= 3000000000L && x < 4000000000L) => ("chr3", (x - 3000000000L).toInt)
+      case x if (x >= 4000000000L && x < 5000000000L) => ("chr4", (x - 4000000000L).toInt)
+      case x if (x >= 5000000000L && x < 6000000000L) => ("chr5", (x - 5000000000L).toInt)
+      case x if (x >= 6000000000L && x < 7000000000L) => ("chr6", (x - 6000000000L).toInt)
+      case x if (x >= 7000000000L && x < 8000000000L) => ("chr7", (x - 7000000000L).toInt)
+      case x if (x >= 8000000000L && x < 9000000000L) => ("chr8", (x - 8000000000L).toInt)
+      case x if (x >= 9000000000L && x < 10000000000L) => ("chr9", (x - 9000000000L).toInt)
+      case x if (x >= 10000000000L && x < 11000000000L) => ("chr10", (x - 10000000000L).toInt)
+      case x if (x >= 11000000000L && x < 12000000000L) => ("chr11", (x - 11000000000L).toInt)
+      case x if (x >= 12000000000L && x < 13000000000L) => ("chr12", (x - 12000000000L).toInt)
+      case x if (x >= 13000000000L && x < 14000000000L) => ("chr13", (x - 13000000000L).toInt)
+      case x if (x >= 14000000000L && x < 15000000000L) => ("chr14", (x - 14000000000L).toInt)
+      case x if (x >= 15000000000L && x < 16000000000L) => ("chr15", (x - 15000000000L).toInt)
+      case x if (x >= 16000000000L && x < 17000000000L) => ("chr16", (x - 16000000000L).toInt)
+      case x if (x >= 17000000000L && x < 18000000000L) => ("chr17", (x - 17000000000L).toInt)
+      case x if (x >= 18000000000L && x < 19000000000L) => ("chr18", (x - 18000000000L).toInt)
+      case x if (x >= 19000000000L && x < 20000000000L) => ("chr19", (x - 19000000000L).toInt)
+      case x if (x >= 20000000000L && x < 21000000000L) => ("chr20", (x - 20000000000L).toInt)
+      case x if (x >= 21000000000L && x < 22000000000L) => ("chr21", (x - 21000000000L).toInt)
+      case x if (x >= 22000000000L && x < 23000000000L) => ("chr22", (x - 22000000000L).toInt)
+      case x if (x >= 23000000000L && x < 24000000000L) => ("chr23", (x - 23000000000L).toInt)
+      case x if (x >= 24000000000L && x < 25000000000L) => ("chr24", (x - 24000000000L).toInt)
+      case x if (x >= 2500000000L && x < 26000000000L) => ("chr25", (x - 25000000000L).toInt)
+      case x if (x >= 2600000000L && x < 27000000000L) => ("chr26", (x - 26000000000L).toInt)
+      case x if (x >= 2700000000L && x < 28000000000L) => ("chr27", (x - 27000000000L).toInt)
+      case x if (x >= 2800000000L && x < 29000000000L) => ("chr28", (x - 28000000000L).toInt)
+      case x if (x >= 2900000000L && x < 30000000000L) => ("chr29", (x - 29000000000L).toInt)
+      case x if (x >= 3000000000L && x < 31000000000L) => ("chr30", (x - 30000000000L).toInt)
+      case x if (x >= 3100000000L && x < 32000000000L) => ("chr31", (x - 31000000000L).toInt)
+      case x if (x >= 3200000000L && x < 33000000000L) => ("chr32", (x - 32000000000L).toInt)
+      case x if (x >= 3300000000L && x < 34000000000L) => ("chr33", (x - 33000000000L).toInt)
+      case x if (x >= 100000000000L && x < 101000000000L) => ("chrX", (x - 100000000000L).toInt)
+      case x if (x >= 110000000000L && x < 111000000000L) => ("chrY", (x - 110000000000L).toInt)
+      case x if (x >= 120000000000L && x < 121000000000L) => ("chrMT", (x - 120000000000L).toInt)
+      case x if (x >= 900000000000L && x < 901000000000L) => ("NA", (x - 900000000000L).toInt)
     }
     return coord
   }
@@ -131,7 +132,7 @@ object SparkSeqConversions {
    * @param bedFile Path to BED file.
    * @return SparkSeq internal representation of a BED as a HashMap
    */
-  def BEDFileToHashMap(sc:SparkContext,bedFile:String) : scala.collection.mutable.HashMap[ String,Array[ArrayBuffer[(String,Int,Int,Int)/*(GeneId,ExonId,Start,End)*/] ] ]={
+  def BEDFileToHashMap(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
 
     val genExons = readBEDFile(sc, bedFile)
     /*genExons format: (genId,ExonId,chr,start,end,strand)*/
@@ -176,21 +177,21 @@ object SparkSeqConversions {
   }
 
   /**
-     *
-     * @param iRegionId
-     * @return
-     */
-    def regionIdToGenExonId(iRegionId: Long): (String, Int) = {
+   *
+   * @param iRegionId
+   * @return
+   */
+  def regionIdToGenExonId(iRegionId: Long): (String, Int) = {
 
-      //remove sampleId header
-      val regId = iRegionId % 1000000000000L
-      var geneExonId: (String, Int) = ("", 0)
-      val newRegPreffix = "NEWREG"
-      val knowGenPreffix = "ENSG"
+    //remove sampleId header
+    val regId = iRegionId % 1000000000000L
+    var geneExonId: (String, Int) = ("", 0)
+    val newRegPreffix = "NEWREG"
+    val knowGenPreffix = "ENSG"
     val nameLength = 15
 
     val exonId = (regId % 1000).toInt
-      val genId = (regId / 100000).toString
+    val genId = (regId / 100000).toString
 
     if (exonId == 0) //check if exonId=0 =>new region
       geneExonId = (newRegPreffix.padTo(nameLength - genId.length, '0') + genId, exonId)
@@ -199,7 +200,7 @@ object SparkSeqConversions {
     }
 
     return (geneExonId)
-    }
+  }
 
 
 }
