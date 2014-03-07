@@ -57,8 +57,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
-  private var seqRegDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
-  private var seqRegContDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double)](iSC)
+  private var seqRegDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = _
+  //= new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double,Double,Double)](iSC)
+  private var seqRegContDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = _
+  //new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double,Double,Double)](iSC)
   private val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
     .map(l => l.split("\t"))
     .map(r => (r.array(0).toDouble, r.array(1).toDouble))
@@ -89,69 +91,81 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (finalSeqJoint)
   }
 
-  private def computeTwoSampleCvMTest(iSeqCC: RDD[(Long, (Seq[Int], Seq[Int]))]): RDD[((Int, Double), (Long, Double))] = {
+  private def computeTwoSampleCvMTest(iSeqCC: RDD[(Long, (Seq[Int], Seq[Int]))]): RDD[((Int, Double), (Long, Double, Double, Double))] = {
+    /*((chrNum,p-value),(pos,FC,avgCountA,avgCountB)*/
 
     val twoSampleTests = iSeqCC
       .map(r => (r._1, r._2, SparkSeqCvM2STest.computeTestStat(r._2._1, r._2._2)))
-      .map(r => ((r._1), (r._2, r._3, SparkSeqCvM2STest.getPValue(r._3, cmDistTableB), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))))
-      .map(r => (((r._1 / 1000000000L).toInt, r._2._3), (r._1, r._2._4)))
+      .map(r => ((r._1), (r._2, r._3, SparkSeqCvM2STest.getPValue(r._3, cmDistTableB),
+      SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2), SparkSeqStats.mean(r._2._1), SparkSeqStats.mean(r._2._2))))
+      .map(r => (((r._1 / 1000000000L).toInt, r._2._3), (r._1, r._2._4, r._2._5, r._2._6)))
       .filter(r => r._1._2 <= iMaxPval)
     return (twoSampleTests)
   }
 
-  private def coalesceContRegions(iRegRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double)]):
-  RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
-    val coalRegions = iRegRDD.map(r => (((if (r._6 == 0) "NEWREG" + r._3._1 else r._5), r._6, r._3._1), (r._1, r._2, r._3, r._4, r._7))) /*( (geneId,exonId,chrName), (pval,length,(chr,startPos), foldChange, pctOverlap) ) */
+  private def coalesceContRegions(iRegRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)]):
+  RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
+    val coalRegions = iRegRDD.map(r => (((if (r._6 == 0) "NEWREG" + r._3._1 else r._5), r._6, r._3._1), (r._1, r._2, r._3, r._4, r._7, r._8, r._9)))
+      /*( (geneId,exonId,chrName), (pval,length,(chr,startPos), foldChange, pctOverlap,avgCountA,avgCountB) ) */
       .groupByKey()
       .mapValues(r => (r.sortBy(_._3._2)))
       .mapPartitions {
       var k = 0
       partitionIterator =>
-        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double)](1000000)
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)](1000000)
         for (r <- partitionIterator) {
           var regStart = r._2(0)._3._2
           var regLength = 0
           var fcWeightSum = 0.0
           var pctOverlapSum = 0.0
           var maxPval = 0.0
+          var avgCountA = 0.0
+          var avgCountB = 0.0
           var i = 0
           while (i < r._2.length) {
             if (i == (r._2.length - 1)) {
               if ((r._2.length == 1) || ((r._2(i)._3._2 - 1 != (r._2(i - 1)._3._2 + r._2(i - 1)._2) || (coalesceRegDiffPVal != true && (r._2(i)._1 != r._2(i - 1)._1)) ||
                 (math.signum(r._2(i)._4) != math.signum(r._2(i - 1)._4))))) {
+                regLength = r._2(i)._2
                 if (regLength >= iMinRegionLen) {
-                  maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
-                  regLenArray(k) = (maxPval, r._2(i)._2, (r._2(i)._3), r._2(i)._4, r._1._1, r._1._2,
-                    math.round(r._2(i)._5 * 10000).toDouble / 10000)
+                  //maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
+                  regLenArray(k) = (r._2(i)._1, regLength, (r._2(i)._3), r._2(i)._4, r._1._1, r._1._2,
+                    math.round(r._2(i)._5 * 10000).toDouble / 10000, r._2(i)._6, r._2(i) _7)
                   k += 1
                 }
                 maxPval = 0.0
               }
               else {
                 fcWeightSum = (fcWeightSum * regLength + r._2(i)._4 * r._2(i)._2) / (regLength + r._2(i)._2).toDouble
-                regLength += r._2(i)._2
+
                 pctOverlapSum += r._2(i)._5
+                avgCountA = (avgCountA * regLength + r._2(i)._6 * r._2(i)._2) / (regLength + r._2(i)._2)
+                avgCountB = (avgCountB * regLength + r._2(i)._7 * r._2(i)._2) / (regLength + r._2(i)._2)
+                regLength += r._2(i)._2
                 maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
                 if (regLength >= iMinRegionLen) {
                   regLenArray(k) = (maxPval, regLength, (r._2(i)._3._1, regStart), fcWeightSum, r._1._1, r._1._2,
-                    math.round(pctOverlapSum * 10000).toDouble / 10000)
+                    math.round(pctOverlapSum * 10000).toDouble / 10000, avgCountA, avgCountB)
                   k += 1
                 }
                 maxPval = 0.0
               }
 
-            }
 
+            }
             else if (r._2(i + 1)._3._2 - 1 != (r._2(i)._3._2 + r._2(i)._2) || (coalesceRegDiffPVal != true && (r._2(i)._1 != r._2(i - 1)._1)) ||
               (math.signum(r._2(i + 1)._4) != math.signum(r._2(i)._4))) {
 
               fcWeightSum = (fcWeightSum * regLength + r._2(i)._4 * r._2(i)._2) / (regLength + r._2(i)._2).toDouble
+              avgCountA = (avgCountA * regLength + r._2(i)._6 * r._2(i)._2) / (regLength + r._2(i)._2)
+              avgCountB = (avgCountB * regLength + r._2(i)._7 * r._2(i)._2) / (regLength + r._2(i)._2)
               regLength += r._2(i)._2
               pctOverlapSum += r._2(i)._5
               maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
+
               if (regLength >= iMinRegionLen) {
                 regLenArray(k) = (maxPval, regLength, (r._2(i)._3._1, regStart), fcWeightSum, r._1._1, r._1._2,
-                  math.round(pctOverlapSum * 10000).toDouble / 10000)
+                  math.round(pctOverlapSum * 10000).toDouble / 10000, avgCountA, avgCountB)
                 k += 1
               }
               regLength = 0
@@ -159,9 +173,13 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
               regStart = r._2(i + 1)._3._2
               pctOverlapSum = 0.0
               maxPval = 0.0
+              avgCountA = 0.0
+              avgCountB = 0.0
             }
             else {
               fcWeightSum = (fcWeightSum * regLength + r._2(i)._4 * r._2(i)._2) / (regLength + r._2(i)._2).toDouble
+              avgCountA = (avgCountA * regLength + r._2(i)._6 * r._2(i)._2) / (regLength + r._2(i)._2)
+              avgCountB = (avgCountB * regLength + r._2(i)._7 * r._2(i)._2) / (regLength + r._2(i)._2)
               regLength += r._2(i)._2
               pctOverlapSum += r._2(i)._5
               maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
@@ -175,36 +193,77 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return coalRegions
   }
 
-  private def findContRegionsEqual(iSeq: RDD[((Int, Double), Seq[(Long, Double)])]): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+  private def findContRegionsEqual(iSeq: RDD[((Int, Double), Seq[(Long, Double, Double, Double)])]):
+  RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
     val iSeqPart = iSeq.map(r => (r._1._2, r._2.sortBy(_._1)))
     //.partitionBy(new HashPartitioner(iNumTasks * 3))
     iSeqPart
       .mapPartitions {
       partitionIterator =>
-        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double)](1000000)
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)](1000000)
         var k = 0
         for (r <- partitionIterator) {
           var regStart = r._2(0)._1
           var regLength = 1
           var fcSum = 0.0
           var i = 1
+          var avgCountA = 0.0
+          var avgCountB = 0.0
           while (i < r._2.length) {
-            if (r._2(i)._1 - 1 != r._2(i - 1)._1) {
-              if (regLength >= iMinRegionLen) {
+            if (i == r._2.length - 1) {
+              if (r._2(i)._2 - 1 != r._2(i - 1)._2) {
                 fcSum += r._2(i - 1)._2
+                avgCountA = (avgCountA * regLength + r._2(i - 1)._3) / (regLength + 1)
+                avgCountB = (avgCountB * regLength + r._2(i - 1)._4) / (regLength + 1)
                 for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r)
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
                   k += 1
                 }
+                regLength = 1
+                fcSum = r._2(i)._2
+                avgCountA = r._2(i)._3
+                avgCountB = r._2(i)._4
+                for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  k += 1
+                }
+
               }
+              else {
+                fcSum += r._2(i)._2
+                avgCountA = (avgCountA * regLength + r._2(i - 1)._3) / (regLength + 1)
+                avgCountB = (avgCountB * regLength + r._2(i - 1)._4) / (regLength + 1)
+                regLength += 1
+                for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  k += 1
+                }
+
+              }
+
+            }
+            else if (r._2(i)._1 - 1 != r._2(i - 1)._1) {
+              // if (regLength >= iMinRegionLen) {
+              fcSum += r._2(i - 1)._2
+              avgCountA = (avgCountA * regLength + r._2(i - 1)._3) / (regLength + 1)
+              avgCountB = (avgCountB * regLength + r._2(i - 1)._4) / (regLength + 1)
+              for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
+                regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                k += 1
+              }
+              //}
               regLength = 1
               fcSum = 0.0
               regStart = r._2(i)._1
+              avgCountA = 0.0
+              avgCountB = 0.0
 
             }
             else {
+              fcSum += (r._2(i - 1)._2)
+              avgCountA = (avgCountA * regLength + r._2(i - 1)._3) / (regLength + 1)
+              avgCountB = (avgCountB * regLength + r._2(i - 1)._4) / (regLength + 1)
               regLength += 1
-              fcSum += (r._2(i)._2)
             }
             i = i + 1
           }
@@ -213,14 +272,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     }.flatMap(r => r)
   }
 
-  private def findContRegionsLessEqual(iSeq: RDD[(Int, Seq[(Double, Long, Double)])]) /*(chrId,(pval,position,foldChange) */
-  : RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+  private def findContRegionsLessEqual(iSeq: RDD[(Int, Seq[(Double, Long, Double, Double, Double)])]) /*(chrId,(pval,position,foldChange) */
+  : RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
     val iSeqPart = iSeq.mapValues(r => (r.sortBy(_._2)))
     // .partitionBy(new HashPartitioner(iNumTasks * 3))
     iSeqPart
       .mapPartitions {
       partitionIterator =>
-        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double)](1000000)
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)](1000000)
         var k = 0
         for (r <- partitionIterator) {
           var regStart = r._2(0)._2
@@ -228,26 +287,69 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
           var fcSum = 0.0
           var i = 1
           var maxPval = 0.0
+          var avgCountA = 0.0
+          var avgCountB = 0.0
           while (i < r._2.length) {
-            if (r._2(i)._2 - 1 != r._2(i - 1)._2) {
+            if (i == r._2.length - 1) {
+              if (r._2(i)._2 - 1 != r._2(i - 1)._2) {
+                maxPval = if (maxPval < r._2(i - 1)._1) r._2(i - 1)._1 else maxPval
+                fcSum += r._2(i - 1)._3
+                avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
+                avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
+                for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  k += 1
+                }
+                regLength = 1
+                fcSum = r._2(i)._3
+                maxPval = r._2(i)._1
+                avgCountA = r._2(i)._4
+                avgCountB = r._2(i)._5
+                for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  k += 1
+                }
+
+              }
+              else {
+                maxPval = if (maxPval < r._2(i - 1)._1) r._2(i - 1)._1 else maxPval
+                fcSum += r._2(i - 1)._3
+                regLength += 1
+                avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
+                avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
+                for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  k += 1
+                }
+
+              }
+
+            }
+            else if (r._2(i)._2 - 1 != r._2(i - 1)._2) {
               //if (regLength >= iMinRegionLen) {
               maxPval = if (maxPval < r._2(i - 1)._1) r._2(i - 1)._1 else maxPval
-                fcSum += r._2(i - 1)._3
-                for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r)
-                  k += 1
+              fcSum += r._2(i - 1)._3
+              avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
+              avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
+              for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
+                regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                k += 1
                 }
               //}
               regLength = 1
               fcSum = 0.0
               regStart = r._2(i)._2
               maxPval = 0.0
+              avgCountA = 0.0
+              avgCountB = 0.0
 
             }
             else {
+              avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
+              avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
               regLength += 1
-              fcSum += r._2(i)._3
-              maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
+              fcSum += r._2(i - 1)._3
+              maxPval = if (maxPval < r._2(i - 1)._1) r._2(i - 1)._1 else maxPval
             }
             i = i + 1
           }
@@ -334,7 +436,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
    * @param iCoalesceRegDiffPVal If continuous regions of different p-value <=iMaxPval should be coalesed (default false).
    * @return RDD of tuples(p-value,regionLength, (chrom,starPosition),foldChange,genId,exonId,exonRegionOverlap)
    */
-  def computeDiffExpr(iCoalesceRegDiffPVal: Boolean = false): RDD[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+  def computeDiffExpr(iCoalesceRegDiffPVal: Boolean = false): RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
 
     coalesceRegDiffPVal = iCoalesceRegDiffPVal
     val seqGroupCase = groupSeqAnalysis(iSeqAnalCase, caseSampleNum)
@@ -352,17 +454,17 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       seqRegContDERDD = findContRegionsEqual(seqPValGroup.groupByKey())
     else {
       val seqPrePart = seqPValGroup
-        .map(r => (r._1._1, (r._1._2, r._2._1, r._2._2)))
+        .map(r => (r._1._1, (r._1._2, r._2._1, r._2._2, r._2._3, r._2._4)))
         .groupByKey()
 
       val seqPostPar = {
-        seqPrePart.partitionBy(new RangePartitioner[Int, Seq[(Double, Long, Double)]](iNumTasks, seqPrePart))
+        seqPrePart.partitionBy(new RangePartitioner[Int, Seq[(Double, Long, Double, Double, Double)]](iNumTasks, seqPrePart))
       }
       seqRegContDERDD = findContRegionsLessEqual(seqPostPar)
       //seqRegContDERDD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/debugRegCoals")
     }
     val seqReg = {
-      seqRegContDERDD.map(r => (r._1, r._2, r._3, if (r._4 < 1.0) (-1.0 / r._4) else r._4, r._5, r._6, r._7))
+      seqRegContDERDD.map(r => (r._1, r._2, r._3, (if (r._4 < 1.0) (-1.0 / r._4) else r._4), r._5, r._6, r._7, r._8, r._9))
     }
     seqRegDERDD = coalesceContRegions(seqReg)
     seqRegDERDD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/debugRegColasCont")
@@ -374,7 +476,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (seqReg)
   }
 
-  private def fetchReults(num: Int): Array[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+  private def fetchReults(num: Int): Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
     val results = seqRegDERDD.coalesce(1).takeOrdered(num)(Ordering[(Double, Double, Int)]
       .on(r => (r._1, -(math.abs(r._4)), -r._2)))
     Thread.sleep(100)
@@ -412,12 +514,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       val a = fetchReults(iNum)
       val writer = new PrintWriter(new File(iFilePathLocal))
       val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(25, ' ') + "length".padTo(10, ' ') +
-        "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct"
-      println("=======================================Results======================================")
+        "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct".padTo(10, ' ') +
+        "avgCovA".padTo(10, ' ') + "avgCovA".padTo(10, ' ') + "covSignif".padTo(10, ' ')
+      //println("=======================================Results======================================"B
       writer.write(header + "\n")
       for (r <- a) {
         var rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 100000).toDouble / 100000).toString.padTo(25, ' ') +
-          r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7
+          r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7.toString.padTo(10, ' ') +
+          (math.round(r._8 * 100) / 100).toString.padTo(10, ' ') + (math.round(r._9 * 100) / 100).toString.padTo(10, ' ')
         writer.write(rec + "\n")
       }
       writer.close()
