@@ -310,10 +310,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                   k += 1
                 }
 
-              }
+            }
               else {
                 maxPval = if (maxPval < r._2(i - 1)._1) r._2(i - 1)._1 else maxPval
-                fcSum += r._2(i - 1)._3
+              fcSum += r._2(i - 1)._3
                 regLength += 1
                 avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
                 avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
@@ -334,7 +334,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
               for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
                 regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
                 k += 1
-                }
+              }
               //}
               regLength = 1
               fcSum = 0.0
@@ -514,14 +514,15 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       val a = fetchReults(iNum)
       val writer = new PrintWriter(new File(iFilePathLocal))
       val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(25, ' ') + "length".padTo(10, ' ') +
-        "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct".padTo(10, ' ') +
-        "avgCovA".padTo(10, ' ') + "avgCovA".padTo(10, ' ') + "covSignif".padTo(10, ' ')
+        "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct".padTo(15, ' ') +
+        "avgCovA".padTo(10, ' ') + "avgCovB".padTo(10, ' ') + "covSignifficant".padTo(10, ' ')
       //println("=======================================Results======================================"B
       writer.write(header + "\n")
       for (r <- a) {
         var rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 100000).toDouble / 100000).toString.padTo(25, ' ') +
-          r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7.toString.padTo(10, ' ') +
-          (math.round(r._8 * 100) / 100).toString.padTo(10, ' ') + (math.round(r._9 * 100) / 100).toString.padTo(10, ' ')
+          r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7.toString.padTo(15, ' ') +
+          ((math.round(r._8 * 100)).toDouble / 100).toString.padTo(10, ' ') + ((math.round(r._9 * 100) / 100).toDouble).toString.padTo(10, ' ') +
+          (if (r._8 < 2 && r._9 < 2) "*" else if (r._8 >= 100 || r._9 >= 100) "****" else if (r._8 >= 10 || r._9 >= 10) "***" else "**")
         writer.write(rec + "\n")
       }
       writer.close()
