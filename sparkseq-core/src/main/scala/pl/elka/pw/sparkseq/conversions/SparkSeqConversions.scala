@@ -68,7 +68,9 @@ object SparkSeqConversions {
       case "chr32" => 32000000000L
       case "chr33" => 33000000000L
       case "chrX" => 100000000000L
+      case "X" => 100000000000L
       case "chrY" => 110000000000L
+      case "Y" => 110000000000L
       case "chrMT" => 120000000000L
       case _ => 900000000000L
 

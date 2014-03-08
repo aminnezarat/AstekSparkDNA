@@ -397,6 +397,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
     val reg = (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4)
     val regionsArray = ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double)]()
+    val exonsOverlapHashMap = scala.collection.mutable.HashMap[(String, Int), Double]()
     if (genExonsMapB.value.contains(reg._3._1)) {
       val exons = genExonsMapB.value(reg._3._1)
       var exId = 0
@@ -405,23 +406,36 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       var exonOverlapPct = 0.0
       val loop = new Breaks
       loop.breakable {
-        if (exons(id) != null) {
-          for (e <- exons(id)) {
-            val exonIntersect = getRangeIntersect(reg._3._2, reg._3._2 + reg._2, e._3, e._4)
-            val exonIntersectLen = exonIntersect._2 - exonIntersect._1
-            if (exonIntersectLen > 1 || (exonIntersectLen == 1 && (exonIntersectLen.toDouble / (e._4 - e._3)) >= minExonPct)) {
-              exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
-              exId = e._2
-              genId = e._1
-              //loop.break() //because there are some overlapping regions
-              regionsArray += ((reg._1, reg._2, reg._3, reg._4, genId, exId, math.round(exonOverlapPct * 10000).toDouble / 10000))
+        for (i <- math.max(0, id - 5) to math.min(id + 5, exons.length - 1)) {
+          if (exons(i) != null) {
+            for (e <- exons(i)) {
+              val exonIntersect = getRangeIntersect(reg._3._2, reg._3._2 + reg._2, e._3, e._4)
+              val exonIntersectLen = exonIntersect._2 - exonIntersect._1
+              if (exonIntersectLen > 1 /*|| (exonIntersectLen == 1 && (exonIntersectLen.toDouble / (e._4 - e._3)) >= minExonPct)*/ ) {
+                exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
+                exId = e._2
+                genId = e._1
+                if (!exonsOverlapHashMap.contains((genId, exId))) {
+                  exonsOverlapHashMap((genId, exId)) = exonOverlapPct
+                }
+                else {
+                  if (exonsOverlapHashMap((genId, exId)) < exonOverlapPct)
+                    exonsOverlapHashMap((genId, exId)) = exonOverlapPct
+                }
+
+                //loop.break() //because there are some overlapping regions
+
+
+              }
+
             }
 
           }
-
+          else if (regionsArray.length == 0)
+            regionsArray += ((reg._1, reg._2, reg._3, reg._4, "PositionNotFound", 0, 0.0))
         }
-        else
-          regionsArray += ((reg._1, reg._2, reg._3, reg._4, "PositionNotFound", 0, 0.0))
+        for (ex <- exonsOverlapHashMap)
+          regionsArray += ((reg._1, reg._2, reg._3, reg._4, ex._1._1, ex._1._2, math.round(ex._2 * 10000).toDouble / 10000))
       }
 
     }

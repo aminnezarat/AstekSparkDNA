@@ -67,7 +67,8 @@ object SparkSeqDERFinder {
 
     val pathFam1 = rootPath + fileSplitSize.toString + "MB/derfinder/chrom_Y"
     val pathFam2 = rootPath + fileSplitSize.toString + "MB/derfinder/chrom_Y"
-    val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_ordered.bed"
+    //val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_ordered.bed"
+    val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_sort_uniq.bed"
     val pathExonsList = rootPath + fileSplitSize.toString + "MB/aux/" + bedFile
 
 
