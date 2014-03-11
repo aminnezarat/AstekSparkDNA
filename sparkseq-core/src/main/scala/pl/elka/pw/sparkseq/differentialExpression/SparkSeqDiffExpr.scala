@@ -397,7 +397,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
     val reg = (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4)
     val regionsArray = ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double)]()
-    val exonsOverlapHashMap = scala.collection.mutable.HashMap[(String, Int), Double]()
+    val exonsOverlapHashMap = scala.collection.mutable.HashMap[(String, Int), (Double, Int)]()
     if (genExonsMapB.value.contains(reg._3._1)) {
       val exons = genExonsMapB.value(reg._3._1)
       var exId = 0
@@ -416,11 +416,12 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 exId = e._2
                 genId = e._1
                 if (!exonsOverlapHashMap.contains((genId, exId))) {
-                  exonsOverlapHashMap((genId, exId)) = exonOverlapPct
+                  exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen)
                 }
                 else {
-                  if (exonsOverlapHashMap((genId, exId)) < exonOverlapPct)
-                    exonsOverlapHashMap((genId, exId)) = exonOverlapPct
+                  if (exonsOverlapHashMap((genId, exId))._1 < exonOverlapPct ||
+                    (exonsOverlapHashMap((genId, exId))._1 == exonOverlapPct && exonsOverlapHashMap((genId, exId))._2 < exonIntersectLen))
+                    exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen)
                 }
 
                 //loop.break() //because there are some overlapping regions
@@ -435,7 +436,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
             regionsArray += ((reg._1, reg._2, reg._3, reg._4, "PositionNotFound", 0, 0.0))
         }
         for (ex <- exonsOverlapHashMap)
-          regionsArray += ((reg._1, reg._2, reg._3, reg._4, ex._1._1, ex._1._2, math.round(ex._2 * 10000).toDouble / 10000))
+          regionsArray += ((reg._1, reg._2, reg._3, reg._4, ex._1._1, ex._1._2, math.round(ex._2._1 * 10000).toDouble / 10000))
       }
 
     }
