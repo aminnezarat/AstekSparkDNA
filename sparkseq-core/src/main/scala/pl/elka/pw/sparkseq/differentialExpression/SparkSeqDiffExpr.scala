@@ -57,9 +57,9 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
-  private var seqRegDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = _
+  private var seqRegDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = _
   //= new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double,Double,Double)](iSC)
-  private var seqRegContDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = _
+  private var seqRegContDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = _
   //new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double,Double,Double)](iSC)
   private val cmDistTable = iSC.textFile(confDir + "cm" + caseSampleNum + "_" + controlSampleNum + "_2.txt")
     .map(l => l.split("\t"))
@@ -103,16 +103,16 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (twoSampleTests)
   }
 
-  private def coalesceContRegions(iRegRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)]):
-  RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
-    val coalRegions = iRegRDD.map(r => (((if (r._6 == 0) "NEWREG" + r._3._1 else r._5), r._6, r._3._1), (r._1, r._2, r._3, r._4, r._7, r._8, r._9)))
+  private def coalesceContRegions(iRegRDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)]):
+  RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = {
+    val coalRegions = iRegRDD.map(r => (((if (r._6 == 0) "NEWREG" + r._3._1 else r._5), r._6, r._3._1), (r._1, r._2, r._3, r._4, r._7, r._8, r._9, r._10)))
       /*( (geneId,exonId,chrName), (pval,length,(chr,startPos), foldChange, pctOverlap,avgCountA,avgCountB) ) */
       .groupByKey()
       .mapValues(r => (r.sortBy(_._3._2)))
       .mapPartitions {
       var k = 0
       partitionIterator =>
-        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)](1000000)
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)](1000000)
         for (r <- partitionIterator) {
           var regStart = r._2(0)._3._2
           var regLength = 0
@@ -130,7 +130,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 if (regLength >= iMinRegionLen) {
                   //maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
                   regLenArray(k) = (r._2(i)._1, regLength, (r._2(i)._3), r._2(i)._4, r._1._1, r._1._2,
-                    math.round(r._2(i)._5 * 10000).toDouble / 10000, r._2(i)._6, r._2(i) _7)
+                    math.round(r._2(i)._5 * 10000).toDouble / 10000, r._2(i)._6, r._2(i) _7, r._2(i)._8)
                   k += 1
                 }
                 maxPval = 0.0
@@ -145,7 +145,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 maxPval = if (maxPval < r._2(i)._1) r._2(i)._1 else maxPval
                 if (regLength >= iMinRegionLen) {
                   regLenArray(k) = (maxPval, regLength, (r._2(i)._3._1, regStart), fcWeightSum, r._1._1, r._1._2,
-                    math.round(pctOverlapSum * 10000).toDouble / 10000, avgCountA, avgCountB)
+                    math.round(pctOverlapSum * 10000).toDouble / 10000, avgCountA, avgCountB, r._2(i)._8)
                   k += 1
                 }
                 maxPval = 0.0
@@ -165,7 +165,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
               if (regLength >= iMinRegionLen) {
                 regLenArray(k) = (maxPval, regLength, (r._2(i)._3._1, regStart), fcWeightSum, r._1._1, r._1._2,
-                  math.round(pctOverlapSum * 10000).toDouble / 10000, avgCountA, avgCountB)
+                  math.round(pctOverlapSum * 10000).toDouble / 10000, avgCountA, avgCountB, r._2(i)._8)
                 k += 1
               }
               regLength = 0
@@ -194,13 +194,13 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   }
 
   private def findContRegionsEqual(iSeq: RDD[((Int, Double), Seq[(Long, Double, Double, Double)])]):
-  RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
+  RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = {
     val iSeqPart = iSeq.map(r => (r._1._2, r._2.sortBy(_._1)))
     //.partitionBy(new HashPartitioner(iNumTasks * 3))
     iSeqPart
       .mapPartitions {
       partitionIterator =>
-        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)](1000000)
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)](1000000)
         var k = 0
         for (r <- partitionIterator) {
           var regStart = r._2(0)._1
@@ -216,7 +216,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 avgCountA = (avgCountA * regLength + r._2(i - 1)._3) / (regLength + 1)
                 avgCountB = (avgCountB * regLength + r._2(i - 1)._4) / (regLength + 1)
                 for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                   k += 1
                 }
                 regLength = 1
@@ -224,7 +224,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 avgCountA = r._2(i)._3
                 avgCountB = r._2(i)._4
                 for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                   k += 1
                 }
 
@@ -235,7 +235,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 avgCountB = (avgCountB * regLength + r._2(i - 1)._4) / (regLength + 1)
                 regLength += 1
                 for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                   k += 1
                 }
 
@@ -248,7 +248,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
               avgCountA = (avgCountA * regLength + r._2(i - 1)._3) / (regLength + 1)
               avgCountB = (avgCountB * regLength + r._2(i - 1)._4) / (regLength + 1)
               for (r <- mapRegionsToExons((r._1, regLength, regStart, fcSum / regLength))) {
-                regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                 k += 1
               }
               //}
@@ -273,13 +273,13 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   }
 
   private def findContRegionsLessEqual(iSeq: RDD[(Int, Seq[(Double, Long, Double, Double, Double)])]) /*(chrId,(pval,position,foldChange) */
-  : RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
+  : RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = {
     val iSeqPart = iSeq.mapValues(r => (r.sortBy(_._2)))
     // .partitionBy(new HashPartitioner(iNumTasks * 3))
     iSeqPart
       .mapPartitions {
       partitionIterator =>
-        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)](1000000)
+        var regLenArray = new Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)](1000000)
         var k = 0
         for (r <- partitionIterator) {
           var regStart = r._2(0)._2
@@ -297,7 +297,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
                 avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
                 for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                   k += 1
                 }
                 regLength = 1
@@ -306,7 +306,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 avgCountA = r._2(i)._4
                 avgCountB = r._2(i)._5
                 for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                   k += 1
                 }
 
@@ -318,7 +318,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
                 avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
                 for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
-                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                  regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                   k += 1
                 }
 
@@ -332,7 +332,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
               avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
               avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
               for (r <- mapRegionsToExons((maxPval, regLength, regStart, fcSum / regLength))) {
-                regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB)
+                regLenArray(k) = (r._1, r._2, r._3, r._4, r._5, r._6, r._7, avgCountA, avgCountB, r._8)
                 k += 1
               }
               //}
@@ -366,11 +366,11 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     (maxStart, minEnd)
   }
 
-  private def getExonFromPosition(iChr: String, iStartPos: Int): (String, Int, Int, Int) = {
+  private def getExonFromPosition(iChr: String, iStartPos: Int): (String, Int, Int, Int, Int) = {
     if (genExonsMapB.value.contains(iChr)) {
       val id = iStartPos / 10000
       val exons = genExonsMapB.value(iChr)
-      var exonTuple = ("", 0, 0, 0)
+      var exonTuple = ("", 0, 0, 0, -1)
       val loop = new Breaks
       loop.breakable {
         if (exons(id) != null) {
@@ -385,23 +385,24 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       return exonTuple
     }
     else
-      return ("ExonNotFound", 0, 0, 0)
+      return ("ExonNotFound", 0, 0, 0, -1)
   }
 
-  private def getExongRange(iGeneId: String, iExonId: Int): (Int, Int) = {
+  private def getExongRange(iGeneId: String, iExonId: Int): (Int, Int, Int) = {
 
     return genExonsMapLookupB.value((iGeneId, iExonId))
   }
 
-  private def mapRegionsToExons(r: (Double, Int, Long, Double)): ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double)] = {
+  private def mapRegionsToExons(r: (Double, Int, Long, Double)): ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double, Int)] = {
 
     val reg = (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4)
-    val regionsArray = ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double)]()
-    val exonsOverlapHashMap = scala.collection.mutable.HashMap[(String, Int), (Double, Int)]()
+    val regionsArray = ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double, Int)]()
+    val exonsOverlapHashMap = scala.collection.mutable.HashMap[(String, Int), (Double, Int, Int)]()
     if (genExonsMapB.value.contains(reg._3._1)) {
       val exons = genExonsMapB.value(reg._3._1)
       var exId = 0
       var genId = ""
+      var tId = 0
       val id = reg._3._2 / 10000
       var exonOverlapPct = 0.0
       val loop = new Breaks
@@ -415,13 +416,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
                 exId = e._2
                 genId = e._1
+                tId = e._5
                 if (!exonsOverlapHashMap.contains((genId, exId))) {
-                  exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen)
+                  exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId)
                 }
                 else {
                   if (exonsOverlapHashMap((genId, exId))._1 < exonOverlapPct ||
                     (exonsOverlapHashMap((genId, exId))._1 == exonOverlapPct && exonsOverlapHashMap((genId, exId))._2 < exonIntersectLen))
-                    exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen)
+                    exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId)
                 }
 
                 //loop.break() //because there are some overlapping regions
@@ -433,15 +435,15 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
           }
           else if (regionsArray.length == 0)
-            regionsArray += ((reg._1, reg._2, reg._3, reg._4, "PositionNotFound", 0, 0.0))
+            regionsArray += ((reg._1, reg._2, reg._3, reg._4, "PositionNotFound", 0, 0.0, -1))
         }
         for (ex <- exonsOverlapHashMap)
-          regionsArray += ((reg._1, reg._2, reg._3, reg._4, ex._1._1, ex._1._2, math.round(ex._2._1 * 10000).toDouble / 10000))
+          regionsArray += ((reg._1, reg._2, reg._3, reg._4, ex._1._1, ex._1._2, math.round(ex._2._1 * 10000).toDouble / 10000, ex._2._3))
       }
 
     }
     else
-      regionsArray += ((reg._1, reg._2, reg._3, reg._4, "ChrNotFound", 0, 0.0))
+      regionsArray += ((reg._1, reg._2, reg._3, reg._4, "ChrNotFound", 0, 0.0, -1))
 
     return regionsArray
   }
@@ -451,7 +453,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
    * @param iCoalesceRegDiffPVal If continuous regions of different p-value <=iMaxPval should be coalesed (default false).
    * @return RDD of tuples(p-value,regionLength, (chrom,starPosition),foldChange,genId,exonId,exonRegionOverlap)
    */
-  def computeDiffExpr(iCoalesceRegDiffPVal: Boolean = false): RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
+  def computeDiffExpr(iCoalesceRegDiffPVal: Boolean = false): RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = {
 
     coalesceRegDiffPVal = iCoalesceRegDiffPVal
     val seqGroupCase = groupSeqAnalysis(iSeqAnalCase, caseSampleNum)
@@ -479,7 +481,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       //seqRegContDERDD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/debugRegCoals")
     }
     val seqReg = {
-      seqRegContDERDD.map(r => (r._1, r._2, r._3, (if (r._4 < 1.0) (-1.0 / r._4) else r._4), r._5, r._6, r._7, r._8, r._9))
+      seqRegContDERDD.map(r => (r._1, r._2, r._3, (if (r._4 < 1.0) (-1.0 / r._4) else r._4), r._5, r._6, r._7, r._8, r._9, r._10))
     }
     seqRegDERDD = coalesceContRegions(seqReg)
     seqRegDERDD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/debugRegColasCont")
@@ -491,7 +493,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (seqReg)
   }
 
-  private def fetchReults(num: Int): Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double)] = {
+  private def fetchReults(num: Int): Array[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = {
     val results = seqRegDERDD.coalesce(1).takeOrdered(num)(Ordering[(Double, Double, Int)]
       .on(r => (r._1, -(math.abs(r._4)), -r._2)))
     Thread.sleep(100)
@@ -530,14 +532,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       val writer = new PrintWriter(new File(iFilePathLocal))
       val header = "p-value".toString.padTo(10, ' ') + "foldChange".padTo(25, ' ') + "length".padTo(10, ' ') +
         "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct".padTo(15, ' ') +
-        "avgCovA".padTo(10, ' ') + "avgCovB".padTo(10, ' ') + "covSignifficant".padTo(10, ' ')
+        "avgCovA".padTo(10, ' ') + "avgCovB".padTo(10, ' ') + "covSignifficant".padTo(20, ' ') + "genExonTranId".padTo(10, ' ')
       //println("=======================================Results======================================"B
       writer.write(header + "\n")
       for (r <- a) {
         var rec = (math.round(r._1 * 100000).toDouble / 100000).toString.padTo(10, ' ') + (math.round(r._4 * 100000).toDouble / 100000).toString.padTo(25, ' ') +
           r._2.toString.padTo(10, ' ') + r._3.toString.padTo(20, ' ') + r._5.toString.padTo(25, ' ') + r._6.toString.padTo(10, ' ') + r._7.toString.padTo(15, ' ') +
           ((math.round(r._8 * 100)).toDouble / 100).toString.padTo(10, ' ') + ((math.round(r._9 * 100) / 100).toDouble).toString.padTo(10, ' ') +
-          (if (r._8 < 2 && r._9 < 2) "*" else if (r._8 >= 100 || r._9 >= 100) "****" else if (r._8 >= 10 || r._9 >= 10) "***" else "**")
+          (if (r._8 < 2 && r._9 < 2) "*" else if (r._8 >= 100 || r._9 >= 100) "****" else if (r._8 >= 10 || r._9 >= 10) "***" else "**").padTo(20, ' ') + r._10.toString.padTo(10, ' ')
         writer.write(rec + "\n")
       }
       writer.close()
@@ -545,7 +547,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     seqRegDERDD.saveAsTextFile(iFilePathRemote)
   }
 
-  private def debugSaveCandidates(iCandMap: scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int)]]],
+  private def debugSaveCandidates(iCandMap: scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int, Int)]]],
                                   iFilePathLacal: String = "sparkseq_candidates.txt") = {
     val writer = new PrintWriter(new File(iFilePathLacal))
     for (r <- iCandMap) {
@@ -558,28 +560,28 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     writer.close()
   }
 
-  def getDistExonCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
+  def getDistExonCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int, Int) /*(GeneId,ExonId,Start,End,tId)*/ ]]] = {
 
     val exonCand = seqRegDERDD /*genExons format: (genId,ExonId,chr,start,end,strand)*/
       .filter(r => (r._6 > 0)) //filter out uknown regions
       .map {
-      r => val eRange = getExongRange(r._5, r._6); (r._5, r._6, r._3._1, eRange._1, eRange._2, ".")
+      r => val eRange = getExongRange(r._5, r._6); (r._5, r._6, r._3._1, eRange._1, eRange._2, ".", r._10)
     }.distinct.collect()
     val exonCandHashMap = SparkSeqConversions.exonsToHashMap(exonCand)
     return (exonCandHashMap)
   }
 
 
-  def getRegionCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
+  def getRegionCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
     val unRegionCand = seqRegDERDD /*genExons format: (genId,ExonId,chr,start,end,strand)*/
       .filter(r => (r._6 == 0))
-      .map(r => ("", 0, r._3._1, r._3._2, r._3._2 + r._2, ".")).distinct().collect()
+      .map(r => ("", 0, r._3._1, r._3._2, r._3._2 + r._2, ".", -1)).distinct().collect()
     val newRegPreffix = "NEWREG"
     val nameLength = 15
     for (k <- 0 to unRegionCand.length - 1) {
       val newRegId = newRegPreffix.padTo(nameLength - (k + 1).toString.length, '0') + (k + 1).toString
       val t = unRegionCand(k)
-      unRegionCand(k) = (newRegId, t._2, t._3, t._4, t._5, t._6)
+      unRegionCand(k) = (newRegId, t._2, t._3, t._4, t._5, t._6, t._7)
     }
 
     val unRegionCandHashMap = SparkSeqConversions.exonsToHashMap(unRegionCand)

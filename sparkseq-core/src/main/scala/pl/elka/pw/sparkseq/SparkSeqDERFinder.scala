@@ -68,7 +68,7 @@ object SparkSeqDERFinder {
     val pathFam1 = rootPath + fileSplitSize.toString + "MB/derfinder/chrom_Y"
     val pathFam2 = rootPath + fileSplitSize.toString + "MB/derfinder/chrom_Y"
     //val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_ordered.bed"
-    val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_sort_uniq.bed"
+    val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_sort_uniq_id.bed"
     val pathExonsList = rootPath + fileSplitSize.toString + "MB/aux/" + bedFile
 
 
@@ -142,5 +142,8 @@ object SparkSeqDERFinder {
     val t = diffExp.computeDiffExpr(iCoalesceRegDiffPVal = true)
     diffExp.saveResults(iFilePathRemote = "hdfs://sparkseq002.cloudapp.net:9000/BAM/sparkseq_DERF_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt",
       iFilePathLocal = "sparkseq_local_DERF_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt")
+    //System.exit(0
+    sc.stop()
+
   }
 }

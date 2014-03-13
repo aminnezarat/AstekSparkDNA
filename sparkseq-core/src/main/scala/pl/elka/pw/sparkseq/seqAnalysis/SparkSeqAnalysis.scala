@@ -120,7 +120,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @return RDD of tuples (regionId, coverage)
    */
   def getCoverageRegion(iGenExons: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
-  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, Int, Int, Int)]]]]): RDD[(Long, Int)] = {
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, Int, Int, Int, Int)]]]]): RDD[(Long, Int)] = {
 
     val coverage = (bamFileFilter.mapPartitions {
       partitionIterator =>
