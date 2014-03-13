@@ -155,7 +155,7 @@ object SparkSeqConversions {
     val genExons = iSC.textFile(iBedFile)
       .map(l => l.split("\t"))
       .map(r => (r.array(4).trim, r.array(5).trim.toInt, r.array(0).trim, r.array(1).trim.toInt, r.array(2).trim.toInt,
-      r.array(3).trim, if (r.array(6).trim != "") r.array(6).trim.toInt else -1)).toArray
+      r.array(3).trim, if (r.array.length >= 6 && r.array(6).trim != "") r.array(6).trim.toInt else -1)).toArray
     return genExons
   }
 
