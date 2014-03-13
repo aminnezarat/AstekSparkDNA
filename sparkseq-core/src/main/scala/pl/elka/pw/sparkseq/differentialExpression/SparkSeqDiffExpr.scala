@@ -397,7 +397,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
     val reg = (r._1, r._2, SparkSeqConversions.idToCoordinates(r._3), r._4)
     val regionsArray = ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double, Int)]()
-    val exonsOverlapHashMap = scala.collection.mutable.HashMap[(String, Int), (Double, Int, Int)]()
+    val exonsOverlapHashMap = scala.collection.mutable.HashMap[(String, Int), (Double, Int, Int, Int, Int)]() /*(genId,exId)(pctOverLap,overLapLength,tId,exStart,exEnd)*/
     if (genExonsMapB.value.contains(reg._3._1)) {
       val exons = genExonsMapB.value(reg._3._1)
       var exId = 0
@@ -410,22 +410,33 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
         for (i <- math.max(0, id - 5) to math.min(id + 5, exons.length - 1)) {
           if (exons(i) != null) {
             for (e <- exons(i)) {
-              val exonIntersect = getRangeIntersect(reg._3._2, reg._3._2 + reg._2, e._3, e._4)
+              val regStart = reg._3._2
+              val regEnd = reg._3._2 + reg._2
+              val exonIntersect = getRangeIntersect(regStart, regEnd, e._3, e._4)
               val exonIntersectLen = exonIntersect._2 - exonIntersect._1
               if (exonIntersectLen > 1 /*|| (exonIntersectLen == 1 && (exonIntersectLen.toDouble / (e._4 - e._3)) >= minExonPct)*/ ) {
                 exonOverlapPct = exonIntersectLen.toDouble / (e._4 - e._3)
                 exId = e._2
                 genId = e._1
                 tId = e._5
-                if (!exonsOverlapHashMap.contains((genId, exId))) {
-                  exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId)
+                var rangeInter = (0, 0)
+                var maxIntersectLength = 0
+                var maxOverlapPct = 0.0
+                var maxId: (String, Int) = ("", 0)
+                for (k <- exonsOverlapHashMap) {
+                  rangeInter = getRangeIntersect(k._2._4, k._2._5, regStart, regEnd)
+                  if (genId == k._1._1 && maxIntersectLength < rangeInter._2 - rangeInter._1) {
+                    maxIntersectLength = rangeInter._2 - rangeInter._1
+                    maxId = k._1
+                    maxOverlapPct = k._2._1
+                  }
                 }
-                else {
-                  if (exonsOverlapHashMap((genId, exId))._1 < exonOverlapPct ||
-                    (exonsOverlapHashMap((genId, exId))._1 == exonOverlapPct && exonsOverlapHashMap((genId, exId))._2 < exonIntersectLen))
-                    exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId)
+                if (maxIntersectLength < 1)
+                  exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId, e._3, e._4)
+                else if (maxIntersectLength <= exonIntersectLen && maxOverlapPct <= exonOverlapPct) {
+                  exonsOverlapHashMap.remove(maxId)
+                  exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId, e._3, e._4)
                 }
-
                 //loop.break() //because there are some overlapping regions
 
 
@@ -434,7 +445,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
             }
 
           }
-          else if (regionsArray.length == 0)
+          else if (regionsArray.length == 0 && i == (math.min(id + 5, exons.length - 1)))
             regionsArray += ((reg._1, reg._2, reg._3, reg._4, "PositionNotFound", 0, 0.0, -1))
         }
         for (ex <- exonsOverlapHashMap)
