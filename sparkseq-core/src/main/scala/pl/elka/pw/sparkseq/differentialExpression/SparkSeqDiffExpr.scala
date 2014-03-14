@@ -445,7 +445,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
             }
 
           }
-          else if (regionsArray.length == 0 && i == (math.min(id + 5, exons.length - 1)))
+          else if (regionsArray.length == 0 && exonsOverlapHashMap.size == 0 && i == math.min(id + 5, exons.length - 1))
             regionsArray += ((reg._1, reg._2, reg._3, reg._4, "PositionNotFound", 0, 0.0, -1))
         }
         for (ex <- exonsOverlapHashMap)
