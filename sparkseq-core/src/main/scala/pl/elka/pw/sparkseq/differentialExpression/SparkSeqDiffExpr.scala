@@ -425,7 +425,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 var maxId: (String, Int) = ("", 0)
                 for (k <- exonsOverlapHashMap) {
                   rangeInter = getRangeIntersect(k._2._4, k._2._5, regStart, regEnd)
-                  if (genId == k._1._1 && maxIntersectLength < rangeInter._2 - rangeInter._1) {
+                  if (genId == k._1._1 && maxIntersectLength <= rangeInter._2 - rangeInter._1 && maxOverlapPct <= k._2._1) {
                     maxIntersectLength = rangeInter._2 - rangeInter._1
                     maxId = k._1
                     maxOverlapPct = k._2._1
@@ -433,7 +433,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                 }
                 if (maxIntersectLength < 1)
                   exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId, e._3, e._4)
-                else if (maxIntersectLength <= exonIntersectLen && maxOverlapPct <= exonOverlapPct) {
+                else if (maxOverlapPct <= exonOverlapPct) {
                   exonsOverlapHashMap.remove(maxId)
                   exonsOverlapHashMap((genId, exId)) = (exonOverlapPct, exonIntersectLen, tId, e._3, e._4)
                 }
