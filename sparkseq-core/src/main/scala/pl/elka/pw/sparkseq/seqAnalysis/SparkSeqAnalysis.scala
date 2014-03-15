@@ -127,12 +127,18 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       //var exonsCountArray = new Array[(Long,Int)](3000000)
         var exonsCountMap = scala.collection.mutable.HashMap[Long, Int]()
         var sampleId: Long = 0
+        var sampleIdRaw: Int = 0
         var exId = 0
         var refName: String = ""
         val pattern = "^[A-Za-z]*0*".r
         for (read <- partitionIterator) {
           sampleId = read._1 * 1000000000000L
-          refName = read._2._2.get.getReferenceName
+          sampleIdRaw = read._1
+          refName = read._2._2.get.getReferenceName match {
+            case "Y" => "chrY"
+            case "X" => "chrX"
+            case _ => read._2._2.get.getReferenceName
+          }
           if (iGenExons.value.contains(refName)) {
             var exons = iGenExons.value(refName)
             var basesFromRead = genBasesFromCigar(read._2._2.get.getAlignmentStart, read._2._2.get.getCigar)
@@ -172,7 +178,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
           }
         }
 
-        Iterator(exonsCountMap)
+        Iterator(exonsCountMap.mapValues(r => (math.round(r * normFactor(sampleIdRaw)).toInt)))
     }
       ).flatMap(r => r).reduceByKey(_ + _, iReduceWorkers)
     return (coverage)

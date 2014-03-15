@@ -139,10 +139,16 @@ object SparkSeqDERFinder {
     val maxPval = args(2).toDouble
     val diffExp = new SparkSeqDiffExpr(sc, seqAnalysisCase, seqAnalysisControl,
       iChr = args(0).mkString, confDir = rootPath + fileSplitSize.toString + "MB/aux/", iNumTasks = 24, iBEDFile = bedFile, iMaxPval = maxPval, iMinRegionLen = minRegLen, iMinCoverage = 1)
-    val t = diffExp.computeDiffExpr(iCoalesceRegDiffPVal = true)
+    val candRegions = diffExp.findCandRegions(iCoalesceRegDiffPVal = true)
     diffExp.saveResults(iFilePathRemote = "hdfs://sparkseq002.cloudapp.net:9000/BAM/sparkseq_DERF_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt",
       iFilePathLocal = "sparkseq_local_DERF_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt")
     //System.exit(0
+
+    val candRegBroadcast = sc.broadcast(candRegions._2)
+    val candExonBroadcast = sc.broadcast(candRegions._1)
+    val results = diffExp.permutTestRegions(candExonBroadcast).collect
+    for (r <- results)
+      println(r)
     sc.stop()
 
   }

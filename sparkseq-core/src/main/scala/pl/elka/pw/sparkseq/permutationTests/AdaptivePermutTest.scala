@@ -9,7 +9,6 @@ import org.apache.commons.math3.util.ArithmeticUtils._
 class AdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest], iX: Seq[Int], iY: Seq[Int]) {
 
 
-  private val nPermut = iNPermut
   private var nTStatGE: Int = 0
   private val xVect = iX
   private val yVect = iY
@@ -17,7 +16,9 @@ class AdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest
   private val initVect = xVect ++ yVect
   private val n = initVect.length
   private val statTests = iStatTests
-  //private val nAllPermut = (factorial(n)/(factorial(n-nX)*factorial(nX)) ).toInt
+  private val nAllPermut = (factorial(n) / (factorial(n - nX) * factorial(nX))).toInt
+  private val nPermut = math.min(iNPermut, nAllPermut)
+
   // private val permArray = new Array[(Array[Int],Array[Int])](nAllPermut)
 
   private def calculateTestStat(iX: Seq[Int], iY: Seq[Int]): Double = {
@@ -42,17 +43,19 @@ class AdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest
     val initList = initVect.toList
     var nTSGreatEqual = 0
     val combIter = initVect.toList.combinations(nX)
-    while (combIter.hasNext) {
+    var i = 1
+    while (combIter.hasNext && i <= nPermut) {
       val listX = combIter.next()
       if (calculateTestStat(listX.toArray, (initList diff listX).toArray) >= initTStat)
         nTSGreatEqual += 1
+      i += 1
     }
     nTSGreatEqual
   }
 
   def getPvalue(): Double = {
     nTStatGE = calculateNTStatGreatEqual()
-    nTStatGE / nPermut
+    (nTStatGE.toDouble / nPermut.toDouble)
   }
 
 }
