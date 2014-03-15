@@ -20,14 +20,14 @@ import scala.util.control._
 /**
  * Object for computing two-sample Cramer-von Mises test
  */
-object SparkSeqCvM2STest extends Serializable {
+object SparkSeqCvM2STest extends StatisticalTest {
   /**
    * Method for computing test statistics of two-sample Cramer von Mises test
    * @param x Value from the first sample.
    * @param y Valure from the other sample.
    * @return Test statistics.
    */
-  def computeTestStat(x: Seq[Int], y: Seq[Int]): Double = {
+  def getTestStatistics(x: Seq[Int], y: Seq[Int]): Double = {
 
     var T2 = 0.0
     val n = x.length

@@ -95,7 +95,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     /*((chrNum,p-value),(pos,FC,avgCountA,avgCountB)*/
 
     val twoSampleTests = iSeqCC
-      .map(r => (r._1, r._2, SparkSeqCvM2STest.computeTestStat(r._2._1, r._2._2)))
+      .map(r => (r._1, r._2, SparkSeqCvM2STest.getTestStatistics(r._2._1, r._2._2)))
       .map(r => ((r._1), (r._2, r._3, SparkSeqCvM2STest.getPValue(r._3, cmDistTableB),
       SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2), SparkSeqStats.mean(r._2._1), SparkSeqStats.mean(r._2._2))))
       .map(r => (((r._1 / 1000000000L).toInt, r._2._3), (r._1, r._2._4, r._2._5, r._2._6)))
