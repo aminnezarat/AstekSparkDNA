@@ -391,9 +391,8 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       return ("ExonNotFound", 0, 0, 0, -1)
   }
 
-  private def getExongRange(iGeneId: String, iExonId: Int): (Int, Int, Int) = {
-
-    return genExonsMapLookupB.value((iGeneId, iExonId))
+  private def getExonRange(iGeneId: String, iExonId: Int, tId: Int): (Int, Int) = {
+    return genExonsMapLookupB.value((iGeneId, iExonId, tId))
   }
 
   private def mapRegionsToExons(r: (Double, Int, Long, Double)): ArrayBuffer[(Double, Int, (String, Int), Double, String, Int, Double, Int)] = {
@@ -602,7 +601,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val exonCand = seqRegDERDDPhase1 /*genExons format: (genId,ExonId,chr,start,end,strand)*/
       .filter(r => (r._6 > 0)) //filter out uknown regions
       .map {
-      r => val eRange = getExongRange(r._5, r._6); (r._5, r._6, r._3._1, eRange._1, eRange._2, ".", 1)
+      r => val eRange = getExonRange(r._5, r._6, r._10); (r._5, r._6, r._3._1, eRange._1, eRange._2, ".", r._10)
     }.distinct.collect()
     val exonCandHashMap = SparkSeqConversions.exonsToHashMap(exonCand)
     return (exonCandHashMap)

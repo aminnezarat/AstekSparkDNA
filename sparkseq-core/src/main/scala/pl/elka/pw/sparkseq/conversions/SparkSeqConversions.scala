@@ -142,11 +142,11 @@ object SparkSeqConversions {
     return genExonsMap
   }
 
-  def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, Int), (Int, Int, Int)] = {
+  def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, Int, Int), (Int, Int)] = {
     val genExons = readBEDFile(sc, bedFile)
-    var genExonsMap = new scala.collection.mutable.HashMap[(String, Int), (Int, Int, Int)]()
+    var genExonsMap = new scala.collection.mutable.HashMap[(String, Int, Int), (Int, Int)]()
     for (r <- genExons)
-      genExonsMap((r._1, r._2)) = (r._4, r._5, r._7)
+      genExonsMap((r._1, r._2, r._7)) = (r._4, r._5)
     return genExonsMap
   }
 
