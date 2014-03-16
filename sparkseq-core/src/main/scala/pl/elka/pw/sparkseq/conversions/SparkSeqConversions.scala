@@ -184,7 +184,7 @@ object SparkSeqConversions {
    * @param iRegionId
    * @return
    */
-  def regionIdToGenExonId(iRegionId: Long): (String, Int) = {
+  def ensemblRegionIdToGenExonId(iRegionId: Long): (String, Int) = {
 
     //remove sampleId header
     val regId = iRegionId % 1000000000000L
@@ -214,4 +214,11 @@ object SparkSeqConversions {
 
     return (positionID % 1000000000000L)
   }
+
+
+  def ensemblGeneToLong(iGene: String): Long = {
+    val pattern = "^[A-Za-z]*0*".r
+    return (pattern.replaceAllIn("ENSG00000198692", "").toInt * 100000L)
+  }
 }
+
