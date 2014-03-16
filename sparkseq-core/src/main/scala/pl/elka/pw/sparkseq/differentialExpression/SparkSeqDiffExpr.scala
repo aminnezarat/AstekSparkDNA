@@ -521,7 +521,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       r =>
         val statTests = Array[StatisticalTest](SparkSeqCvM2STest)
         val permTest = new AdaptivePermutTest(iNPermut = 5005, iStatTests = statTests, r._2._1, r._2._2)
-        ((SparkSeqConversions.regionIdToGenExonId(r._1)), permTest.getPvalue(), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))
+        ((SparkSeqConversions.ensemblRegionIdToGenExonId(r._1)), permTest.getPvalue(), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))
     }
 
     // .filter(r=>r._2<=iMaxPval)
