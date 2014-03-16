@@ -59,9 +59,12 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
+  //private val seqRegDERDDExonsMerge:RDD[(Int, (Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Double))] = _
   private var seqRegDERDDExons: RDD[(Int, (Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Double))] = _
   private var seqRegDERDDPhase1: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = _
   private var seqRegDERDDPhase2: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = _
+  private var seqRegExonsArray: Array[(Int, (Double, Double, String, Int, Double))] = _
+
   //= new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double,Double,Double)](iSC)
   private var seqRegContDERDD: RDD[(Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Int)] = _
   //new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double,Double,Double)](iSC)
@@ -541,9 +544,35 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
     // .filter(r=>r._2<=iMaxPval)
     seqRegDERDDExons = seqRegDERDDPhase1
-      .filter(r => r._3._2 != 0)
+      //.filter(r => r._3._2 != 0)
       .map(r => (r._10, (r._1, r._2, r._3, r._4, r._5, r._6, r._7, r._8, r._9))).join(permTestRegion.map(r => (r._2, r._3)))
       .mapValues(r => (r._1._1, r._1._2, r._1._3, r._1._4, r._1._5, r._1._6, r._1._7, r._1._8, r._1._9, r._2))
+    val seqRegExons = seqRegDERDDExons.groupByKey().collect()
+    seqRegExonsArray = new Array[(Int, (Double, Double, String, Int, Double))](seqRegExons.length)
+    var i = 0
+    for (r <- seqRegExons) {
+      var overlap = 0.0
+      var exonPval = 0.0
+      var regPval = 0.0
+      var foldChange = 0.0
+      var length = 0
+      var genId = ""
+      var exonId = 0
+      for (s <- r._2) {
+
+        regPval = (regPval * length + s._2 * s._1) / (length + s._2)
+        overlap += s._7
+        foldChange = (foldChange * length + s._4 * s._2) / (length + s._2)
+        exonPval = s._10
+        length += s._2
+        genId = s._5
+        exonId = s._6
+
+      }
+      seqRegExonsArray(i) = (r._1, (exonPval, foldChange, genId, exonId, overlap))
+      i += 1
+    }
+    seqRegExonsArray = seqRegExonsArray.sortBy(r => (r._2._1, -r._2._2))
     return permTestRegion
   }
 
@@ -581,10 +610,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
    * @param iFilePathLocal Local path to save top iNum regions locally.
    * @param iFilePathRemote Remote path to HDFS storage to save all the results.
    */
-  def saveResults(iNum: Int = 10000, iFilePathLocal: String = "sparkseq_10000.txt", iFilePathRemote: String) = {
+  def saveResults(iNum: Int = 10000, iFilePathLocal: String = "sparkseq_10000.txt", iFilePathLocalExon: String = "sparkseq_exons.txt", iFilePathRemote: String) = {
     if (iNum <= 10000) {
       val localResults = fetchReultsExons(iNum)
-      val writer = new PrintWriter(new File(iFilePathLocal))
+      var writer = new PrintWriter(new File(iFilePathLocal))
       val header = "Ph-II p-val".toString.padTo(15, ' ') + "Ph-I p-val".toString.padTo(15, ' ') + "foldChange".padTo(25, ' ') + "length".padTo(10, ' ') +
         "Coordinates".padTo(20, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') + "exonOverlapPct".padTo(15, ' ') +
         "avgCovA".padTo(10, ' ') + "avgCovB".padTo(10, ' ') + "covSignifficant".padTo(20, ' ') + "genExonTranId".padTo(10, ' ')
@@ -600,6 +629,18 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
         writer.write(rec + "\n")
       }
       writer.close()
+
+      writer = new PrintWriter(new File(iFilePathLocalExon))
+      val headerExon = "Ph-II p-val".toString.padTo(15, ' ') + "foldChange".padTo(25, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(10, ' ') +
+        "exonOverlapPct".padTo(15, ' ') + "genExonTranId".padTo(10, ' ')
+      writer.write(headerExon + "\n")
+      for (r <- seqRegExonsArray) {
+        var rec = (math.round(r._2._1 * 100000).toDouble / 100000).toString.padTo(15, ' ') + (math.round(r._2._2 * 100000).toDouble / 100000).toString.padTo(25, ' ') +
+          r._2._3.padTo(25, ' ') + r._2._4.toString.padTo(10, ' ') + (math.round(r._2._5 * 100000).toDouble / 100000).toString.padTo(15, ' ') + r._1.toString.padTo(10, ' ')
+        writer.write(rec + "\n")
+      }
+      writer.close()
+
     }
     seqRegDERDDExons.saveAsTextFile(iFilePathRemote)
   }
