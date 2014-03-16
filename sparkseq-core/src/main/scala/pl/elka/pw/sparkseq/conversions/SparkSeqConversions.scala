@@ -205,5 +205,13 @@ object SparkSeqConversions {
     return (geneExonId)
   }
 
+  def sampleToLong(iSampleid: Int): Long = {
 
+    return (iSampleid * 1000000000000L)
+  }
+
+  def stripSampleID(positionID: Long): Long = {
+
+    return (positionID % 1000000000000L)
+  }
 }
