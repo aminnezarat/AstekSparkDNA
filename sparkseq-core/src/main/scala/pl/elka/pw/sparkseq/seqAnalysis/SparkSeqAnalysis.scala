@@ -120,12 +120,12 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @return RDD of tuples (regionId, coverage)
    */
   def getCoverageRegion(iGenExons: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
-  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, Int, Int, Int, Int)]]]]): RDD[(Long, Int)] = {
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, Int, Int, Int, Int)]]]]): RDD[((Long, Int), Int)] = {
 
     val coverage = (bamFileFilter.mapPartitions {
       partitionIterator =>
       //var exonsCountArray = new Array[(Long,Int)](3000000)
-        var exonsCountMap = scala.collection.mutable.HashMap[Long, Int]()
+        var exonsCountMap = scala.collection.mutable.HashMap[(Long, Int), Int]()
         var sampleId: Long = 0
         var sampleIdRaw: Int = 0
         var exId = 0
@@ -161,10 +161,10 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
                     for (r <- subReadStart to subReadEnd by 2) {
                       if (es._3 <= r && es._4 >= r) {
                         var id = sampleId + pattern.replaceAllIn(es._1, "").toInt * 100000L + es._2
-                        if (!exonsCountMap.contains(id))
-                          exonsCountMap(id) = 1
+                        if (!exonsCountMap.contains(id, es._5))
+                          exonsCountMap((id, es._5)) = 1
                         else
-                          exonsCountMap(id) += 1
+                          exonsCountMap((id, es._5)) += 1
 
                         loop.break
                       }

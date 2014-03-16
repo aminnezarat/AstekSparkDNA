@@ -59,7 +59,7 @@ object SparkSeqBaseDE {
 
     val pathFam1 = rootPath + fileSplitSize.toString + "MB/GSE51403"
     val pathFam2 = rootPath + fileSplitSize.toString + "MB/GSE51403"
-    val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_ordered.bed"
+    val bedFile = "Homo_sapiens.GRCh37.74_exons_chr_sort_uniq_id.bed"
     val pathExonsList = rootPath + fileSplitSize.toString + "MB/aux/" + bedFile
 
 
@@ -130,8 +130,14 @@ object SparkSeqBaseDE {
     val maxPval = args(2).toDouble
     val diffExp = new SparkSeqDiffExpr(sc, seqAnalysisCase, seqAnalysisControl,
       iChr = args(0).mkString, confDir = rootPath + fileSplitSize.toString + "MB/aux/", iNumTasks = 24, iBEDFile = bedFile, iMaxPval = maxPval, iMinRegionLen = minRegLen, iMinCoverage = 1)
-    val t = diffExp.findCandRegions(iCoalesceRegDiffPVal = true)
-    diffExp.saveResults(iFilePathRemote = "hdfs://sparkseq002.cloudapp.net:9000/BAM/sparkseq_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt",
-      iFilePathLocal = "sparkseq_local_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt")
+    val candRegions = diffExp.findCandRegions(iCoalesceRegDiffPVal = true)
+    val candRegBroadcast = sc.broadcast(candRegions._2)
+    val candExonBroadcast = sc.broadcast(candRegions._1)
+    val results = diffExp.permutTestRegions(candExonBroadcast).collect
+    diffExp.saveResults(iFilePathRemote = "hdfs://sparkseq002.cloudapp.net:9000/BAM/sparkseq_DERF_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt",
+      iFilePathLocal = "sparkseq_local_DERF_" + minRegLen.toString + "_" + args(0).replace("*", "whole").mkString + "_" + maxPval.toString + ".txt")
+    /*for (r <- results)
+      println(r)*/
+    sc.stop()
   }
 }
