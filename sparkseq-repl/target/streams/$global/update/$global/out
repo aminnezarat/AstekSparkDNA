@@ -7,7 +7,7 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies for pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT [compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT->org.scala-lang#scala-library;2.10.3 [compile->default(compile)][0m
 [0m[[0minfo[0m] [0mResolving org.scala-lang#scala-library;2.10.3 ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@17ff3f5d[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@7cdd462c[0m
 [0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.scala-lang#scala-library;2.10.3[0m
 [0m[[0mdebug[0m] [0m	local: revision in cache: org.scala-lang#scala-library;2.10.3[0m
 [0m[[0mdebug[0m] [0m	found org.scala-lang#scala-library;2.10.3 in sbt-chain[0m
@@ -17,7 +17,7 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT->org.scala-lang#scala-library;2.10.3 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT->pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT [compile->default(compile)][0m
 [0m[[0minfo[0m] [0mResolving pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@e1935d6[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: sbt.ivyint.MergedDescriptors@571bedb0[0m
 [0m[[0mdebug[0m] [0mdon't use cache for pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT: changing=true[0m
 [0m[[0mdebug[0m] [0m	found pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT in inter-project[0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.scala-lang#scala-library;2.10.3 [compile->default(compile)][0m
@@ -44,7 +44,6 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies org.apache.spark#spark-core_2.10;0.9.0-incubating->io.netty#netty-all;4.0.13.Final [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.apache.spark#spark-core_2.10;0.9.0-incubating->io.netty#netty-all;4.0.13.Final [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies org.apache.spark#spark-core_2.10;0.9.0-incubating->org.eclipse.jetty#jetty-server;7.6.8.v20121106 [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0mno default cache defined: set to /home/mesos/.ivy2/cache[0m
 [0m[[0minfo[0m] [0mResolving org.eclipse.jetty#jetty-server;7.6.8.v20121106 ...[0m
 [0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: org.eclipse.jetty#jetty-server;7.6.8.v20121106 {compile=[default(compile)]}[0m
 [0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: org.eclipse.jetty#jetty-server;7.6.8.v20121106[0m
@@ -1802,71 +1801,15 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->master][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->default(compile)][0m
-[0m[[0minfo[0m] [0mResolving fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT ...[0m
-[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT {compile=[default(compile)]}[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0m		tried /home/mesos/.ivy2/local/fi.tkk.ics.hadoop.bam/hadoop-bam/6.1-SNAPSHOT/ivys/ivy.xml[0m
-[0m[[0mdebug[0m] [0m	local: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo1.maven.org/maven2/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried http://repo1.maven.org/maven2/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo1.maven.org/maven2/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	public: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=https://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: https://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried https://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=https://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	Sonatype OSS: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.akka.io/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo.akka.io/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried http://repo.akka.io/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.akka.io/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	Akka Repository: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.typesafe.com/typesafe/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo.typesafe.com/typesafe/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried http://repo.typesafe.com/typesafe/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.typesafe.com/typesafe/releases/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	Typesafe: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://scala-tools.org/repo-snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: http://scala-tools.org/repo-snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried http://scala-tools.org/repo-snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://scala-tools.org/repo-snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	Scala Tools Snapshots: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.scalanlp.org/repo/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo.scalanlp.org/repo/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried http://repo.scalanlp.org/repo/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.scalanlp.org/repo/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	ScalaNLP Maven2: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.spray.cc/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: http://repo.spray.cc/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried http://repo.spray.cc/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://repo.spray.cc/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	Spray: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m	maven-metadata not available: http://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/maven-metadata.xml[0m
-[0m[[0mdebug[0m] [0m		tried http://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0mCLIENT ERROR: Not Found url=http://oss.sonatype.org/content/repositories/snapshots/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-SNAPSHOT.pom[0m
-[0m[[0mdebug[0m] [0m	Sonatype snapshots: no ivy file found for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0mdon't use cache for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT: changing=true[0m
-[0m[[0mdebug[0m] [0m[6.1-20131203.221118-1] fi/tkk/ics/hadoop/bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0m		tried http://hadoop-bam.sourceforge.net/maven/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-20131203.221118-1.pom[0m
-[0m[[0mdebug[0m] [0m	Hadoop-BAM: found md file for fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0m		=> http://hadoop-bam.sourceforge.net/maven/fi/tkk/ics/hadoop/bam/hadoop-bam/6.1-SNAPSHOT/hadoop-bam-6.1-20131203.221118-1.pom (6.1-SNAPSHOT)[0m
-[0m[[0mdebug[0m] [0m	default-cache: revision in cache (not updated): fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT[0m
-[0m[[0mdebug[0m] [0m	found fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT in sbt-chain[0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->default(compile)][0m
+[0m[[0minfo[0m] [0mResolving fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 ...[0m
+[0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 {compile=[default(compile)]}[0m
+[0m[[0mdebug[0m] [0msbt-chain: module revision found in cache: fi.tkk.ics.hadoop.bam#hadoop-bam;6.1[0m
+[0m[[0mdebug[0m] [0m	local: revision in cache: fi.tkk.ics.hadoop.bam#hadoop-bam;6.1[0m
+[0m[[0mdebug[0m] [0m	found fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 in sbt-chain[0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->default(compile)][0m
 [0m[[0minfo[0m] [0mResolving picard#picard;1.93 ...[0m
 [0m[[0mdebug[0m] [0msbt-chain: Checking cache for: dependency: picard#picard;1.93 {compile=[default(compile)]}[0m
@@ -3148,10 +3091,10 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->master][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->compile][0m
@@ -4399,10 +4342,10 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->master][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->compile][0m
@@ -5670,10 +5613,10 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->master][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->compile][0m
@@ -6923,10 +6866,10 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->master][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->compile][0m
@@ -8176,10 +8119,10 @@
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->compile][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->org.apache.hadoop#hadoop-client;1.2.1 [compile->master][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->default(compile)][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->runtime][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->compile][0m
-[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT [compile->master][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->default(compile)][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->runtime][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->compile][0m
+[0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->fi.tkk.ics.hadoop.bam#hadoop-bam;6.1 [compile->master][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->default(compile)][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->runtime][0m
 [0m[[0mdebug[0m] [0m== resolving dependencies pl.edu.pw.elka#sparkseq-core_2.10;0.1-SNAPSHOT->picard#picard;1.93 [compile->compile][0m
@@ -8307,7 +8250,7 @@
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] com.github.nscala-time#nscala-time_2.10;0.8.0!nscala-time_2.10.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.apache.commons#commons-math3;3.2!commons-math3.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.apache.hadoop#hadoop-client;1.2.1!hadoop-client.jar[0m
-[0m[[0mdebug[0m] [0m	[NOT REQUIRED] fi.tkk.ics.hadoop.bam#hadoop-bam;6.1-SNAPSHOT!hadoop-bam.jar[0m
+[0m[[0mdebug[0m] [0m	[NOT REQUIRED] fi.tkk.ics.hadoop.bam#hadoop-bam;6.1!hadoop-bam.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] picard#picard;1.93!picard.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] samtools#samtools;1.93!samtools.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] tribble#tribble;1.93!tribble.jar[0m
@@ -8413,7 +8356,7 @@
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.scala-lang#jline;2.10.3!jline.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] org.fusesource.jansi#jansi;1.4!jansi.jar[0m
 [0m[[0mdebug[0m] [0m	[NOT REQUIRED] com.sqality.scct#scct_2.10;0.3!scct_2.10.jar[0m
-[0m[[0mdebug[0m] [0m:: resolution report :: resolve 6689ms :: artifacts dl 97ms[0m
+[0m[[0mdebug[0m] [0m:: resolution report :: resolve 2817ms :: artifacts dl 127ms[0m
 [0m[[0mdebug[0m] [0m	report for pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT compile produced in /home/mesos/phd/sparkseq/sparkseq-repl/target/resolution-cache/reports/pl.edu.pw.elka-sparkseq-repl_2.10-compile.xml[0m
 [0m[[0mdebug[0m] [0m	report for pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT runtime produced in /home/mesos/phd/sparkseq/sparkseq-repl/target/resolution-cache/reports/pl.edu.pw.elka-sparkseq-repl_2.10-runtime.xml[0m
 [0m[[0mdebug[0m] [0m	report for pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT test produced in /home/mesos/phd/sparkseq/sparkseq-repl/target/resolution-cache/reports/pl.edu.pw.elka-sparkseq-repl_2.10-test.xml[0m
@@ -8429,5 +8372,5 @@
 [0m[[0mdebug[0m] [0m	report for pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT scala-tool produced in /home/mesos/phd/sparkseq/sparkseq-repl/target/resolution-cache/reports/pl.edu.pw.elka-sparkseq-repl_2.10-scala-tool.xml[0m
 [0m[[0mdebug[0m] [0m	report for pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT scct produced in /home/mesos/phd/sparkseq/sparkseq-repl/target/resolution-cache/reports/pl.edu.pw.elka-sparkseq-repl_2.10-scct.xml[0m
 [0m[[0mdebug[0m] [0m	report for pl.edu.pw.elka#sparkseq-repl_2.10;0.1-SNAPSHOT scct-test produced in /home/mesos/phd/sparkseq/sparkseq-repl/target/resolution-cache/reports/pl.edu.pw.elka-sparkseq-repl_2.10-scct-test.xml[0m
-[0m[[0mdebug[0m] [0m	resolve done (6689ms resolve - 97ms download)[0m
+[0m[[0mdebug[0m] [0m	resolve done (2817ms resolve - 127ms download)[0m
 [0m[[0minfo[0m] [0mDone updating.[0m
