@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.10" % "2.1.0-RC2" % "test",
   "org.apache.commons" % "commons-math3" % "3.2",          
   "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
-  "fi.tkk.ics.hadoop.bam" % "hadoop-bam" % "6.1-SNAPSHOT",
+  "fi.tkk.ics.hadoop.bam" % "hadoop-bam" % "6.1",
   "picard" % "picard" % "1.93",
   "samtools" % "samtools" % "1.93",
   "tribble" % "tribble" % "1.93",
