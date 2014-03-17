@@ -134,7 +134,7 @@ object SparkSeqConversions {
    * @param bedFile Path to BED file.
    * @return SparkSeq internal representation of a BED as a HashMap
    */
-  def BEDFileToHashMap(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
+  def BEDFileToHashMap(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
 
     val genExons = readBEDFile(sc, bedFile)
     /*genExons format: (genId,ExonId,chr,start,end,strand)*/
@@ -142,20 +142,20 @@ object SparkSeqConversions {
     return genExonsMap
   }
 
-  def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, Int, Int), (Int, Int)] = {
+  def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, String), (Int, Int)] = {
     val genExons = readBEDFile(sc, bedFile)
-    var genExonsMap = new scala.collection.mutable.HashMap[(String, Int, Int), (Int, Int)]()
+    var genExonsMap = new scala.collection.mutable.HashMap[(String, String), (Int, Int)]()
     for (r <- genExons)
-      genExonsMap((r._1, r._2, r._7)) = (r._4, r._5)
+      genExonsMap((r._1, r._2)) = (r._4, r._5)
     return genExonsMap
   }
 
 
-  private def readBEDFile(iSC: SparkContext, iBedFile: String): Array[(String, Int, String, Int, Int, String, Int)] = {
+  private def readBEDFile(iSC: SparkContext, iBedFile: String): Array[(String, String, String, Int, Int, String)] = {
     val genExons = iSC.textFile(iBedFile)
       .map(l => l.split("\t"))
-      .map(r => (r.array(4).trim, r.array(5).trim.toInt, r.array(0).trim, r.array(1).trim.toInt, r.array(2).trim.toInt,
-      r.array(3).trim, if (r.array.length >= 7 && r.array(6).trim != "") r.array(6).trim.toInt else -1)).toArray
+      .map(r => (r.array(4).trim, r.array(5).trim, r.array(0).trim, r.array(1).trim.toInt, r.array(2).trim.toInt,
+      r.array(3).trim)).toArray
     return genExons
   }
 
@@ -164,17 +164,17 @@ object SparkSeqConversions {
    * @param iExons
    * @return
    */
-  def exonsToHashMap(iExons: Array[(String, Int, String, Int, Int, String, Int)]): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int, Int)]]] = {
+  def exonsToHashMap(iExons: Array[(String, String, String, Int, Int, String)]): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int)]]] = {
 
     val genExons = iExons
-    var genExonsMap = scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, Int, Int, Int, Int) /*(GeneId,ExonId,Start,End,tId)*/ ]]]()
+    var genExonsMap = scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]]()
     for (ge <- genExons) {
       if (!genExonsMap.contains(ge._3))
-        genExonsMap(ge._3) = new Array[ArrayBuffer[(String, Int, Int, Int, Int)]](25000)
+        genExonsMap(ge._3) = new Array[ArrayBuffer[(String, String, Int, Int)]](25000)
       var idIn = ge._4 / 10000
       if (genExonsMap(ge._3)(idIn) == null)
-        genExonsMap(ge._3)(idIn) = new ArrayBuffer[(String, Int, Int, Int, Int)]()
-      genExonsMap(ge._3)(idIn) += ((ge._1, ge._2, ge._4, ge._5, ge._7))
+        genExonsMap(ge._3)(idIn) = new ArrayBuffer[(String, String, Int, Int)]()
+      genExonsMap(ge._3)(idIn) += ((ge._1, ge._2, ge._4, ge._5))
     }
     return genExonsMap
   }
@@ -184,22 +184,22 @@ object SparkSeqConversions {
    * @param iRegionId
    * @return
    */
-  def ensemblRegionIdToGenExonId(iRegionId: Long): (String, Int) = {
+  def ensemblRegionIdToExonId(iRegionId: Long): String = {
 
     //remove sampleId header
     val regId = iRegionId % 1000000000000L
-    var geneExonId: (String, Int) = ("", 0)
+    var geneExonId = ""
     val newRegPreffix = "NEWREG"
-    val knowGenPreffix = "ENSG"
+    val knowGenPreffix = "ENSE"
     val nameLength = 15
 
-    val exonId = (regId % 1000).toInt
-    val genId = (regId / 100000).toString
+    //val exonId = (regId % 1000).toInt
+    val exonId = (regId / 100000).toString
 
-    if (exonId == 0) //check if exonId=0 =>new region
-      geneExonId = (newRegPreffix.padTo(nameLength - genId.length, '0') + genId, exonId)
+    if (exonId == "0") //check if exonId=0 =>new region
+      geneExonId = newRegPreffix.padTo(nameLength - exonId.length, '0') + exonId
     else {
-      geneExonId = (knowGenPreffix.padTo(nameLength - genId.length, '0') + genId, exonId)
+      geneExonId = knowGenPreffix.padTo(nameLength - exonId.length, '0') + exonId
     }
 
     return (geneExonId)
@@ -216,9 +216,9 @@ object SparkSeqConversions {
   }
 
 
-  def ensemblGeneToLong(iGene: String): Long = {
+  def ensemblExonToLong(iGene: String): Long = {
     val pattern = "^[A-Za-z]*0*".r
-    return (pattern.replaceAllIn("ENSG00000198692", "").toInt * 100000L)
+    return (pattern.replaceAllIn(iGene, "").toInt * 100000L)
   }
 }
 

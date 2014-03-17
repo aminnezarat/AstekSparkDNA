@@ -22,7 +22,7 @@ class AdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest
   // private val permArray = new Array[(Array[Int],Array[Int])](nAllPermut)
 
   private def calculateTestStat(iX: Seq[Int], iY: Seq[Int]): Double = {
-    val testResult = Array[Double](statTests.length)
+    val testResult = new Array[Double](statTests.length)
     var i = 0
     for (t <- statTests) {
       testResult(i) = t.getTestStatistics(iX, iY)
