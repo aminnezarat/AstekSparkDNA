@@ -22,12 +22,12 @@ import jsc.independentsamples.MannWhitneyTest
  */
 
 /**
- * Object for computing two-sample MannWhitney  test
+ * Object for computing two-sample Mann-Whitney  test
  */
 object SparkSeqMW2STest extends SparkSeqStatisticalTest {
 
   /**
-   * Method for computing test statistics of two-sample Cramer von Mises test
+   * Method for computing test statistics of two-sample Mann-Whitney test
    * @param x Value from the first sample.
    * @param y Value from the other sample.
    * @return Test statistics.

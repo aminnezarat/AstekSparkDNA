@@ -51,6 +51,9 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    */
   var bamFile = iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r))
   private var bamFileFilter = bamFile
+  /**
+   * Number of samples (defaults to 1)
+   */
   var sampleNum = 1
 
   private var normFactor = scala.collection.mutable.HashMap[Int, Double]()
