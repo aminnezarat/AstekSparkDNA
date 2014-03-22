@@ -25,7 +25,7 @@ package pl.elka.pw.sparkseq.statisticalTests
 abstract class SparkSeqStatisticalTest {
 
   /**
-   * Method for computing test statistics of two-sample Cramer von Mises test
+   * Method for computing test statistics
    * @param x Value from the first sample.
    * @param y Value from the other sample.
    * @return Test statistics.

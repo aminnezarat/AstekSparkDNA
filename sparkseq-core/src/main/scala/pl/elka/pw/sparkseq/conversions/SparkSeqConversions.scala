@@ -81,7 +81,7 @@ object SparkSeqConversions {
 
   /**
    * Method for converting SparSeq internal gen position representation to tuple (chromosome, position)
-   * @param id SparSeq internal gen position representation as Long number
+   * @param id SparkSeq's internal gen position representation as Long number
    * @return Tuple (chromosome, position)
    */
   def idToCoordinates(id: Long): (String, Int) = {
@@ -146,7 +146,7 @@ object SparkSeqConversions {
    * Method for reading BED file and then to convert to SparSeq internal HashMap representation, optimized for searching by geneID,exonID.
    * @param sc Apache Spark context.
    * @param bedFile Path to BED file.
-   * @return SparkSeq internal representation of a BED as a HashMap ((GeneId,ExonId),chr,Start,End))
+   * @return SparkSeq's internal representation of a BED as a HashMap ((GeneId,ExonId),chr,Start,End))
    */
   def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, String), (String, Int, Int)] = {
     val genExons = readBEDFile(sc, bedFile)
@@ -168,7 +168,7 @@ object SparkSeqConversions {
   /**
    * Method of converting array of exoxs to SparSeq internal HashMap representation, optimized for searching by chr,position.
    * @param iExons Array of exons ()
-   * @return SparkSeq internal representation of a array of exons as a HashMap(chr,(geneID,exonID,startPos,endPos) )
+   * @return SparkSeq's internal representation of a array of exons as a HashMap(chr,(geneID,exonID,startPos,endPos) )
    */
   def exonsToHashMap(iExons: Array[(String, String, String, Int, Int, String)]): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int)]]] = {
 
