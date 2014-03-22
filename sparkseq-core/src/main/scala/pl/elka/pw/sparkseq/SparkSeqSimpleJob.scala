@@ -145,10 +145,10 @@ object SparkSeqSimpleJob {
 
 
     /*Test Exon counts*/
-    val covCase = seqAnalysisCase.getCoverageRegion(genExonsMapB).map(c=>(c._1%100000000000L,c._2) ).groupByKey()
+    val covCase = seqAnalysisCase.getCoverageRegion(genExonsMapB).map(c => (c._1 % 100000000000L, c._2)).groupByKey()
       .map(c=>(c._1,c._2 )) //.partitionBy(new HashPartitioner(15))
-    val covControl = seqAnalysisControl.getCoverageRegion(genExonsMapB).map(c=>(c._1%100000000000L,c._2) ).groupByKey()
-      .map(c=>(c._1,c._2 ))//.partitionBy(new HashPartitioner(15))
+   val covControl = seqAnalysisControl.getCoverageRegion(genExonsMapB).map(c => (c._1 % 100000000000L, c._2)).groupByKey()
+       .map(c=>(c._1,c._2 ))//.partitionBy(new HashPartitioner(15))
     //val covJoint = covCase++covControl
     val covJoint = covCase.join(covControl)
     //val covCase = seqAnalysisCase.getCoverageRegion(genExonsMap)

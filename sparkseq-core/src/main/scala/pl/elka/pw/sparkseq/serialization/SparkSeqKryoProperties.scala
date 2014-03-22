@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014. [insert your company or name here]
+ * Copyright (c) 2014. Marek Wiewiorka
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ object SparkSeqKryoProperties {
    * @return
    */
   def setupKryoContextProperties() = {
-    System.setProperty("spark.kryoserializer.buffer.mb", "20")
+    System.setProperty("spark.kryoserializer.buffer.mb", "25")
     System.setProperty("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     System.setProperty("spark.kryo.registrator", "pl.elka.pw.sparkseq.serialization.SparkSeqKryoRegistrator")
     System.setProperty("spark.kryo.referenceTracking","false")

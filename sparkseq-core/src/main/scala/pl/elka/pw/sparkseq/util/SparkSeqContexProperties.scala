@@ -24,7 +24,7 @@ object SparkSeqContexProperties {
    * @return
    */
   def setupContexProperties() ={
-    //	System.setProperty("spark.storage.memoryFraction","0.33")
+    System.setProperty("spark.storage.memoryFraction", "0.5")
     System.setProperty("spark.executor.memory", "10g")
     //System.setProperty("spark.locality.wait","600")
     	System.setProperty("spark.rdd.compress", "true")
@@ -34,7 +34,8 @@ object SparkSeqContexProperties {
     //	System.setProperty("spark.akka.timeout", "90000")
     //	System.setProperty("spark.worker.timeout", "90000")
     //	System.setProperty("spark.storage.blockManagerHeartBeatMs","30000")
-    //        System.setProperty("spark.cores.max","8")
+    //System.setProperty(" spark.mesos.coarse","true")
+    //System.setProperty("spark.cores.max","10")
     //      System.setProperty("spark.local.dir", "/home/ubuntu")
 
   }

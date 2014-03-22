@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014. [insert your company or name here]
+ * Copyright (c) 2014. Marek Wiewiorka
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ package pl.elka.pw.sparkseq.serialization
 
 import com.esotericsoftware.kryo.Kryo
 import org.apache.spark.serializer.KryoRegistrator
-//import com.romix.scala.serialization.kryo._
+import pl.elka.pw.sparkseq.differentialExpression.SparkSeqDiffExpr
+
 /**
  * Class for registering various classes with KryoSerializer.
  */
@@ -31,6 +32,7 @@ class SparkSeqKryoRegistrator extends org.apache.spark.serializer.KryoRegistrato
     kryo.register(classOf[net.sf.samtools.Cigar])
     kryo.register(classOf[fi.tkk.ics.hadoop.bam.BAMInputFormat])
     kryo.register(classOf[org.apache.hadoop.io.LongWritable])
+    //kryo.register(classOf[pl.elka.pw.sparkseq.differentialExpression.SparkSeqDiffExpr])
     //kryo.register(classOf[scala.collection.Traversable[_]], new ScalaCollectionSerializer(kryo))
     //kryo.register(classOf[scala.Product], new ScalaProductSerializer(kryo))
    }

@@ -8,7 +8,7 @@ import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
  */
 
 import org.scalatest.FunSuite
-    class SparkSeqAnalysisSuite extends  SparkFunSuite{
+class SparkSeqAnalysisSuite extends  SparkFunSuite{
 
       sparkSeqTest("Test region count"){
         val pathExonsList = "sparkseq-core/src/test/resources/sample_1.bed"
