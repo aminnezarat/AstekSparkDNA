@@ -167,19 +167,18 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
                   if (unionMode == true && counter > 1)
                     outloop.break
                   for (es <- readStartArray) {
-                  loop.breakable {
-                    for (r <- subReadStart to subReadEnd by 2) {
-                      if (es._3 <= r && es._4 >= r) {
-                        var id = sampleId + pattern.replaceAllIn(es._2, "").toInt * 100000L
-                        exonsOverlap += id
-                        counter += 1
-                        loop.break
-                      }
+                    loop.breakable {
+                      for (r <- subReadStart to subReadEnd by 2) {
+                        if (es._3 <= r && es._4 >= r) {
+                          var id = sampleId + pattern.replaceAllIn(es._2, "").toInt * 100000L
+                          exonsOverlap += id
+                          counter += 1
+                          loop.break
+                        }
 
+                      }
                     }
                   }
-                }
-
                 }
                 if (unionMode == true && counter == 1) {
                   val id = exonsOverlap(0)
