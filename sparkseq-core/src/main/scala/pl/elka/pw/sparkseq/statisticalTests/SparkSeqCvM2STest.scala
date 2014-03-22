@@ -20,7 +20,7 @@ import scala.util.control._
 /**
  * Object for computing two-sample Cramer-von Mises test
  */
-object SparkSeqCvM2STest extends StatisticalTest {
+object SparkSeqCvM2STest extends SparkSeqStatisticalTest {
   /**
    * Method for computing test statistics of two-sample Cramer von Mises test
    * @param x Value from the first sample.

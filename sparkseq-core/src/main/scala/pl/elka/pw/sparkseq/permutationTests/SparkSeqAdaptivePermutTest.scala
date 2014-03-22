@@ -29,7 +29,7 @@ import org.apache.commons.math3.util.ArithmeticUtils._
  * @param iX X Vector of coverage
  * @param iY Y Vector of coverage
  */
-class SparkSeqAdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest], iX: Seq[Int], iY: Seq[Int]) {
+class SparkSeqAdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[SparkSeqStatisticalTest], iX: Seq[Int], iY: Seq[Int]) {
 
 
   private var nTStatGE: Int = 0

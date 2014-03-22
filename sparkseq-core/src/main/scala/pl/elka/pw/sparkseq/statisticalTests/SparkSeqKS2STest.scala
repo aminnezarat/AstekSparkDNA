@@ -25,7 +25,7 @@ import jsc.independentsamples.SmirnovTest
 /**
  * Object for computing two-sample Cramer-von Mises test
  */
-object SparkSeqKS2STest extends StatisticalTest {
+object SparkSeqKS2STest extends SparkSeqStatisticalTest {
 
   /**
    * Method for computing test statistics of two-sample Cramer von Mises test

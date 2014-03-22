@@ -543,7 +543,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val jointRegion = joinSeqAnalysisGroupRegion(seqRegCovCase, seqRegCovControl)
     val permTestRegionD = jointRegion.map {
       r =>
-        val statTests = Array[StatisticalTest](SparkSeqCvM2STest, SparkSeqKS2STest)
+        val statTests = Array[SparkSeqStatisticalTest](SparkSeqCvM2STest, SparkSeqKS2STest)
         val permTest = new SparkSeqAdaptivePermutTest(iNPermut = 10000, iStatTests = statTests, r._2._1, r._2._2)
         (SparkSeqConversions.ensemblRegionIdToExonId(r._1), permTest.getPvalue(), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2), r._2._1, r._2._2)
     }

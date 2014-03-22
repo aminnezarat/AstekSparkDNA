@@ -24,7 +24,7 @@ import jsc.independentsamples.MannWhitneyTest
 /**
  * Object for computing two-sample MannWhitney  test
  */
-object SparkSeqMW2STest extends StatisticalTest {
+object SparkSeqMW2STest extends SparkSeqStatisticalTest {
 
   /**
    * Method for computing test statistics of two-sample Cramer von Mises test
