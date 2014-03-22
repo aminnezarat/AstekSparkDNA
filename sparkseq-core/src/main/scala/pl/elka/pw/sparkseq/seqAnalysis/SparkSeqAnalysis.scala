@@ -120,10 +120,12 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * Method for computing coverage for a given list of genetic regions.
    *
    * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
+   * @param unionMode If set to true reads overlapping more than one region are discarded (false by default). More info on union mode:
+   *                  http://www-huber.embl.de/users/anders/HTSeq/doc/count.html#count
    * @return RDD of tuples (regionId, coverage)
    */
   def getCoverageRegion(iGenExons: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
-  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]]): RDD[(Long, Int)] = {
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]], unionMode: Boolean = false): RDD[(Long, Int)] = {
 
     val coverage = (bamFileFilter.mapPartitions {
       partitionIterator =>
@@ -156,25 +158,47 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
               else if (idReadStart > 0 && readStartArray == null && exons(idReadStart - 1) != null)
                 readStartArray = exons(idReadStart - 1)
               val loop = new Breaks;
-
+              val outloop = new Breaks;
               // if(idReadStart == idReadEnd ){
               if (readStartArray != null) {
-                for (es <- readStartArray) {
+                val exonsOverlap = new ArrayBuffer[Long]()
+                var counter = 0
+                outloop.breakable {
+                  if (unionMode == true && counter > 1)
+                    outloop.break
+                  for (es <- readStartArray) {
                   loop.breakable {
                     for (r <- subReadStart to subReadEnd by 2) {
                       if (es._3 <= r && es._4 >= r) {
                         var id = sampleId + pattern.replaceAllIn(es._2, "").toInt * 100000L
-                        if (!exonsCountMap.contains(id))
-                          exonsCountMap((id)) = 1
-                        else
-                          exonsCountMap((id)) += 1
-
+                        exonsOverlap += id
+                        counter += 1
                         loop.break
                       }
 
                     }
                   }
                 }
+
+                }
+                if (unionMode == true && counter == 1) {
+                  val id = exonsOverlap(0)
+                  if (!exonsCountMap.contains(id))
+                    exonsCountMap((id)) = 1
+                  else
+                    exonsCountMap((id)) += 1
+                }
+                else if (unionMode == false && counter >= 1) {
+                  for (e <- exonsOverlap) {
+                    val id = e
+                    if (!exonsCountMap.contains(id))
+                      exonsCountMap((id)) = 1
+                    else
+                      exonsCountMap((id)) += 1
+                  }
+                }
+
+
               }
             }
 
