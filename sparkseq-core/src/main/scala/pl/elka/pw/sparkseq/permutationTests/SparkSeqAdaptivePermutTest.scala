@@ -1,12 +1,35 @@
+/**
+ * Copyright (c) 2014. Marek Wiewiorka
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pl.elka.pw.sparkseq.permutationTests
 
 import pl.elka.pw.sparkseq.statisticalTests._
 import org.apache.commons.math3.util.ArithmeticUtils._
 
 /**
- * Created by mesos on 3/9/14.
+ * Created by marek on 3/9/14.
  */
-class AdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest], iX: Seq[Int], iY: Seq[Int]) {
+
+/**
+ * Class for conducting adaptive permutation test.
+ * @param iNPermut Number of permutations to run.
+ * @param iStatTests Array of tests to run.
+ * @param iX X Vector of coverage
+ * @param iY Y Vector of coverage
+ */
+class SparkSeqAdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest], iX: Seq[Int], iY: Seq[Int]) {
 
 
   private var nTStatGE: Int = 0
@@ -53,6 +76,10 @@ class AdaptivePermutTest(iNPermut: Int = 1000, iStatTests: Array[StatisticalTest
     nTSGreatEqual
   }
 
+  /**
+   * Method for getting exact p-value.
+   * @return p-value.
+   */
   def getPvalue(): Double = {
     nTStatGE = calculateNTStatGreatEqual()
     (nTStatGE.toDouble / nPermut.toDouble)
