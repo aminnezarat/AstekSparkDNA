@@ -129,10 +129,10 @@ object SparkSeqConversions {
   }
 
   /**
-   * Method for converting BED file to SparSeq internal HashMap
+   * Method for reading BED file and then to convert to SparSeq internal HashMap representation, optimized for searching by chr,position.
    * @param sc Apache Spark context.
    * @param bedFile Path to BED file.
-   * @return SparkSeq internal representation of a BED as a HashMap
+   * @return SparkSeq internal representation of a BED as a HashMap (chr,Array[ArrayBuffer(geneId,exonId,start,end)])
    */
   def BEDFileToHashMap(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
 
@@ -142,11 +142,17 @@ object SparkSeqConversions {
     return genExonsMap
   }
 
-  def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, String), (Int, Int)] = {
+  /**
+   * Method for reading BED file and then to convert to SparSeq internal HashMap representation, optimized for searching by geneID,exonID.
+   * @param sc Apache Spark context.
+   * @param bedFile Path to BED file.
+   * @return SparkSeq internal representation of a BED as a HashMap ((GeneId,ExonId),chr,Start,End))
+   */
+  def BEDFileToHashMapGeneExon(sc: SparkContext, bedFile: String): scala.collection.mutable.HashMap[(String, String), (String, Int, Int)] = {
     val genExons = readBEDFile(sc, bedFile)
-    var genExonsMap = new scala.collection.mutable.HashMap[(String, String), (Int, Int)]()
+    var genExonsMap = new scala.collection.mutable.HashMap[(String, String), (String, Int, Int)]()
     for (r <- genExons)
-      genExonsMap((r._1, r._2)) = (r._4, r._5)
+      genExonsMap((r._1, r._2)) = (r._3, r._4, r._5)
     return genExonsMap
   }
 
@@ -160,9 +166,9 @@ object SparkSeqConversions {
   }
 
   /**
-   *
-   * @param iExons
-   * @return
+   * Method of converting array of exoxs to SparSeq internal HashMap representation, optimized for searching by chr,position.
+   * @param iExons Array of exons ()
+   * @return SparkSeq internal representation of a array of exons as a HashMap(chr,(geneID,exonID,startPos,endPos) )
    */
   def exonsToHashMap(iExons: Array[(String, String, String, Int, Int, String)]): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int)]]] = {
 
@@ -180,9 +186,9 @@ object SparkSeqConversions {
   }
 
   /**
-   *
+   * Method for decoding Ensembl exonId from SparkSeq's internal representation based on one Long-type value
    * @param iRegionId
-   * @return
+   * @return Ensemble format exonID
    */
   def ensemblRegionIdToExonId(iRegionId: Long): String = {
 
@@ -205,17 +211,31 @@ object SparkSeqConversions {
     return (geneExonId)
   }
 
+  /**
+   * Convert real sampleID from SparkSeq's internal representation based on one Long-type value
+   * @param iSampleid
+   * @return Sample id as Long number.
+   */
   def sampleToLong(iSampleid: Int): Long = {
 
     return (iSampleid * 1000000000000L)
   }
 
-  def stripSampleID(positionID: Long): Long = {
+  /**
+   * Remove sampleID preffix from position or region id.
+   * @param id Position or region id.
+   * @return Position or region id withoud sample preffix.
+   */
+  def stripSampleID(id: Long): Long = {
 
-    return (positionID % 1000000000000L)
+    return (id % 1000000000000L)
   }
 
-
+  /**
+   * Method for encoding Ensembl exonID into SparkSeq's internal representation based on one Long-type value
+   * @param iGene
+   * @return
+   */
   def ensemblExonToLong(iGene: String): Long = {
     val pattern = "^[A-Za-z]*0*".r
     return (pattern.replaceAllIn(iGene, "").toInt * 100000L)
