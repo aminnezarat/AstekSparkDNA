@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="SBT: samtools:samtools:1.93">
-    <CLASSES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/samtools/samtools/jars/samtools-1.93.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
