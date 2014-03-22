@@ -32,6 +32,7 @@ import pl.elka.pw.sparkseq.statisticalTests._
  * Created by mwiewior on 2/24/14.
  */
 /**
+ * Class for creating differential expression pipeline.
  *
  * @param iSC Apache Spark context.
  * @param iSeqAnalCase SparkSeqAnalysis object for case samples.
@@ -40,15 +41,15 @@ import pl.elka.pw.sparkseq.statisticalTests._
  * @param iChr Chromosome (eg. chr1)
  * @param iStartPos Starting position in a chromosome (default 1).
  * @param iEndPos End position in a chromosome (default 300000000).
- * @param iMinCoverage Minimal base-coverage (default 10).
- * @param iMinRegionLen Minimal region length (default 2).
+ * @param iMinCoverage Minimal base-coverage (default 1).
+ * @param iMinRegionLen Minimal region length (default 1).
  * @param iMaxPval Maximum p-value for base differential expression (default 0.1).
  * @param iNumTasks Number of tasks and partitions (default 8).
  * @param iNumReducers Number of reducer workers (default 8).
  * @param confDir Configuration directory.
  */
 class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAnalControl: SparkSeqAnalysis, iBEDFile: String, iChr: String = "*",
-                       iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Double = 1.0, iMinRegionLen: Int = 2,
+                       iStartPos: Int = 1, iEndPos: Int = 300000000, iMinCoverage: Double = 1.0, iMinRegionLen: Int = 1,
                        iMaxPval: Double = 0.1, iNumTasks: Int = 8, iNumReducers: Int = 8, confDir: String) extends Serializable {
 
   private val maxPval = iMaxPval
@@ -57,13 +58,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   private val minExonPct = 0.0
   private var coalesceRegDiffPVal = false
 
+
   private val caseSampleNum: Int = iSeqAnalCase.sampleNum
   private val controlSampleNum: Int = iSeqAnalControl.sampleNum
   //private val seqRegDERDDExonsMerge:RDD[(Int, (Double, Int, (String, Int), Double, String, Int, Double, Double, Double, Double))] = _
   private var seqRegDERDDExons: RDD[(String, (Double, Int, (String, Int), Double, String, String, Double, Double, Double, Double))] = _
   private var seqRegDERDDPhase1: RDD[(Double, Int, (String, Int), Double, String, String, Double, Double, Double)] = _
   private var seqRegDERDDPhase2: RDD[(Double, Int, (String, Int), Double, String, String, Double, Double, Double)] = _
-  private var seqRegExonsArray: Array[(String, (Double, Double, String, String, Double))] = _
+  private var seqRegExonsArray: Array[(String, (Double, Double, String, String, Double, Double, Double))] = _
 
   //= new EmptyRDD[(Double, Int, (String, Int), Double, String, Int, Double,Double,Double)](iSC)
   private var seqRegContDERDD: RDD[(Double, Int, (String, Int), Double, String, String, Double, Double, Double)] = _
@@ -409,7 +411,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       return ("ExonNotFound", "0", 0, 0)
   }
 
-  private def getExonRange(iGeneId: String, iExonId: String): (Int, Int) = {
+  private def getExonRange(iGeneId: String, iExonId: String): (String, Int, Int) = {
     return genExonsMapLookupB.value((iGeneId, iExonId))
   }
 
@@ -479,11 +481,11 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   }
 
   /**
-   *
-   * @param iCoalesceRegDiffPVal If continuous regions of different p-value <=iMaxPval should be coalesed (default false).
+   * Method for finding differentially expressed regions candidates at base-resolution
+   * @param iCoalesceRegDiffPVal If continuous regions of different p-value <=iMaxPval should be coalesced (default true).
    * @return RDD of tuples(p-value,regionLength, (chrom,starPosition),foldChange,genId,exonId,exonRegionOverlap)
    */
-  def findCandRegions(iCoalesceRegDiffPVal: Boolean = false): (scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int)]]],
+  def findCandRegions(iCoalesceRegDiffPVal: Boolean = true): (scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int)]]],
     scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int)]]]) = {
 
     coalesceRegDiffPVal = iCoalesceRegDiffPVal
@@ -524,7 +526,12 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     return (exonCandidates, newRegCandidates)
   }
 
-
+  /**
+   * Method for testing regions candidates using adaptive permutation method
+   * @param iRegions SparkSeq broadcast variable produced by getDistExonCandidates or getRegionCandidates (workaround for Apache SparkContext
+   *                 serialization issue).
+   * @return RDD[((regionID), p-value, foldChange)]
+   */
   def permutTestRegions(iRegions: broadcast.Broadcast[scala.collection.mutable.
   HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]]): RDD[((String), Double, Double)] = {
     val seqRegCovCase = iSeqAnalCase.getCoverageRegion(iRegions).map(r => ((SparkSeqConversions.stripSampleID(r._1), r._2)))
@@ -534,20 +541,21 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       .groupByKey()
       .mapValues(c => if ((controlSampleNum - c.length) > 0) (c ++ ArrayBuffer.fill[Int](controlSampleNum - c.length)(0)) else (c))
     val jointRegion = joinSeqAnalysisGroupRegion(seqRegCovCase, seqRegCovControl)
-    val permTestRegion = jointRegion.map {
+    val permTestRegionD = jointRegion.map {
       r =>
         val statTests = Array[StatisticalTest](SparkSeqCvM2STest, SparkSeqKS2STest)
         val permTest = new AdaptivePermutTest(iNPermut = 10000, iStatTests = statTests, r._2._1, r._2._2)
-        (SparkSeqConversions.ensemblRegionIdToExonId(r._1), permTest.getPvalue(), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2))
+        (SparkSeqConversions.ensemblRegionIdToExonId(r._1), permTest.getPvalue(), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2), r._2._1, r._2._2)
     }
-
+    permTestRegionD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/64MB/debugTestStat.txt")
+    val permTestRegion = permTestRegionD.map(r => (r._1, r._2, r._3))
     // .filter(r=>r._2<=iMaxPval)
     seqRegDERDDExons = seqRegDERDDPhase1
       //.filter(r => r._3._2 != 0)
       .map(r => (r._6, (r._1, r._2, r._3, r._4, r._5, r._6, r._7, r._8, r._9))).join(permTestRegion.map(r => (r._1, r._2)))
       .mapValues(r => (r._1._1, r._1._2, r._1._3, r._1._4, r._1._5, r._1._6, r._1._7, r._1._8, r._1._9, r._2))
     val seqRegExons = seqRegDERDDExons.groupByKey().collect()
-    seqRegExonsArray = new Array[(String, (Double, Double, String, String, Double))](seqRegExons.length)
+    seqRegExonsArray = new Array[(String, (Double, Double, String, String, Double, Double, Double))](seqRegExons.length)
     var i = 0
     for (r <- seqRegExons) {
       var overlap = 0.0
@@ -557,18 +565,22 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
       var length = 0
       var genId = ""
       var exonId = ""
+      var avgCovA = 0.0
+      var avgCovB = 0.0
       for (s <- r._2) {
 
         regPval = (regPval * length + s._2 * s._1) / (length + s._2)
         overlap += s._7
         foldChange = (foldChange * length + s._4 * s._2) / (length + s._2)
+        avgCovA = (avgCovA * length + s._8 * s._2) / (length + s._2)
+        avgCovB = (avgCovB * length + s._9 * s._2) / (length + s._2)
         exonPval = s._10
         length += s._2
         genId = s._5
         exonId = s._6
 
       }
-      seqRegExonsArray(i) = (r._1, (exonPval, foldChange, genId, exonId, overlap))
+      seqRegExonsArray(i) = (r._1, (exonPval, foldChange, genId, exonId, overlap, avgCovA, avgCovB))
       i += 1
     }
     seqRegExonsArray = seqRegExonsArray.sortBy(r => (r._2._1, -r._2._2))
@@ -606,7 +618,8 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
   /**
    *
    * @param iNum Number of top regions sorted  by p-value asc, foldChange desc and region length desc to be saved to file (default 10000).
-   * @param iFilePathLocal Local path to save top iNum regions locally.
+   * @param iFilePathLocal Local path to save top iNum regions candidates locally.
+   * @param iFilePathLocalExon Local path to save exons after running permutation tests on them.
    * @param iFilePathRemote Remote path to HDFS storage to save all the results.
    */
   def saveResults(iNum: Int = 10000, iFilePathLocal: String = "sparkseq_10000.txt", iFilePathLocalExon: String = "sparkseq_exons.txt", iFilePathRemote: String) = {
@@ -622,7 +635,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
         var rec = (math.round(r._2._10 * 100000).toDouble / 100000).toString.padTo(15, ' ') + (math.round(r._2._1 * 100000).toDouble / 100000).toString.padTo(15, ' ') +
           (math.round(r._2._4 * 100000).toDouble / 100000).toString.padTo(25, ' ') +
           r._2._2.toString.padTo(10, ' ') + r._2._3.toString.padTo(20, ' ') + r._2._5.toString.padTo(25, ' ') + r._2._6.toString.padTo(25, ' ') + r._2._7.toString.padTo(15, ' ') +
-          ((math.round(r._2._8 * 100)).toDouble / 100).toString.padTo(10, ' ') + ((math.round(r._2._9 * 100) / 100).toDouble).toString.padTo(10, ' ') +
+          ((math.round(r._2._8 * 100)).toDouble / 100).toString.padTo(10, ' ') + ((math.round(r._2._9 * 100)).toDouble / 100).toString.padTo(10, ' ') +
           (if (r._2._8 < 2 && r._2._9 < 2) "*" else if (r._2._8 >= 100 || r._2._9 >= 100) "****" else if (r._2._8 >= 10 || r._2._9 >= 10) "***" else "**").padTo(20, ' ')
         writer.write(rec + "\n")
       }
@@ -630,11 +643,14 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
 
       writer = new PrintWriter(new File(iFilePathLocalExon))
       val headerExon = "Ph-II p-val".toString.padTo(15, ' ') + "foldChange".padTo(25, ' ') + "geneId".padTo(25, ' ') + "exonId".padTo(25, ' ') +
-        "exonOverlapPct".padTo(15, ' ')
+        "exonOverlapPct".padTo(15, ' ') + "avgCovA".padTo(10, ' ') + "avgCovB".padTo(10, ' ') + "covSignifficant".padTo(20, ' ')
       writer.write(headerExon + "\n")
       for (r <- seqRegExonsArray) {
         var rec = (math.round(r._2._1 * 100000).toDouble / 100000).toString.padTo(15, ' ') + (math.round(r._2._2 * 100000).toDouble / 100000).toString.padTo(25, ' ') +
-          r._2._3.padTo(25, ' ') + r._2._4.toString.padTo(25, ' ') + (math.round(r._2._5 * 100000).toDouble / 100000).toString.padTo(15, ' ')
+          r._2._3.padTo(25, ' ') + r._2._4.toString.padTo(25, ' ') + (math.round(r._2._5 * 100000).toDouble / 100000).toString.padTo(15, ' ') +
+          ((math.round(r._2._6 * 100)).toDouble / 100).toString.padTo(10, ' ') + ((math.round(r._2._7 * 100)).toDouble / 100).toString.padTo(10, ' ') +
+          (if (r._2._6 < 2 && r._2._7 < 2) "*".length else if (r._2._6 >= 100 || r._2._7 >= 100) "****".length else if (r._2._6 >= 10 || r._2._7 >= 10) "***".length else "**".length)
+            .toString.padTo(20, ' ')
         writer.write(rec + "\n")
       }
       writer.close()
@@ -656,18 +672,25 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     writer.close()
   }
 
+  /**
+   * Returns HashTable with differentially expressed exons candidates.
+   * @return SparkSeq internal representation of a array of exons as a HashMap(chr,(geneID,exonID,startPos,endPos) )
+   */
   def getDistExonCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int) /*(GeneId,ExonId,Start,End,tId)*/ ]]] = {
 
     val exonCand = seqRegDERDDPhase1 /*genExons format: (genId,ExonId,chr,start,end,strand)*/
       .filter(r => (r._6 != "0")) //filter out uknown regions
       .map {
-      r => val eRange = getExonRange(r._5, r._6); (r._5, r._6, r._3._1, eRange._1, eRange._2, ".")
+      r => val eRange = getExonRange(r._5, r._6); (r._5, r._6, r._3._1, eRange._2, eRange._3, ".")
     }.distinct.collect()
     val exonCandHashMap = SparkSeqConversions.exonsToHashMap(exonCand)
     return (exonCandHashMap)
   }
 
-
+  /**
+   * Returns HashTable with differentially expressed novel regions candidates.
+   * @return SparkSeq internal representation of a array of exons as a HashMap(chr,(geneID,exonID,startPos,endPos) )
+   */
   def getRegionCandidates(): scala.collection.mutable.HashMap[String, Array[ArrayBuffer[(String, String, Int, Int) /*(GeneId,ExonId,Start,End)*/ ]]] = {
     val unRegionCand = seqRegDERDDPhase1 /*genExons format: (genId,ExonId,chr,start,end,strand)*/
       .filter(r => (r._6 == "0"))
