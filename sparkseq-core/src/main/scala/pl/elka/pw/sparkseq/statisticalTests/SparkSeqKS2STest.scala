@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014. [insert your company or name here]
+ * Copyright (c) 2014. Marek Wiewiorka
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,18 @@ import jsc.independentsamples.SmirnovTest
 /**
  * Created by mesos on 3/17/14.
  */
+
+/**
+ * Object for computing two-sample Cramer-von Mises test
+ */
 object SparkSeqKS2STest extends StatisticalTest {
 
-
+  /**
+   * Method for computing test statistics of two-sample Cramer von Mises test
+   * @param x Value from the first sample.
+   * @param y Value from the other sample.
+   * @return Test statistics.
+   */
   def getTestStatistics(x: Seq[Int], y: Seq[Int]): Double = {
 
     val dX = x.map(r => r.toDouble).toArray
