@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014. [insert your company or name here]
+ * Copyright (c) 2014. Marek Wiewiorka
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -333,10 +333,10 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
                   k += 1
                 }
 
-            }
+              }
               else {
                 maxPval = if (maxPval < r._2(i - 1)._1) r._2(i - 1)._1 else maxPval
-              fcSum += r._2(i - 1)._3
+                fcSum += r._2(i - 1)._3
                 regLength += 1
                 avgCountA = (avgCountA * regLength + r._2(i - 1)._4) / (regLength + 1)
                 avgCountB = (avgCountB * regLength + r._2(i - 1)._5) / (regLength + 1)
@@ -544,7 +544,7 @@ class SparkSeqDiffExpr(iSC: SparkContext, iSeqAnalCase: SparkSeqAnalysis, iSeqAn
     val permTestRegionD = jointRegion.map {
       r =>
         val statTests = Array[StatisticalTest](SparkSeqCvM2STest, SparkSeqKS2STest)
-        val permTest = new AdaptivePermutTest(iNPermut = 10000, iStatTests = statTests, r._2._1, r._2._2)
+        val permTest = new SparkSeqAdaptivePermutTest(iNPermut = 10000, iStatTests = statTests, r._2._1, r._2._2)
         (SparkSeqConversions.ensemblRegionIdToExonId(r._1), permTest.getPvalue(), SparkSeqStats.mean(r._2._1) / SparkSeqStats.mean(r._2._2), r._2._1, r._2._2)
     }
     permTestRegionD.saveAsTextFile("hdfs://sparkseq002.cloudapp.net:9000/BAM/64MB/debugTestStat.txt")
