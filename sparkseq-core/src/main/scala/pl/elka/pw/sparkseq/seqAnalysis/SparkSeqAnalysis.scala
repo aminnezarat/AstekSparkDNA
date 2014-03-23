@@ -49,7 +49,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * References to all samples in the analysis.
    */
-  var bamFile = iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r))
+  var bamFile = iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r._2.get))
   private var bamFileFilter = bamFile
   /**
    * Number of samples (defaults to 1)
@@ -59,8 +59,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   private var normFactor = scala.collection.mutable.HashMap[Int, Double]()
   normFactor(iSampleId) = iNormFactor
 
-  //var bedFile:RDD[String] = null
-  //val fastaFile = iFASTAFile
+  //private def reads
   /**
    * Method for generating bases coordinates that a given read is alligned to using its Cigar string.
    *
@@ -110,7 +109,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    *
    */
   def addBAM(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNormFactor: Double) {
-    bamFile = bamFile ++ iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r))
+    bamFile = bamFile ++ iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r._2.get()))
     normFactor(iSampleId) = iNormFactor
     bamFileFilter = bamFile
     sampleNum += 1
@@ -139,14 +138,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
         for (read <- partitionIterator) {
           sampleId = read._1 * 1000000000000L
           sampleIdRaw = read._1
-          refName = read._2._2.get.getReferenceName match {
+          refName = read._2.getReferenceName match {
             case "Y" => "chrY"
             case "X" => "chrX"
-            case _ => read._2._2.get.getReferenceName
+            case _ => read._2.getReferenceName
           }
           if (iGenExons.value.contains(refName)) {
             var exons = iGenExons.value(refName)
-            var basesFromRead = genBasesFromCigar(read._2._2.get.getAlignmentStart, read._2._2.get.getCigar)
+            var basesFromRead = genBasesFromCigar(read._2.getAlignmentStart, read._2.getCigar)
             for (basesArray <- basesFromRead) {
               var subReadStart = basesArray.start
               var subReadEnd = basesArray.end
@@ -236,19 +235,19 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
 
         for (read <- partitionIterator) {
           sampleId = read._1
-          refName = read._2._2.get.getReferenceName
+          refName = read._2.getReferenceName
           chNumCode = SparkSeqConversions.chrToLong(refName) + sampleId * 1000000000000L
 
           if (!chrMin.contains(chNumCode))
             chrMin(chNumCode) = Int.MaxValue
-          if (chrMin(chNumCode) > read._2._2.get.getAlignmentStart)
-            chrMin(chNumCode) = read._2._2.get.getAlignmentStart
+          if (chrMin(chNumCode) > read._2.getAlignmentStart)
+            chrMin(chNumCode) = read._2.getAlignmentStart
 
           if (!chrMax.contains(chNumCode))
             chrMax(chNumCode) = 0
-          if (chrMax(chNumCode) < read._2._2.get.getAlignmentEnd)
-            chrMax(chNumCode) = read._2._2.get.getAlignmentEnd
-          var basesFromRead = genBasesFromCigar(read._2._2.get.getAlignmentStart, read._2._2.get.getCigar)
+          if (chrMax(chNumCode) < read._2.getAlignmentEnd)
+            chrMax(chNumCode) = read._2.getAlignmentEnd
+          var basesFromRead = genBasesFromCigar(read._2.getAlignmentStart, read._2.getCigar)
           //new chr in reads
           if (!chrMap.contains(chNumCode))
             chrMap(chNumCode) = new Array[Array[Int]](2500000)
@@ -308,12 +307,75 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   def getCoverageBaseRegion(chr: String, regStart: Int, regEnd: Int): RDD[(Long, Int)] = {
     //val chrCode = chrToLong(chr)
     if (chr == "*")
-      bamFileFilter = bamFile.filter(r => r._2._2.get.getAlignmentStart() >= regStart && r._2._2.get.getAlignmentEnd() <= regEnd)
+      bamFileFilter = bamFile.filter(r => r._2.getAlignmentStart() >= regStart && r._2.getAlignmentEnd() <= regEnd)
     else
-      bamFileFilter = bamFile.filter(r => r._2._2.get.getReferenceName() == chr && r._2._2.get.getAlignmentStart() >= regStart && r._2._2.get.getAlignmentEnd() <= regEnd)
+      bamFileFilter = bamFile.filter(r => r._2.getReferenceName() == chr && r._2.getAlignmentStart() >= regStart && r._2.getAlignmentEnd() <= regEnd)
 
     return (getCoverageBase())
 
   }
+
+  /**
+   * Get all reads from all samples  in format (sampleId,ReadObject)
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def getReads(): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    return bamFileFilter
+  }
+
+  /**
+   * Get all reads for a specific sample in format (ReadObject)
+   * @param sampleID ID of a given sample
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def getSampleReads(sampleID: Int): RDD[(net.sf.samtools.SAMRecord)] = {
+
+    return getReads().filter(r => r._1 == sampleID).map(r => r._2)
+  }
+
+  /**
+   * Set reads of SeqAnalysis object, e.g. after external filtering
+   * @param reads RDD of (sampleID,ReadObject)
+   */
+  def setReads(reads: RDD[(Int, net.sf.samtools.SAMRecord)]) = {
+
+    bamFileFilter = reads
+  }
+
+  /**
+   * Generic method for filtering out all reads using the condition provided: _.1 refers to sampleID, _.2 to ReadObject .
+   * @param filterCond ((Int, net.sf.samtools.SAMRecord)) => Boolean
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterReads(filterCond: ((Int, net.sf.samtools.SAMRecord)) => Boolean): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    bamFileFilter = bamFileFilter.filter(filterCond)
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on quality of mapping
+   * @param qaulityCond - Condition on quality
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterMappingQuality(qaulityCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    bamFileFilter = bamFileFilter.filter(r => qaulityCond(r._2.getMappingQuality))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on referance name
+   * @param refNameCond Condition on reference name
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterReadReferenceName(refNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => refNameCond(r._2.getReferenceName))
+    return bamFileFilter
+  }
+
+
 }
+
   
