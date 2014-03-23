@@ -325,7 +325,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
   /**
-   * Get all reads for a specific sample in format (ReadObject)
+   * Get all reads for a specific sample in format (sampleId,ReadObject)
    * @param sampleID ID of a given sample
    * @return RDD[(Int, net.sf.samtools.SAMRecord)]
    */
@@ -457,7 +457,31 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     return bamFileFilter
   }
 
+  /**
+   * Method for filtering reads using conditions on the CIGAR object
+   * @param cigarCond Condition on the end of the CIGAR object
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterCigar(cigarCond: (net.sf.samtools.Cigar => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => cigarCond(r._2.getCigar))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for saving feature counts to a file with samples in columns and feature in rows.
+   * @param iFile Path to a file.
+   */
+  def saveFeatureCoverageToFile(iFile: String) = {
+
+  }
+
+  /**
+   * ethod for saving base counts to a file with samples in columns and base positions in rows.
+   * @param iFile
+   */
+  def saveBaseCoverageToFile(iFile: String) = {
+
+  }
 
 }
 
-  
