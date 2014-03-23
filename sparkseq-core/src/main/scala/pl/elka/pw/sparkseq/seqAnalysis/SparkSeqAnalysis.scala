@@ -355,8 +355,8 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
   /**
-   * Method for filtering reads using conditions on quality of mapping
-   * @param qaulityCond - Condition on quality
+   * Method for filtering reads using conditions on the quality of mapping
+   * @param qaulityCond - Condition on the quality of read mapping
    * @return RDD[(net.sf.samtools.SAMRecord)]
    */
   def filterMappingQuality(qaulityCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
@@ -366,15 +366,74 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
   /**
-   * Method for filtering reads using conditions on referance name
+   * Method for filtering reads using conditions on the reference name
    * @param refNameCond Condition on reference name
    * @return RDD[(net.sf.samtools.SAMRecord)]
    */
-  def filterReadReferenceName(refNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReferenceName(refNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => refNameCond(r._2.getReferenceName))
     return bamFileFilter
   }
 
+  /**
+   * Method for filtering reads using conditions on the start of alignment
+   * @param alignStartCond  Condition on the start of the alignment
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterAlignmentStart(alignStartCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => alignStartCond(r._2.getAlignmentStart))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the end of alignment
+   * @param alignEndCond  Condition on the end of the alignment
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterAlignmentEnd(alignEndCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => alignEndCond(r._2.getAlignmentEnd))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the mapped flag
+   * @param unmapFlagCond Condition on the end of the mapped flag
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterUnmappedFlag(unmapFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => unmapFlagCond(r._2.getMateUnmappedFlag))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the read name
+   * @param readNameCond Condition on the end of the read name
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterReadName(readNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => readNameCond(r._2.getReadName))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the read length
+   * @param readLengthCond Condition on the end of the read length
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterReadLength(readLengthCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => readLengthCond(r._2.getReadLength))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the CIGAR string
+   * @param cigarStringCond Condition on the end of the CIGAR string
+   * @return RDD[(net.sf.samtools.SAMRecord)]
+   */
+  def filterCigarString(cigarStringCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => cigarStringCond(r._2.getCigarString))
+    return bamFileFilter
+  }
 
 }
 
