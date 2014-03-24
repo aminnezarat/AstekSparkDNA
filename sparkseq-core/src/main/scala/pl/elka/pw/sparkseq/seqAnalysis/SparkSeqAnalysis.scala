@@ -52,12 +52,21 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * References to all samples in the analysis.
    */
   var bamFile = iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r._2.get))
+
+
   private var regionCovRDD: RDD[(Long, Int)] = _
   private var baseCovRDD: RDD[(Long, Int)] = _
 
   private var samplesID = new ArrayBuffer[Int]()
   samplesID += iSampleId
+
+  private var samplePaths = new ArrayBuffer[String]()
+  private var samplePathsRDD = iSC.makeRDD(samplePaths)
+  samplePaths += iBAMFile
+
   private var bamFileFilter = bamFile
+
+  private var bamFileUndo = bamFileFilter
   /**
    * Number of samples (defaults to 1)
    */
@@ -87,7 +96,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       if (cElem.getOperator().toString() == "M" && i == 0 || (i == 1 && iCigar.getCigarElement(0).getOperator().toString() == "S"))
       //nuclReadArray=Array.range(iAlignStart,iAlignStart+cElem.getLength()+1)
         nuclReadArray += Range(iAlignStart, iAlignStart + cElem.getLength() + 1)
-      //find maps in between	  
+      //find maps in between
       else if (cElem.getOperator().toString() != "M")
         nuclShift += cElem.getLength()
       else if (cElem.getOperator().toString() == "M" && i > 1 && i < (numCigElem - 1) && nuclReadArray.length > 0) {
@@ -117,10 +126,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    */
   def addBAM(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNormFactor: Double) {
     bamFile = bamFile ++ iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r._2.get()))
+    bamFileUndo
     normFactor(iSampleId) = iNormFactor
     bamFileFilter = bamFile
+    bamFileUndo = bamFileFilter
     sampleNum += 1
     samplesID += iSampleId
+    samplePaths += iBAMFile
+    samplePathsRDD.+(iBAMFile)
   }
 
   /**
@@ -539,7 +552,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
   /**
-   * ethod for saving base counts to a file with samples in columns and base positions in rows.
+   * Method for saving base counts to a file with samples in columns and base positions in rows.
    * @param iFile
    */
   def saveBaseCoverageToFile(iFile: String) = {
@@ -551,5 +564,30 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
 
   }
 
+  /**
+   *
+   * Method that returns all the samples paths that are attached to the analysis
+   * @return Array of paths.
+   */
+  def getSamples(): RDD[String] = {
+
+    return samplePathsRDD
+  }
+
+  /**
+   *
+   * Method that lists all the samples paths that are attached to the analysis
+   */
+  def listSamples() = {
+    for (s <- samplePaths)
+      println(s)
+  }
+
+  /**
+   * Method that undo all the filtering done to all samples
+   */
+  def undoFilter() = {
+    bamFileFilter = bamFileUndo
+  }
 }
 
