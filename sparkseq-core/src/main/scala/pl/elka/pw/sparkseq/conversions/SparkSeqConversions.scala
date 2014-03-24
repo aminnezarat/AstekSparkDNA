@@ -18,6 +18,8 @@ package pl.elka.pw.sparkseq.conversions
 import org.apache.spark.SparkContext
 import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.rdd.RDD
+import pl.elka.pw.sparkseq.util.SparkSeqRegType._
+
 
 /**
  * Object for doing various data conversions used by SparkSeq.
@@ -85,7 +87,6 @@ object SparkSeqConversions {
    * @return Tuple (chromosome, position)
    */
   def idToCoordinates(id: Long): (String, Int) = {
-
     var coord = id match {
       case x if (x >= 1000000000L && x < 2000000000L) => ("chr1", (x - 1000000000L).toInt)
       case x if (x >= 2000000000L && x < 3000000000L) => ("chr2", (x - 2000000000L).toInt)
@@ -186,17 +187,21 @@ object SparkSeqConversions {
   }
 
   /**
-   * Method for decoding Ensembl exonId from SparkSeq's internal representation based on one Long-type value
+   * Method for decoding Ensembl regionId from SparkSeq's internal representation based on one Long-type value
    * @param iRegionId
-   * @return Ensemble format exonID
+   * @return Ensemble format regionID
    */
-  def ensemblRegionIdToExonId(iRegionId: Long): String = {
+  def ensemblRegionIdToExonId(iRegionId: Long, iRegType: SparkSeqRegType = Exon): String = {
 
     //remove sampleId header
     val regId = iRegionId % 1000000000000L
     var geneExonId = ""
     val newRegPreffix = "NEWREG"
-    val knowGenPreffix = "ENSE"
+    var knowRegPreffix = ""
+    if (iRegType == Exon)
+      knowRegPreffix = "ENSE"
+    else if (iRegType == Gene)
+      knowRegPreffix = "ENSG"
     val nameLength = 15
 
     //val exonId = (regId % 1000).toInt
@@ -205,7 +210,7 @@ object SparkSeqConversions {
     if (exonId == "0") //check if exonId=0 =>new region
       geneExonId = newRegPreffix.padTo(nameLength - exonId.length, '0') + exonId
     else {
-      geneExonId = knowGenPreffix.padTo(nameLength - exonId.length, '0') + exonId
+      geneExonId = knowRegPreffix.padTo(nameLength - exonId.length, '0') + exonId
     }
 
     return (geneExonId)
@@ -229,6 +234,15 @@ object SparkSeqConversions {
   def stripSampleID(id: Long): Long = {
 
     return (id % 1000000000000L)
+  }
+
+  /**
+   * Method that splits ID into tuple(sampleID,positionID or baseID without sample preffix)
+   * @param id Position or region id
+   * @return (SampleId,positionID or baseID without sample preffix)
+   */
+  def splitSampleID(id: Long): (Int, Long) = {
+    return ((id / 1000000000000L).toInt, stripSampleID(id))
   }
 
   /**

@@ -25,6 +25,8 @@ import org.apache.hadoop.io.LongWritable
 import scala.util.control._
 import scala.collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
+import java.io.{File, PrintWriter}
+import pl.elka.pw.sparkseq.util.SparkSeqRegType._
 
 /**
  * Main class for analysis of sequencing data. A SparkSeqAnalysis holds Apache Spark context as well as references
@@ -49,7 +51,12 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * References to all samples in the analysis.
    */
-  var bamFile = iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r))
+  var bamFile = iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r._2.get))
+  private var regionCovRDD: RDD[(Long, Int)] = _
+  private var baseCovRDD: RDD[(Long, Int)] = _
+
+  private var samplesID = new ArrayBuffer[Int]()
+  samplesID += iSampleId
   private var bamFileFilter = bamFile
   /**
    * Number of samples (defaults to 1)
@@ -59,8 +66,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   private var normFactor = scala.collection.mutable.HashMap[Int, Double]()
   normFactor(iSampleId) = iNormFactor
 
-  //var bedFile:RDD[String] = null
-  //val fastaFile = iFASTAFile
+  //private def reads
   /**
    * Method for generating bases coordinates that a given read is alligned to using its Cigar string.
    *
@@ -110,20 +116,23 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    *
    */
   def addBAM(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNormFactor: Double) {
-    bamFile = bamFile ++ iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r))
+    bamFile = bamFile ++ iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r._2.get()))
     normFactor(iSampleId) = iNormFactor
     bamFileFilter = bamFile
     sampleNum += 1
+    samplesID += iSampleId
   }
 
   /**
    * Method for computing coverage for a given list of genetic regions.
    *
    * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
+   * @param unionMode If set to true reads overlapping more than one region are discarded (false by default). More info on union mode:
+   *                  http://www-huber.embl.de/users/anders/HTSeq/doc/count.html#count
    * @return RDD of tuples (regionId, coverage)
    */
   def getCoverageRegion(iGenExons: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
-  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]]): RDD[(Long, Int)] = {
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]], unionMode: Boolean = false): RDD[(Long, Int)] = {
 
     val coverage = (bamFileFilter.mapPartitions {
       partitionIterator =>
@@ -137,14 +146,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
         for (read <- partitionIterator) {
           sampleId = read._1 * 1000000000000L
           sampleIdRaw = read._1
-          refName = read._2._2.get.getReferenceName match {
+          refName = read._2.getReferenceName match {
             case "Y" => "chrY"
             case "X" => "chrX"
-            case _ => read._2._2.get.getReferenceName
+            case _ => read._2.getReferenceName
           }
           if (iGenExons.value.contains(refName)) {
             var exons = iGenExons.value(refName)
-            var basesFromRead = genBasesFromCigar(read._2._2.get.getAlignmentStart, read._2._2.get.getCigar)
+            var basesFromRead = genBasesFromCigar(read._2.getAlignmentStart, read._2.getCigar)
             for (basesArray <- basesFromRead) {
               var subReadStart = basesArray.start
               var subReadEnd = basesArray.end
@@ -156,25 +165,46 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
               else if (idReadStart > 0 && readStartArray == null && exons(idReadStart - 1) != null)
                 readStartArray = exons(idReadStart - 1)
               val loop = new Breaks;
-
+              val outloop = new Breaks;
               // if(idReadStart == idReadEnd ){
               if (readStartArray != null) {
-                for (es <- readStartArray) {
-                  loop.breakable {
-                    for (r <- subReadStart to subReadEnd by 2) {
-                      if (es._3 <= r && es._4 >= r) {
-                        var id = sampleId + pattern.replaceAllIn(es._2, "").toInt * 100000L
-                        if (!exonsCountMap.contains(id))
-                          exonsCountMap((id)) = 1
-                        else
-                          exonsCountMap((id)) += 1
+                val exonsOverlap = new ArrayBuffer[Long]()
+                var counter = 0
+                outloop.breakable {
+                  if (unionMode == true && counter > 1)
+                    outloop.break
+                  for (es <- readStartArray) {
+                    loop.breakable {
+                      for (r <- subReadStart to subReadEnd by 2) {
+                        if (es._3 <= r && es._4 >= r) {
+                          var id = sampleId + pattern.replaceAllIn(es._2, "").toInt * 100000L
+                          exonsOverlap += id
+                          counter += 1
+                          loop.break
+                        }
 
-                        loop.break
                       }
-
                     }
                   }
                 }
+                if (unionMode == true && counter == 1) {
+                  val id = exonsOverlap(0)
+                  if (!exonsCountMap.contains(id))
+                    exonsCountMap((id)) = 1
+                  else
+                    exonsCountMap((id)) += 1
+                }
+                else if (unionMode == false && counter >= 1) {
+                  for (e <- exonsOverlap) {
+                    val id = e
+                    if (!exonsCountMap.contains(id))
+                      exonsCountMap((id)) = 1
+                    else
+                      exonsCountMap((id)) += 1
+                  }
+                }
+
+
               }
             }
 
@@ -184,6 +214,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
         Iterator(exonsCountMap.mapValues(r => (math.round(r * normFactor(sampleIdRaw)).toInt)))
     }
       ).flatMap(r => r).reduceByKey(_ + _, iReduceWorkers)
+    regionCovRDD = coverage
     return (coverage)
   }
 
@@ -213,19 +244,18 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
 
         for (read <- partitionIterator) {
           sampleId = read._1
-          refName = read._2._2.get.getReferenceName
+          refName = read._2.getReferenceName
           chNumCode = SparkSeqConversions.chrToLong(refName) + sampleId * 1000000000000L
-
           if (!chrMin.contains(chNumCode))
             chrMin(chNumCode) = Int.MaxValue
-          if (chrMin(chNumCode) > read._2._2.get.getAlignmentStart)
-            chrMin(chNumCode) = read._2._2.get.getAlignmentStart
+          if (chrMin(chNumCode) > read._2.getAlignmentStart)
+            chrMin(chNumCode) = read._2.getAlignmentStart
 
           if (!chrMax.contains(chNumCode))
             chrMax(chNumCode) = 0
-          if (chrMax(chNumCode) < read._2._2.get.getAlignmentEnd)
-            chrMax(chNumCode) = read._2._2.get.getAlignmentEnd
-          var basesFromRead = genBasesFromCigar(read._2._2.get.getAlignmentStart, read._2._2.get.getCigar)
+          if (chrMax(chNumCode) < read._2.getAlignmentEnd)
+            chrMax(chNumCode) = read._2.getAlignmentEnd
+          var basesFromRead = genBasesFromCigar(read._2.getAlignmentStart, read._2.getCigar)
           //new chr in reads
           if (!chrMap.contains(chNumCode))
             chrMap(chNumCode) = new Array[Array[Int]](2500000)
@@ -271,7 +301,8 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     val coverageToReduce = coverage.flatMap(r => (r.array(1))).reduceByKey(_ + _, iReduceWorkers)
     val coverageNotReduce = coverage.flatMap(r => (r.array(0)))
     bamFileFilter = bamFile
-    return (coverageNotReduce.union(coverageToReduce))
+    baseCovRDD = coverageNotReduce.union(coverageToReduce)
+    return (baseCovRDD)
   }
 
   /**
@@ -285,12 +316,240 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   def getCoverageBaseRegion(chr: String, regStart: Int, regEnd: Int): RDD[(Long, Int)] = {
     //val chrCode = chrToLong(chr)
     if (chr == "*")
-      bamFileFilter = bamFile.filter(r => r._2._2.get.getAlignmentStart() >= regStart && r._2._2.get.getAlignmentEnd() <= regEnd)
+      bamFileFilter = bamFile.filter(r => r._2.getAlignmentStart() >= regStart && r._2.getAlignmentEnd() <= regEnd)
     else
-      bamFileFilter = bamFile.filter(r => r._2._2.get.getReferenceName() == chr && r._2._2.get.getAlignmentStart() >= regStart && r._2._2.get.getAlignmentEnd() <= regEnd)
+      bamFileFilter = bamFile.filter(r => r._2.getReferenceName() == chr && r._2.getAlignmentStart() >= regStart && r._2.getAlignmentEnd() <= regEnd)
 
     return (getCoverageBase())
 
   }
+
+  /**
+   * Get all reads from all samples  in format (sampleId,ReadObject)
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def getReads(): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    return bamFileFilter
+  }
+
+  /**
+   * Get all reads for a specific sample in format (sampleId,ReadObject)
+   * @param sampleID ID of a given sample
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def getSampleReads(sampleID: Int): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    return getReads().filter(r => r._1 == sampleID)
+  }
+
+  /**
+   * Set reads of SeqAnalysis object, e.g. after external filtering
+   * @param reads RDD of (sampleID,ReadObject)
+   */
+  def setReads(reads: RDD[(Int, net.sf.samtools.SAMRecord)]) = {
+
+    bamFileFilter = reads
+  }
+
+  /**
+   * Generic method for filtering out all reads using the condition provided: _.1 refers to sampleID, _.2 to ReadObject .
+   * @param filterCond ((Int, net.sf.samtools.SAMRecord)) => Boolean
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterReads(filterCond: ((Int, net.sf.samtools.SAMRecord)) => Boolean): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    bamFileFilter = bamFileFilter.filter(filterCond)
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the quality of mapping
+   * @param qaulityCond - Condition on the quality of read mapping
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterMappingQuality(qaulityCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    bamFileFilter = bamFileFilter.filter(r => qaulityCond(r._2.getMappingQuality))
+    return bamFileFilter
+  }
+
+
+  /**
+   * Method for filtering reads using conditions on the reference name
+   * @param refNameCond Condition on reference name
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterReferenceName(refNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => refNameCond(r._2.getReferenceName))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the start of alignment
+   * @param alignStartCond  Condition on the start of the alignment
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterAlignmentStart(alignStartCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => alignStartCond(r._2.getAlignmentStart))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the end of alignment
+   * @param alignEndCond  Condition on the end of the alignment
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterAlignmentEnd(alignEndCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => alignEndCond(r._2.getAlignmentEnd))
+    return bamFileFilter
+  }
+
+  /**
+   * Generic method for filtering reads using conditions on the merged flags.
+   * More info http://picard.sourceforge.net/explain-flags.html
+   * @param flagCond Condition on the merged flags
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterFlags(flagCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => flagCond(r._2.getFlags))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the mapped flag
+   * @param unmapFlagCond Condition on the end of the mapped flag
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterUnmappedFlag(unmapFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => unmapFlagCond(r._2.getMateUnmappedFlag))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the duplicate flag
+   * @param dupFlagCond
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterDuplicateReadFlag(dupFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => dupFlagCond(r._2.getDuplicateReadFlag))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the read name
+   * @param readNameCond Condition on the end of the read name
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterReadName(readNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => readNameCond(r._2.getReadName))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the read length
+   * @param readLengthCond Condition on the end of the read length
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterReadLength(readLengthCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => readLengthCond(r._2.getReadLength))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the CIGAR string
+   * @param cigarStringCond Condition on the end of the CIGAR string
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterCigarString(cigarStringCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => cigarStringCond(r._2.getCigarString))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the CIGAR object
+   * @param cigarCond Condition on the end of the CIGAR object
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterCigar(cigarCond: (net.sf.samtools.Cigar => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => cigarCond(r._2.getCigar))
+    return bamFileFilter
+  }
+
+  private def coverageRDDToFile(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType = Exon, iFile: String) = {
+    val regionCollect = iRDD
+      .map(r => (SparkSeqConversions.splitSampleID(r._1), r._2))
+      .map(r => (r._1._2, (r._1._1, r._2)))
+      .groupByKey()
+      .sortByKey()
+      .mapValues(r => r.sortBy(r => r._1))
+      .collect()
+    var samplesHeader: String = ""
+    val samplesIDSort = samplesID.sortBy(r => r)
+    for (i <- samplesIDSort)
+      samplesHeader += ("Sample_" + i.toString).padTo(10, ' ')
+    val fileHeader = "Feature".padTo(25, ' ') + samplesHeader + "\n"
+    var writer = new PrintWriter(new File(iFile))
+    writer.write(fileHeader)
+    for (r <- regionCollect) {
+      var feature: String = ""
+      if (iRegType == Exon)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Exon)
+      else if (iRegType == Gene)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)
+      else if (iRegType == Base) {
+        val posTup = SparkSeqConversions.idToCoordinates(r._1)
+        feature = posTup._1 + "," + posTup._2.toString
+      }
+      var sampleData: String = feature.padTo(25, ' ')
+      val rData = r._2
+      val loop = new Breaks
+      for (i <- samplesIDSort) {
+        loop.breakable {
+          for (s <- rData) {
+            if (s._1 == i) {
+              sampleData += s._2.toString.padTo(10, ' ')
+              loop.break()
+            }
+            else if (s == rData.last)
+              sampleData += 0.toString.padTo(10, ' ')
+          }
+
+        }
+
+      }
+
+      writer.write(sampleData + "\n")
+    }
+
+    writer.close()
+  }
+
+
+  /**
+   * Method for saving feature counts to a file with samples in columns and feature in rows.
+   * @param iFile Path to a file.
+   */
+  def saveFeatureCoverageToFile(iFile: String, iRegType: SparkSeqRegType = Exon) = {
+    if (regionCovRDD != None) {
+      coverageRDDToFile(regionCovRDD, iRegType, iFile)
+    }
+    else
+      println("Run getCoverageRegion method first!")
+  }
+
+  /**
+   * ethod for saving base counts to a file with samples in columns and base positions in rows.
+   * @param iFile
+   */
+  def saveBaseCoverageToFile(iFile: String) = {
+    if (baseCovRDD != None) {
+      coverageRDDToFile(baseCovRDD, Base, iFile)
+    }
+    else
+      println("Run getCoverageBase method first!")
+
+  }
+
 }
-  
+
