@@ -590,4 +590,3 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     bamFileFilter = bamFileUndo
   }
 }
-

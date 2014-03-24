@@ -3,12 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="1368ae05-693c-4bf5-9c67-1975774d46c8" name="Default" comment="SparkSeqStatisticalTest - code cleanup&#10;">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sparkseq-core/src/main/scala/pl/elka/pw/sparkseq/seqAnalysis/SparkSeqAnalysis.scala" afterPath="$PROJECT_DIR$/sparkseq-core/src/main/scala/pl/elka/pw/sparkseq/seqAnalysis/SparkSeqAnalysis.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sparkseq-core/src/main/scala/pl/elka/pw/sparkseq/serialization/SparkSeqKryoRegistrator.scala" afterPath="$PROJECT_DIR$/sparkseq-core/src/main/scala/pl/elka/pw/sparkseq/serialization/SparkSeqKryoRegistrator.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea_modules/sparkseq-build.iml" afterPath="$PROJECT_DIR$/.idea_modules/sparkseq-build.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea_modules/sparkseq-core.iml" afterPath="$PROJECT_DIR$/.idea_modules/sparkseq-core.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea_modules/sparkseq-repl.iml" afterPath="$PROJECT_DIR$/.idea_modules/sparkseq-repl.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea_modules/sparkseq.iml" afterPath="$PROJECT_DIR$/.idea_modules/sparkseq.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="sparkseq.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -94,7 +88,7 @@
       <file leaf-file-name="SparkSeqAnalysis.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/sparkseq-core/src/main/scala/pl/elka/pw/sparkseq/seqAnalysis/SparkSeqAnalysis.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="593" column="0" selection-start="22343" selection-end="22343" vertical-scroll-proportion="2.3584287" vertical-offset="7454" max-vertical-offset="8985">
+            <state line="591" column="1" selection-start="22341" selection-end="22341" vertical-scroll-proportion="0.8527005" vertical-offset="8344" max-vertical-offset="8955">
               <folding>
                 <element signature="n#!!doc" expanded="true" />
                 <element signature="e#642#678#0" expanded="true" />
@@ -1312,7 +1306,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/sparkseq-core/src/main/scala/pl/elka/pw/sparkseq/seqAnalysis/SparkSeqAnalysis.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="593" column="0" selection-start="22343" selection-end="22343" vertical-scroll-proportion="2.3584287" vertical-offset="7454" max-vertical-offset="8985">
+        <state line="591" column="1" selection-start="22341" selection-end="22341" vertical-scroll-proportion="0.8527005" vertical-offset="8344" max-vertical-offset="8955">
           <folding>
             <element signature="n#!!doc" expanded="true" />
             <element signature="e#642#678#0" expanded="true" />
