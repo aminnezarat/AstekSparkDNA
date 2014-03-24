@@ -25,6 +25,8 @@ import org.apache.hadoop.io.LongWritable
 import scala.util.control._
 import scala.collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
+import java.io.{File, PrintWriter}
+import pl.elka.pw.sparkseq.util.SparkSeqRegType._
 
 /**
  * Main class for analysis of sequencing data. A SparkSeqAnalysis holds Apache Spark context as well as references
@@ -50,6 +52,11 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * References to all samples in the analysis.
    */
   var bamFile = iSC.newAPIHadoopFile[LongWritable, SAMRecordWritable, BAMInputFormat](iBAMFile).map(r => (iSampleId, r._2.get))
+  private var regionCovRDD: RDD[(Long, Int)] = _
+  private var baseCovRDD: RDD[(Long, Int)] = _
+
+  private var samplesID = new ArrayBuffer[Int]()
+  samplesID += iSampleId
   private var bamFileFilter = bamFile
   /**
    * Number of samples (defaults to 1)
@@ -113,6 +120,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     normFactor(iSampleId) = iNormFactor
     bamFileFilter = bamFile
     sampleNum += 1
+    samplesID += iSampleId
   }
 
   /**
@@ -206,6 +214,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
         Iterator(exonsCountMap.mapValues(r => (math.round(r * normFactor(sampleIdRaw)).toInt)))
     }
       ).flatMap(r => r).reduceByKey(_ + _, iReduceWorkers)
+    regionCovRDD = coverage
     return (coverage)
   }
 
@@ -237,7 +246,6 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
           sampleId = read._1
           refName = read._2.getReferenceName
           chNumCode = SparkSeqConversions.chrToLong(refName) + sampleId * 1000000000000L
-
           if (!chrMin.contains(chNumCode))
             chrMin(chNumCode) = Int.MaxValue
           if (chrMin(chNumCode) > read._2.getAlignmentStart)
@@ -293,7 +301,8 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     val coverageToReduce = coverage.flatMap(r => (r.array(1))).reduceByKey(_ + _, iReduceWorkers)
     val coverageNotReduce = coverage.flatMap(r => (r.array(0)))
     bamFileFilter = bamFile
-    return (coverageNotReduce.union(coverageToReduce))
+    baseCovRDD = coverageNotReduce.union(coverageToReduce)
+    return (baseCovRDD)
   }
 
   /**
@@ -467,12 +476,66 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     return bamFileFilter
   }
 
+  private def coverageRDDToFile(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType = Exon, iFile: String) = {
+    val regionCollect = iRDD
+      .map(r => (SparkSeqConversions.splitSampleID(r._1), r._2))
+      .map(r => (r._1._2, (r._1._1, r._2)))
+      .groupByKey()
+      .sortByKey()
+      .mapValues(r => r.sortBy(r => r._1))
+      .collect()
+    var samplesHeader: String = ""
+    val samplesIDSort = samplesID.sortBy(r => r)
+    for (i <- samplesIDSort)
+      samplesHeader += ("Sample_" + i.toString).padTo(10, ' ')
+    val fileHeader = "Feature".padTo(25, ' ') + samplesHeader + "\n"
+    var writer = new PrintWriter(new File(iFile))
+    writer.write(fileHeader)
+    for (r <- regionCollect) {
+      var feature: String = ""
+      if (iRegType == Exon)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Exon)
+      else if (iRegType == Gene)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)
+      else if (iRegType == Base) {
+        val posTup = SparkSeqConversions.idToCoordinates(r._1)
+        feature = posTup._1 + "," + posTup._2.toString
+      }
+      var sampleData: String = feature.padTo(25, ' ')
+      val rData = r._2
+      val loop = new Breaks
+      for (i <- samplesIDSort) {
+        loop.breakable {
+          for (s <- rData) {
+            if (s._1 == i) {
+              sampleData += s._2.toString.padTo(10, ' ')
+              loop.break()
+            }
+            else if (s == rData.last)
+              sampleData += 0.toString.padTo(10, ' ')
+          }
+
+        }
+
+      }
+
+      writer.write(sampleData + "\n")
+    }
+
+    writer.close()
+  }
+
+
   /**
    * Method for saving feature counts to a file with samples in columns and feature in rows.
    * @param iFile Path to a file.
    */
-  def saveFeatureCoverageToFile(iFile: String) = {
-
+  def saveFeatureCoverageToFile(iFile: String, iRegType: SparkSeqRegType = Exon) = {
+    if (regionCovRDD != None) {
+      coverageRDDToFile(regionCovRDD, iRegType, iFile)
+    }
+    else
+      println("Run getCoverageRegion method first!")
   }
 
   /**
@@ -480,6 +543,11 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @param iFile
    */
   def saveBaseCoverageToFile(iFile: String) = {
+    if (baseCovRDD != None) {
+      coverageRDDToFile(baseCovRDD, Base, iFile)
+    }
+    else
+      println("Run getCoverageBase method first!")
 
   }
 
