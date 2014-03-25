@@ -27,6 +27,7 @@ import scala.collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
 import java.io.{File, PrintWriter}
 import pl.elka.pw.sparkseq.util.SparkSeqRegType._
+import net.sf.samtools.SAMUtils._
 
 /**
  * Main class for analysis of sequencing data. A SparkSeqAnalysis holds Apache Spark context as well as references
@@ -378,7 +379,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
 
   /**
    * Method for filtering reads using conditions on the quality of mapping
-   * @param qaulityCond - Condition on the quality of read mapping
+   * @param qaulityCond - Conditions on the quality of read mapping
    * @return RDD[(Int, net.sf.samtools.SAMRecord)]
    */
   def filterMappingQuality(qaulityCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
@@ -387,6 +388,15 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     return bamFileFilter
   }
 
+  /**
+   * Method for filtering reads using conditions on the base qualities of a given read
+   * @param baseQualCond  Conditions on the quality of read bases
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterBaseQualities(baseQualCond: (Array[Char] => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => baseQualCond(r._2.getBaseQualityString.toCharArray.sortBy(r => (-r))))
+    return bamFileFilter
+  }
 
   /**
    * Method for filtering reads using conditions on the reference name
@@ -441,11 +451,21 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
 
   /**
    * Method for filtering reads using conditions on the duplicate flag
-   * @param dupFlagCond
+   * @param dupFlagCond Condition on the end of the duplicate flag
    * @return RDD[(Int, net.sf.samtools.SAMRecord)]
    */
   def filterDuplicateReadFlag(dupFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => dupFlagCond(r._2.getDuplicateReadFlag))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the primary flag
+   * @param notPrimFlagCond Condition on the end of the primary flag
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterNotPrimaryAlignFlag(notPrimFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => notPrimFlagCond(r._2.getNotPrimaryAlignmentFlag))
     return bamFileFilter
   }
 
@@ -486,6 +506,16 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    */
   def filterCigar(cigarCond: (net.sf.samtools.Cigar => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => cigarCond(r._2.getCigar))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the alignment length covered by read incl. gaps
+   * @param alignLenCond Condition on the end of the alignmrnent length covered by read incl. gaps
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterAlignmentLength(alignLenCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+    bamFileFilter = bamFileFilter.filter(r => alignLenCond(r._2.getCigar.getPaddedReferenceLength))
     return bamFileFilter
   }
 
@@ -584,9 +614,21 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
   /**
-   * Method that undo all the filtering done to all samples
+   * Method that undoes all the filtering done to all samples
    */
   def undoFilter() = {
     bamFileFilter = bamFileUndo
+  }
+
+  /**
+   * Method that return mean read length of all samples
+   * @return mean read length
+   */
+  def getAvgReadLength(): Double = {
+    val stat = bamFileFilter
+      .map(r => (1, (1, r._2.getReadLength)))
+      .reduceByKey((a, b) => (a._1 + b._1, a._2 + b._2))
+      .map(r => (r._2))
+    return stat.first._2.toDouble / stat.first._1.toDouble
   }
 }

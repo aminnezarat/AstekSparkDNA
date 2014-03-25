@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2014. [insert your company or name here]
+ * Copyright (c) 2014. Marek Wiewiorka
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,5 +24,8 @@ package pl.elka.pw.sparkseq.util
  */
 object SparkSeqRegType extends Enumeration {
   type SparkSeqRegType = Value
+  /**
+   * Region type
+   */
   val Exon, Gene, Base = Value
 }
