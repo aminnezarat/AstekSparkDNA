@@ -254,5 +254,22 @@ object SparkSeqConversions {
     val pattern = "^[A-Za-z]*0*".r
     return (pattern.replaceAllIn(iGene, "").toInt * 100000L)
   }
+
+  /**
+   * Method to standardize chromosome names that contains letter(like Y,X)
+   * @param chr Chromosome name
+   * @return Standardized chromosome name, e.g. "Y" => "chrY"
+   */
+  def standardizeChr(chr: String): String = chr match {
+    case "Y" => "chrY"
+    case "X" => "chrX"
+    case _ => chr
+  }
+
+  def trimLetterChr(chr: String): String = chr match {
+    case "chrY" => "Y"
+    case "chrX" => "X"
+    case _ => chr
+  }
 }
 

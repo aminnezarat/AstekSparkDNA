@@ -423,12 +423,12 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @return RDD[(Int, net.sf.samtools.SAMRecord)]
    */
   def filterReferenceName(refNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
-    bamFileFilter = bamFileFilter.filter(r => refNameCond(r._2.getReferenceName))
+    bamFileFilter = bamFileFilter.filter(r => refNameCond(SparkSeqConversions.standardizeChr(r._2.getReferenceName)))
     return bamFileFilter
   }
 
   def filterReferenceName(refNameCond: ((String, String) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
-    bamFileFilter = bamFileFilter.filter(r => refNameCond(r._2.getReferenceName, r._2.getReferenceName))
+    bamFileFilter = bamFileFilter.filter(r => refNameCond(SparkSeqConversions.standardizeChr(r._2.getReferenceName), SparkSeqConversions.standardizeChr(r._2.getReferenceName)))
     return bamFileFilter
   }
 
@@ -681,14 +681,26 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method that displays sample reads(or first @iNum reads ) after optional applying all the filters specified
    * @param sampleID ID of a given sample
-   * @param iNum
+   * @param iNum Optionally the number of reads to display
    */
   def viewSampleReads(sampleID: Int, iNum: Int) = {
     val n = (Option(iNum) getOrElse 0)
     if (n > 0)
       getSampleReads(sampleID).take(n).foreach(r => println(r._2.getSAMString))
     else
-      getSampleReads(sampleID).foreach(r => println(r._2.getSAMString))
+      getSampleReads(sampleID).collect.foreach(r => println(r._2.getSAMString))
+
+  }
+
+  /**
+   * Method that displays all reads(or first @iNum reads ) after optional applying all the filters specified
+   * @param iNum Optionally the number of reads to display
+   */
+  def viewReads(iNum: Int = Int.MaxValue) = {
+    if (iNum == Int.MaxValue)
+      getReads.collect.foreach(r => println(r._2.getSAMString))
+    else
+      getReads.take(iNum).foreach(r => println(r._2.getSAMString))
 
   }
 
