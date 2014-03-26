@@ -332,8 +332,10 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     //val chrCode = chrToLong(chr)
     if (chr == "*")
       bamFileFilter = bamFile.filter(r => r._2.getAlignmentStart() >= regStart && r._2.getAlignmentEnd() <= regEnd)
-    else
-      bamFileFilter = bamFile.filter(r => r._2.getReferenceName() == chr && r._2.getAlignmentStart() >= regStart && r._2.getAlignmentEnd() <= regEnd)
+    else {
+      val chrT = SparkSeqConversions.trimLetterChr(chr)
+      bamFileFilter = bamFile.filter(r => r._2.getReferenceName() == chrT && r._2.getAlignmentStart() >= regStart && r._2.getAlignmentEnd() <= regEnd)
+    }
 
     return (getCoverageBase())
 
@@ -626,11 +628,56 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
         }
 
       }
-
       writer.write(sampleData + "\n")
     }
 
     writer.close()
+  }
+
+  private def coverageRDDToTable(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType = Exon) = {
+    val regionCollect = iRDD
+      .map(r => (SparkSeqConversions.splitSampleID(r._1), r._2))
+      .map(r => (r._1._2, (r._1._1, r._2)))
+      .groupByKey()
+      .sortByKey()
+      .mapValues(r => r.sortBy(r => r._1))
+      .collect()
+    var samplesHeader: String = ""
+    val samplesIDSort = samplesID.sortBy(r => r)
+    for (i <- samplesIDSort)
+      samplesHeader += ("Sample_" + i.toString).padTo(10, ' ')
+    val tabHeader = "\n" + "Feature".padTo(25, ' ') + samplesHeader + "\n"
+    print(tabHeader)
+    println("".padTo(tabHeader.length, '='))
+    for (r <- regionCollect) {
+      var feature: String = ""
+      if (iRegType == Exon)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Exon)
+      else if (iRegType == Gene)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)
+      else if (iRegType == Base) {
+        val posTup = SparkSeqConversions.idToCoordinates(r._1)
+        feature = posTup._1 + "," + posTup._2.toString
+      }
+      var sampleData: String = feature.padTo(25, ' ')
+      val rData = r._2
+      val loop = new Breaks
+      for (i <- samplesIDSort) {
+        loop.breakable {
+          for (s <- rData) {
+            if (s._1 == i) {
+              sampleData += s._2.toString.padTo(10, ' ')
+              loop.break()
+            }
+            else if (s == rData.last)
+              sampleData += 0.toString.padTo(10, ' ')
+          }
+
+        }
+
+      }
+      print(sampleData + "\n")
+    }
   }
 
 
@@ -647,12 +694,70 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
   /**
+   * Method that displays all samples coverage(counts) for the specified exons
+   * @param exArray Array of exons
+   */
+  def viewExonCoverage(exArray: Array[String]) = {
+    if (regionCovRDD != None) {
+      regionCovRDD.cache()
+      val regionCovFilterRDD = regionCovRDD
+        .filter(r => exArray.contains(SparkSeqConversions.ensemblRegionIdToExonId(r._1, Exon)))
+      coverageRDDToTable(regionCovFilterRDD, Exon)
+    }
+    else
+      println("Run getCoverageRegion method first!")
+  }
+
+  /**
+   * Method that displays all samples coverage(counts) for the specified regions
+   */
+  def viewRegionCoverage(exArray: Array[String]) = {
+    viewExonCoverage(exArray)
+  }
+
+  /**
+   * Method that displays all samples coverage(counts) for the specified genes
+   * @param exArray Array of gene names
+   */
+  def viewGeneCoverage(exArray: Array[String]) = {
+    if (regionCovRDD != None) {
+      regionCovRDD.cache()
+      val regionCovFilterRDD = regionCovRDD
+        .filter(r => exArray.contains(SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)))
+      coverageRDDToTable(regionCovFilterRDD, Gene)
+    }
+    else
+      println("Run getCoverageRegion method first!")
+  }
+
+
+  /**
    * Method for saving base counts to a file with samples in columns and base positions in rows.
    * @param iFile
    */
   def saveBaseCoverageToFile(iFile: String) = {
     if (baseCovRDD != None) {
       coverageRDDToFile(baseCovRDD, Base, iFile)
+    }
+    else
+      println("Run getCoverageBase method first!")
+
+  }
+
+  /**
+   * Method that displays all samples coverage for the specified region at base resolution
+   * @param iChr chromosome
+   * @param iStartPos start position
+   * @param iEndPos end position
+   */
+  def viewBaseCoverage(iChr: String, iStartPos: Int, iEndPos: Int) = {
+    if (baseCovRDD != None) {
+      baseCovRDD.cache()
+      val baseCovFilterRDD = baseCovRDD
+        .filter {
+        r => val coord = SparkSeqConversions.idToCoordinates(r._1); coord._1 == iChr && coord._2 >= iStartPos && coord._2 <= iEndPos
+      }
+      coverageRDDToTable(baseCovFilterRDD, Base)
     }
     else
       println("Run getCoverageBase method first!")

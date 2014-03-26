@@ -87,7 +87,7 @@ object SparkSeqConversions {
    * @return Tuple (chromosome, position)
    */
   def idToCoordinates(id: Long): (String, Int) = {
-    var coord = id match {
+    var coord = (id % 1000000000000L) match {
       case x if (x >= 1000000000L && x < 2000000000L) => ("chr1", (x - 1000000000L).toInt)
       case x if (x >= 2000000000L && x < 3000000000L) => ("chr2", (x - 2000000000L).toInt)
       case x if (x >= 3000000000L && x < 4000000000L) => ("chr3", (x - 3000000000L).toInt)
