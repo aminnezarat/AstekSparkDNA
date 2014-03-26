@@ -484,7 +484,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @return RDD[(Int, net.sf.samtools.SAMRecord)]
    */
   def filterUnmappedFlag(unmapFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
-    bamFileFilter = bamFileFilter.filter(r => unmapFlagCond(r._2.getMateUnmappedFlag))
+    bamFileFilter = bamFileFilter.filter(r => unmapFlagCond(r._2.getReadUnmappedFlag))
     return bamFileFilter
   }
 
