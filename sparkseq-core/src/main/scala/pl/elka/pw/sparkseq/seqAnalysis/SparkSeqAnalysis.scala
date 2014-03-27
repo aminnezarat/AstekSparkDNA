@@ -856,6 +856,5 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .sortByKey(iAsc)
       .map(r => ((((r._1._1, (SparkSeqConversions.idToCoordinates(r._1._2)._1, r._1._3)), r._2))))
     return sortReads
-
   }
 }
