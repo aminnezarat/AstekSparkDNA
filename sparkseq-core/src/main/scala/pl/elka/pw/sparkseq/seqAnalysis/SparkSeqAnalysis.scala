@@ -827,4 +827,35 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => (r._2))
     return stat.first._2.toDouble / stat.first._1.toDouble
   }
+
+  /**
+   * Sort all reads from all the samples by alignment start
+   * @param iAsc If results should be sorted ascending (by default)
+   * @return RDD of((sampleID,(chrName,alignStart)),read object)
+   */
+  def sortReadsByAlign(iAsc: Boolean = true): RDD[((Int, (String, Int)), net.sf.samtools.SAMRecord)] = {
+
+    val sortReads = getReads
+      .map(r => ((r._1, SparkSeqConversions.chrToLong(r._2.getReferenceName), r._2.getAlignmentStart), r._2))
+      .sortByKey(iAsc)
+      .map(r => ((((r._1._1, (SparkSeqConversions.idToCoordinates(r._1._2)._1, r._1._3)), r._2))))
+    return sortReads
+
+  }
+
+  /**
+   * Sort all reads from a given sample  by alignment start
+   * @param iSampleID SampleID of a given sample
+   * @param iAsc If results should be sorted ascending (by default)
+   * @return RDD of((sampleID,(chrName,alignStart)),read object)
+   */
+  def sortSampleReadsByAlign(iSampleID: Int, iAsc: Boolean = true): RDD[((Int, (String, Int)), net.sf.samtools.SAMRecord)] = {
+
+    val sortReads = getSampleReads(iSampleID)
+      .map(r => ((r._1, SparkSeqConversions.chrToLong(r._2.getReferenceName), r._2.getAlignmentStart), r._2))
+      .sortByKey(iAsc)
+      .map(r => ((((r._1._1, (SparkSeqConversions.idToCoordinates(r._1._2)._1, r._1._3)), r._2))))
+    return sortReads
+
+  }
 }
