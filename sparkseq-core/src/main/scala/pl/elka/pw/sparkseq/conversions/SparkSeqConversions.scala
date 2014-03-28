@@ -271,5 +271,15 @@ object SparkSeqConversions {
     case "chrX" => "X"
     case _ => chr
   }
+
+  /**
+   * Method to convert a postion tuple (chr,position) to Long-type value
+   * @param posTuple Tuple (chrName,position): (String,Int)
+   * @return Position encoded as Long
+   */
+  def coordinatesToId(posTuple: (String, Int)): Long = {
+
+    chrToLong(posTuple._1) + posTuple._2
+  }
 }
 

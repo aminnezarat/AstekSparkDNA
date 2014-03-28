@@ -29,6 +29,7 @@ import java.io.{File, PrintWriter}
 import pl.elka.pw.sparkseq.util.SparkSeqRegType._
 import net.sf.samtools.SAMUtils._
 import scala.Function._
+import com.sun.org.apache.xpath.internal.operations.Bool
 
 /**
  * Main class for analysis of sequencing data. A SparkSeqAnalysis holds Apache Spark context as well as references
@@ -383,6 +384,23 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   def filterReads(filterCond: ((Int, net.sf.samtools.SAMRecord), (Int, net.sf.samtools.SAMRecord)) => Boolean): RDD[(Int, net.sf.samtools.SAMRecord)] = {
 
     bamFileFilter = bamFileFilter.filter(r => filterCond(r, r))
+    return bamFileFilter
+  }
+
+  /**
+   * Method for filtering reads using conditions on the sample id
+   * @param sampleCond  Condition on the sample id
+   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   */
+  def filterSample(sampleCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    bamFileFilter = bamFileFilter.filter(r => sampleCond(r._1))
+    return bamFileFilter
+  }
+
+  def filterSample(sampleCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+
+    bamFileFilter = bamFileFilter.filter(r => sampleCond(r._1, r._1))
     return bamFileFilter
   }
 
