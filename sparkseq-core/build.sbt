@@ -51,6 +51,7 @@ test in assembly := {}
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   {
     case PathList("org", "apache", "commons", xs @ _*) => MergeStrategy.first 
+    case PathList("fi", "tkk", "ics", xs @ _*) => MergeStrategy.first
     case PathList("com", "esotericsoftware", xs @ _*) => MergeStrategy.first
     case PathList("org", "objectweb", xs @ _*)         => MergeStrategy.last
     case PathList("javax", "xml", xs @ _*)         => MergeStrategy.first

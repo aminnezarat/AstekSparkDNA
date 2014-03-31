@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="1368ae05-693c-4bf5-9c67-1975774d46c8" name="Default" comment="RSparkSeq&#10;">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/sparkseq-core/build.sbt" afterPath="$PROJECT_DIR$/sparkseq-core/build.sbt" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-    </list>
+    <list default="true" id="1368ae05-693c-4bf5-9c67-1975774d46c8" name="Default" comment="RSparkSeq&#10;" />
     <ignored path="sparkseq.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="TRACKING_ENABLED" value="true" />
