@@ -70,6 +70,9 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   private var bamFileFilter = bamFile
 
   private var bamFileUndo = bamFileFilter
+
+  private var regionMap: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]] = _
   /**
    * Number of samples (defaults to 1)
    */
@@ -711,6 +714,76 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       println("Run getCoverageRegion method first!")
   }
 
+
+  private def getCoverageTable(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType): Array[(String, Array[Int])] = {
+    val regionCoverageTable = new Array[(String, Array[Int])](iRDD.count().toInt)
+    val regionCollect = iRDD
+      .map(r => (SparkSeqConversions.splitSampleID(r._1), r._2))
+      .map(r => (r._1._2, (r._1._1, r._2)))
+      .groupByKey()
+      .sortByKey()
+      .mapValues(r => r.sortBy(r => r._1))
+      .collect()
+    val samplesIDSort = samplesID.sortBy(r => r)
+    var i = 0
+    for (r <- regionCollect) {
+      var feature: String = ""
+      if (iRegType == Exon)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Exon)
+      else if (iRegType == Gene)
+        feature = SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)
+      else
+        feature = SparkSeqConversions.idToCoordinates(r._1).toString()
+      var sampleData = new ArrayBuffer[Int]()
+      val rData = r._2
+      val loop = new Breaks
+      for (i <- samplesIDSort) {
+        loop.breakable {
+          for (s <- rData) {
+            if (s._1 == i) {
+              sampleData += s._2
+              loop.break()
+            }
+            else if (s == rData.last)
+              sampleData += 0
+          }
+
+        }
+
+      }
+      regionCoverageTable(i) = (feature, sampleData.toArray)
+      i += 1
+    }
+    return regionCoverageTable
+  }
+
+  /**
+   * Get all genes counts for all samples.  Foe each gene it returns tuple with geneID and sorted by sampleID feature counts
+   * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
+   * @param unionMode If set to true reads overlapping more than one region are discarded (false by default). More info on union mode:
+   *                  http://www-huber.embl.de/users/anders/HTSeq/doc/count.html#count
+   * @return (geneId,Array(count))
+   */
+  def getGeneCoverage(iGenExons: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]], unionMode: Boolean = false): Array[(String, Array[Int])] = {
+
+    return getCoverageTable(getCoverageRegion(iGenExons, unionMode), Gene)
+  }
+
+  /**
+   * Get all exons counts for all samples.  Foe each gene it returns tuple with exonID and sorted by sampleID feature counts
+   * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
+   * @param unionMode If set to true reads overlapping more than one region are discarded (false by default). More info on union mode:
+   *                  http://www-huber.embl.de/users/anders/HTSeq/doc/count.html#count
+   * @return
+   */
+  def getExonCoverage(iGenExons: org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]], unionMode: Boolean = false): Array[(String, Array[Int])] = {
+
+    return getCoverageTable(getCoverageRegion(iGenExons, unionMode), Exon)
+  }
+
+
   /**
    * Method that displays all samples coverage(counts) for the specified exons
    * @param exArray Array of exons
@@ -862,7 +935,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
   /**
-   * Sort all reads from a given sample  by alignment start
+   * Sorts all reads from a given sample  by alignment start
    * @param iSampleID SampleID of a given sample
    * @param iAsc If results should be sorted ascending (by default)
    * @return RDD of((sampleID,(chrName,alignStart)),read object)
@@ -875,4 +948,26 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => ((((r._1._1, (SparkSeqConversions.idToCoordinates(r._1._2)._1, r._1._3)), r._2))))
     return sortReads
   }
+
+  /**
+   * Sets region map
+   * @param iSC SparkContext object
+   * @param bedFilePath Path to BED file (accesible by all nodes in the Spark cluster)
+   * @return region hashmap
+   */
+  def setRegionMap(iSC: SparkContext, bedFilePath: String) = {
+    regionMap = iSC.broadcast(SparkSeqConversions.BEDFileToHashMap(iSC, bedFilePath))
+
+  }
+
+  /**
+   * Get region map
+   * @return region hashmap
+   */
+  def getRegionMap(): org.apache.spark.broadcast.Broadcast[scala.collection.mutable.
+  HashMap[String, Array[scala.collection.mutable.ArrayBuffer[(String, String, Int, Int)]]]] = {
+
+    return regionMap
+  }
+
 }
