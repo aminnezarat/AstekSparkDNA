@@ -970,4 +970,12 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     return regionMap
   }
 
+  /**
+   * Get array of samplesID
+   * @return array of samplesID
+   */
+  def getSamplesID(): Array[Int] = {
+    return samplesID.toArray.sortBy(r => r)
+  }
+
 }
