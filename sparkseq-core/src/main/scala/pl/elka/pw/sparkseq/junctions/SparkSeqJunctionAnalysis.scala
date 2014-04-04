@@ -32,11 +32,16 @@ class SparkSeqJunctionAnalysis(seqAnalysis: SparkSeqAnalysis) extends Serializab
   private val jSeqAnalysis = seqAnalysis
   private var gapReads: RDD[(Int, net.sf.samtools.SAMRecord)] = _
 
-  private def findGapReads() = {
 
-    //reads with one gap
-    val cigRegex = "^[0-9]+[MEQISXDHP]+[0-9]+N[0-9]+[MEQISXDHP]{1,1}$".r
+  /**
+   * Find reads with specified maximum number of gaps
+   * @param maxGapNum
+   * @return
+   */
+  private def findGapReads(maxGapNum: Int = 3) = {
 
+    //reads with 1 to maxGapNum gaps
+    val cigRegex = ("^([0-9]+[MEQISXDHP]+)+([0-9]+N[0-9]+M[0-9]*[EQISXDHP]*){1," + maxGapNum.toString + "}[0-9]*[MEQISXDHP]*$").r
     jSeqAnalysis.filterCigarString(cigRegex.pattern.matcher(_).matches)
 
   }
@@ -45,10 +50,15 @@ class SparkSeqJunctionAnalysis(seqAnalysis: SparkSeqAnalysis) extends Serializab
    * Get junctions counts across all samples in SparkSeqAnalysis object
    * @return ( (sampleID,chrName,start,End), count )
    */
-  /*  def getJuncReadsCounts() : RDD[((Int,String,Int,Int),Int)]= {
+  /*def getJuncReadsCounts(maxGapNum:Int = 3) : RDD[((Int,String,Int,Int),Int)]= {
 
-      val juncReads = jSeqAnalysis.getReads()
-        .map(r=>((r._1, r._2.getReferenceName,r._2.getAlignmentStart, r._2.getCigar),1) )
+     findGapReads(maxGapNum=maxGapNum)
+     val juncReads = jSeqAnalysis.getReads()
+         .map(r=>((r._1, r._2.getReferenceName,r._2.getAlignmentStart, r._2.getCigar),1) )
+         .map{
 
-    }*/
+
+
+     }
+   }*/
 }
