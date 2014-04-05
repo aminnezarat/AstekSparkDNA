@@ -655,7 +655,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     writer.close()
   }
 
-  private def coverageRDDToTable(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType = Exon) = {
+  protected def coverageRDDToTable(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType = Exon) = {
     val regionCollect = iRDD
       .map(r => (SparkSeqConversions.splitSampleID(r._1), r._2))
       .map(r => (r._1._2, (r._1._1, r._2)))
@@ -715,7 +715,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   }
 
 
-  private def getCoverageTable(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType): Array[(String, Array[Int])] = {
+  protected def getCoverageTable(iRDD: RDD[(Long, Int)], iRegType: SparkSeqRegType): Array[(String, Array[Int])] = {
     val regionCoverageTable = new Array[(String, Array[Int])](iRDD.count().toInt)
     val regionCollect = iRDD
       .map(r => (SparkSeqConversions.splitSampleID(r._1), r._2))
@@ -770,6 +770,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
     return getCoverageTable(getCoverageRegion(iGenExons, unionMode), Gene)
   }
 
+
   /**
    * Get all exons counts for all samples.  Foe each gene it returns tuple with exonID and sorted by sampleID feature counts
    * @param iGenExons A Spark broadcast variable created from BED file that is transformed using SparkSeqConversions.BEDFileToHashMap
@@ -808,13 +809,13 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
 
   /**
    * Method that displays all samples coverage(counts) for the specified genes
-   * @param exArray Array of gene names
+   * @param genArray Array of gene names
    */
-  def viewGeneCoverage(exArray: Array[String]) = {
+  def viewGeneCoverage(genArray: Array[String]) = {
     if (regionCovRDD != None) {
       regionCovRDD.cache()
       val regionCovFilterRDD = regionCovRDD
-        .filter(r => exArray.contains(SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)))
+        .filter(r => genArray.contains(SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)))
       coverageRDDToTable(regionCovFilterRDD, Gene)
     }
     else
@@ -977,5 +978,6 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   def getSamplesID(): Array[Int] = {
     return samplesID.toArray.sortBy(r => r)
   }
+
 
 }

@@ -18,6 +18,8 @@ package pl.elka.pw.sparkseq.rsparkseq
 import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
+import pl.elka.pw.sparkseq.util.SparkSeqRegType._
 
 /**
  * Created by mwiewiorka on 3/31/14.
@@ -85,6 +87,20 @@ class RSparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNo
   def getRGeneCoverage(): Array[(String, Array[Int])] = {
 
     return getGeneCoverage(super.getRegionMap())
+  }
+
+  /**
+   * Get gene feature counts for genes specified in an input array
+   * @param geneArray array of string genes identifiers
+   * @return
+   */
+  def getRGeneCoverage(geneArray: Array[String]): Array[(String, Array[Int])] = {
+
+    val regionCovRDD = getCoverageRegion(super.getRegionMap())
+    regionCovRDD.cache()
+    val regionCovFilterRDD = regionCovRDD
+      .filter(r => geneArray.contains(SparkSeqConversions.ensemblRegionIdToExonId(r._1, Gene)))
+    return super.getCoverageTable(regionCovFilterRDD, Gene)
   }
 
   /**

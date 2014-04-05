@@ -281,5 +281,17 @@ object SparkSeqConversions {
 
     chrToLong(posTuple._1) + posTuple._2
   }
+
+  /**
+   * Gets encoded position
+   * @param sampleID sampleID
+   * @param chrName chromosome name
+   * @param position position in chrmomosome
+   * @return encoded position as Long value
+   */
+  def getEncodedPosition(sampleID: Int, chrName: String, position: Int): Long = {
+
+    return (sampleToLong(sampleID) + chrToLong(chrName) + position)
+  }
 }
 
