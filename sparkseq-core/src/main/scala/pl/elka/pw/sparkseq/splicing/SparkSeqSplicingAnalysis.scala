@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pl.elka.pw.sparkseq.pl.elka.pw.sparkseq.splicing
+package pl.elka.pw.sparkseq.splicing
 
 /**
  * Created by mwiewiorka on 4/6/14.
