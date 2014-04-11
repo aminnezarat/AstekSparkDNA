@@ -257,7 +257,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
         var refName: String = ""
         var chNumCode: Long = 0
         //val nuclArray = new Array[Array[Int]](2000000)
-        var countArray = new Array[(Long, Int)](12000000)
+        var countArray = new Array[(Long, Int)](15000000)
         var countArrayToReduce = new Array[(Long, Int)](300000)
         var outputArray = new Array[Array[(Long, Int)]](2)
 

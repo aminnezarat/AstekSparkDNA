@@ -100,8 +100,8 @@ class SparkSeqJunctionAnalysis(seqAnalysis: SparkSeqAnalysis) extends Serializab
   }
 
   /**
-   * Print topnN junction reads with the highest counts across samples
-   * @param topN numbe
+   * Print topN junction reads with the highest counts across samples
+   * @param topN number of top junction reads to report
    */
   def viewJuncReadsCounts(topN: Int = 10) = {
     val juncReadsOrdered = junctionReads.coalesce(1).cache.takeOrdered(topN)(Ordering[(Int)]
