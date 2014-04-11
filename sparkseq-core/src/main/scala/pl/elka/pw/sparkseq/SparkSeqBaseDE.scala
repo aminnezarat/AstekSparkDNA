@@ -59,6 +59,7 @@ object SparkSeqBaseDE {
 
     val timeStamp = DateTime.now.toString()
     val fileSplitSize = 64
+    val t = 1
     val rootPath = "hdfs://sparkseq002.cloudapp.net:9000/BAM/"
 
     /*val pathFam1 = rootPath+fileSplitSize.toString+"MB/condition_9/Fam1"
