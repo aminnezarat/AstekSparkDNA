@@ -6,9 +6,9 @@ name := "sparkseq-core"
 
 organization := "pl.edu.pw.elka"
 
-version := "0.1-SNAPSHOT"
+version := "0.2-SNAPSHOT"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 publishTo := Some(Resolver.file("file", new File("/var/www/maven.sparkseq001.cloudapp.net/html/maven")))
 
@@ -18,7 +18,7 @@ lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HA
 ScctPlugin.instrumentSettings
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
+  "org.apache.spark" %% "spark-core" % "1.0.0",
   "org.scalatest" % "scalatest_2.10" % "2.1.0-RC2" % "test",
   "org.apache.commons" % "commons-math3" % "3.2",
   "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
