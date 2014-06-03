@@ -4,9 +4,9 @@ name := "sparkseq"
 
 organization := "pl.edu.pw.elka"
 
-version := "0.2-SNAPSHOT"
+version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.10.4"
+scalaVersion := "2.10.3"
 
 publishTo := Some(Resolver.file("file", new File("/var/www/maven.sparkseq001.cloudapp.net/html/maven")) )
 

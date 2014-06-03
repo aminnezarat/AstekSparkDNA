@@ -613,7 +613,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => (r._1._2, (r._1._1, r._2)))
       .groupByKey()
       .sortByKey()
-      .mapValues(r => r.toSeq.sortBy(r => r._1))
+      .mapValues(r => r.sortBy(r => r._1))
       .collect()
     var samplesHeader: String = ""
     val samplesIDSort = samplesID.sortBy(r => r)
@@ -661,7 +661,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => (r._1._2, (r._1._1, r._2)))
       .groupByKey()
       .sortByKey()
-      .mapValues(r => r.toSeq.sortBy(r => r._1))
+      .mapValues(r => r.sortBy(r => r._1))
       .collect()
     var samplesHeader: String = ""
     val samplesIDSort = samplesID.sortBy(r => r)
@@ -722,7 +722,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => (r._1._2, (r._1._1, r._2)))
       .groupByKey()
       .sortByKey()
-      .mapValues(r => r.toSeq.sortBy(r => r._1))
+      .mapValues(r => r.sortBy(r => r._1))
       .collect()
     val samplesIDSort = samplesID.sortBy(r => r)
     var i = 0
