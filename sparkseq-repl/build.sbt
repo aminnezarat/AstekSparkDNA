@@ -4,14 +4,14 @@ version := "0.1-SNAPSHOT"
 
 organization := "pl.edu.pw.elka"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 publishTo := Some(Resolver.file("file", new File("/var/www/maven.sparkseq001.cloudapp.net/maven")) )
 
 ScctPlugin.instrumentSettings
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
+  "org.apache.spark" %% "spark-core" % "1.0.2",
   "org.scalatest" % "scalatest_2.10" % "2.1.0-RC2" % "test",
   "com.github.nscala-time" %% "nscala-time" % "0.8.0", 
   "pl.edu.pw.elka" %% "sparkseq-core" % "0.1-SNAPSHOT"

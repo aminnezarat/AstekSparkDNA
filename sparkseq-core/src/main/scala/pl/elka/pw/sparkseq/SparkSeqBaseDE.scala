@@ -15,26 +15,14 @@
  */
 package pl.elka.pw.sparkseq
 
-import pl.elka.pw.sparkseq.statisticalTests._
-import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
-import pl.elka.pw.sparkseq.statisticalTests._
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import collection.mutable.ArrayBuffer
-import org.apache.hadoop.io.LongWritable
-import fi.tkk.ics.hadoop.bam.{BAMInputFormat, SAMRecordWritable}
-import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
-import scala.util.control._
-import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
-import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
-import scala.Array
-import org.apache.spark.RangePartitioner
-import org.apache.spark.HashPartitioner
-import org.apache.spark.SparkConf
-import java.io._
-import com.github.nscala_time.time._
 import com.github.nscala_time.time.Imports._
+import org.apache.hadoop.io.LongWritable
+import org.apache.spark.{SparkConf, SparkContext}
+import org.seqdoop.hadoop_bam.{BAMInputFormat, SAMRecordWritable}
 import pl.elka.pw.sparkseq.differentialExpression.SparkSeqDiffExpr
+import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
+import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
+import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
 
 /**
  * Created by marek on 2/8/14.

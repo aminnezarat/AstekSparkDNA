@@ -8,7 +8,7 @@ organization := "pl.edu.pw.elka"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 publishTo := Some(Resolver.file("file", new File("/var/www/maven.sparkseq001.cloudapp.net/html/maven")))
 
@@ -18,15 +18,16 @@ lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HA
 ScctPlugin.instrumentSettings
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "0.9.0-incubating",
+  "org.apache.spark" %% "spark-core" % "1.0.2",
   "org.scalatest" % "scalatest_2.10" % "2.1.0-RC2" % "test",
   "org.apache.commons" % "commons-math3" % "3.2",
   "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
-  "fi.tkk.ics.hadoop.bam" % "hadoop-bam" % "6.1",
-  "picard" % "picard" % "1.93",
-  "samtools" % "samtools" % "1.93",
-  "tribble" % "tribble" % "1.93",
-  "variant" % "variant" % "1.93",
+  "org.seqdoop" % "hadoop-bam" % "7.0.0",
+  "org.seqdoop" % "htsjdk" % "1.118",
+  //"picard" % "picard" % "1.93",
+  //"samtools" % "samtools" % "1.93",
+  //"tribble" % "tribble" % "1.93",
+  //"variant" % "variant" % "1.93",
   "com.github.nscala-time" %% "nscala-time" % "0.8.0"
 )
 

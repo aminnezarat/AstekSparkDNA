@@ -16,12 +16,13 @@
 
 package pl.elka.pw.sparkseq.junctions
 
-import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
-import org.apache.spark.rdd.{EmptyRDD, RDD}
-import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
-import scala.collection.mutable.ArrayBuffer
-import net.sf.samtools.CigarOperator
+import htsjdk.samtools.CigarOperator
 import org.apache.spark.SparkContext._
+import org.apache.spark.rdd.RDD
+import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
+import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
  * Created by mwiewiorka on 4/4/14.
@@ -49,7 +50,7 @@ class SparkSeqJunctionAnalysis(seqAnalysis: SparkSeqAnalysis) extends Serializab
 
   }
 
-  private def getGapFromCigar(alignStart: Int, cigar: net.sf.samtools.Cigar): Array[Range] = {
+  private def getGapFromCigar(alignStart: Int, cigar: htsjdk.samtools.Cigar): Array[Range] = {
 
     var gapArray = ArrayBuffer[Range]()
     val numCigElem = cigar.numCigarElements()

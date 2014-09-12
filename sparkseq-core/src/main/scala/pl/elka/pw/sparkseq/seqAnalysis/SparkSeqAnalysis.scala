@@ -19,15 +19,16 @@ import org.apache.spark.SparkContext
 import SparkContext._
 import org.apache.spark.rdd._
 import org.apache.spark._
-import fi.tkk.ics.hadoop.bam.BAMInputFormat
-import fi.tkk.ics.hadoop.bam.SAMRecordWritable
+import org.seqdoop.hadoop_bam.BAMInputFormat
+import org.seqdoop.hadoop_bam.SAMRecordWritable
 import org.apache.hadoop.io.LongWritable
 import scala.util.control._
 import scala.collection.mutable.ArrayBuffer
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
 import java.io.{File, PrintWriter}
 import pl.elka.pw.sparkseq.util.SparkSeqRegType._
-import net.sf.samtools.SAMUtils._
+import htsjdk.samtools.SAMRecord
+import htsjdk.samtools.SAMUtils._
 import scala.Function._
 import com.sun.org.apache.xpath.internal.operations.Bool
 
@@ -89,7 +90,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @param iCigar Cigar string of a read aligments
    * @return Array of ranges computed from Cigar string.
    */
-  private def genBasesFromCigar(iAlignStart: Int, iCigar: net.sf.samtools.Cigar): Array[Range] = {
+  private def genBasesFromCigar(iAlignStart: Int, iCigar:htsjdk.samtools.Cigar): Array[Range] = {
 
     var nuclReadArray = ArrayBuffer[Range]()
     val numCigElem = iCigar.numCigarElements()
@@ -347,9 +348,9 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
 
   /**
    * Get all reads from all samples  in format (sampleId,ReadObject)
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def getReads(): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def getReads(): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     return bamFileFilter
   }
@@ -357,9 +358,9 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Get all reads for a specific sample in format (sampleId,ReadObject)
    * @param sampleID ID of a given sample
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def getSampleReads(sampleID: Int): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def getSampleReads(sampleID: Int): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     return getReads().filter(r => r._1 == sampleID)
   }
@@ -368,23 +369,23 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * Set reads of SeqAnalysis object, e.g. after external filtering
    * @param reads RDD of (sampleID,ReadObject)
    */
-  def setReads(reads: RDD[(Int, net.sf.samtools.SAMRecord)]) = {
+  def setReads(reads: RDD[(Int, htsjdk.samtools.SAMRecord)]) = {
 
     bamFileFilter = reads
   }
 
   /**
    * Generic method for filtering out all reads using the condition provided: _.1 refers to sampleID, _.2 to ReadObject .
-   * @param filterCond ((Int, net.sf.samtools.SAMRecord)) => Boolean
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @param filterCond ((Int, htsjdk.samtools.SAMRecord)) => Boolean
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterReads(filterCond: ((Int, net.sf.samtools.SAMRecord)) => Boolean): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReads(filterCond: ((Int, htsjdk.samtools.SAMRecord)) => Boolean): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     bamFileFilter = bamFileFilter.filter(filterCond)
     return bamFileFilter
   }
 
-  def filterReads(filterCond: ((Int, net.sf.samtools.SAMRecord), (Int, net.sf.samtools.SAMRecord)) => Boolean): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReads(filterCond: ((Int, htsjdk.samtools.SAMRecord), (Int, htsjdk.samtools.SAMRecord)) => Boolean): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     bamFileFilter = bamFileFilter.filter(r => filterCond(r, r))
     return bamFileFilter
@@ -393,15 +394,15 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the sample id
    * @param sampleCond  Condition on the sample id
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterSample(sampleCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterSample(sampleCond: (Int => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     bamFileFilter = bamFileFilter.filter(r => sampleCond(r._1))
     return bamFileFilter
   }
 
-  def filterSample(sampleCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterSample(sampleCond: ((Int, Int) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     bamFileFilter = bamFileFilter.filter(r => sampleCond(r._1, r._1))
     return bamFileFilter
@@ -410,15 +411,15 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the quality of mapping
    * @param qaulityCond - Conditions on the quality of read mapping
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord]
    */
-  def filterMappingQuality(qaulityCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterMappingQuality(qaulityCond: (Int => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     bamFileFilter = bamFileFilter.filter(r => qaulityCond(r._2.getMappingQuality))
     return bamFileFilter
   }
 
-  def filterMappingQuality(qaulityCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterMappingQuality(qaulityCond: ((Int, Int) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
 
     bamFileFilter = bamFileFilter.filter(r => qaulityCond(r._2.getMappingQuality, r._2.getMappingQuality))
     return bamFileFilter
@@ -427,14 +428,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the base qualities of a given read
    * @param baseQualCond  Conditions on the quality of read bases
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterBaseQualities(baseQualCond: (Array[Int] => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterBaseQualities(baseQualCond: (Array[Int] => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => baseQualCond(r._2.getBaseQualityString.toCharArray.map(r => fastqToPhred(r))))
     return bamFileFilter
   }
 
-  def filterBaseQualities(baseQualCond: ((Array[Int], Array[Int]) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterBaseQualities(baseQualCond: ((Array[Int], Array[Int]) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => baseQualCond(r._2.getBaseQualityString.toCharArray.map(r => fastqToPhred(r)),
       r._2.getBaseQualityString.toCharArray.map(r => fastqToPhred(r))))
     return bamFileFilter
@@ -443,14 +444,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the reference name
    * @param refNameCond Condition on reference name
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterReferenceName(refNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReferenceName(refNameCond: (String => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => refNameCond(SparkSeqConversions.standardizeChr(r._2.getReferenceName)))
     return bamFileFilter
   }
 
-  def filterReferenceName(refNameCond: ((String, String) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReferenceName(refNameCond: ((String, String) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => refNameCond(SparkSeqConversions.standardizeChr(r._2.getReferenceName), SparkSeqConversions.standardizeChr(r._2.getReferenceName)))
     return bamFileFilter
   }
@@ -458,14 +459,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the start of alignment
    * @param alignStartCond  Condition on the start of the alignment
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterAlignmentStart(alignStartCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterAlignmentStart(alignStartCond: (Int => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => alignStartCond(r._2.getAlignmentStart))
     return bamFileFilter
   }
 
-  def filterAlignmentStart(alignStartCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterAlignmentStart(alignStartCond: ((Int, Int) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => alignStartCond(r._2.getAlignmentStart, r._2.getAlignmentStart))
     return bamFileFilter
   }
@@ -473,14 +474,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the end of alignment
    * @param alignEndCond  Condition on the end of the alignment
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterAlignmentEnd(alignEndCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterAlignmentEnd(alignEndCond: (Int => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => alignEndCond(r._2.getAlignmentEnd))
     return bamFileFilter
   }
 
-  def filterAlignmentEnd(alignEndCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterAlignmentEnd(alignEndCond: ((Int, Int) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => alignEndCond(r._2.getAlignmentEnd, r._2.getAlignmentEnd))
     return bamFileFilter
   }
@@ -489,14 +490,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * Generic method for filtering reads using conditions on the merged flags.
    * More info http://picard.sourceforge.net/explain-flags.html
    * @param flagCond Condition on the merged flags
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterFlags(flagCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterFlags(flagCond: (Int => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => flagCond(r._2.getFlags))
     return bamFileFilter
   }
 
-  def filterFlags(flagCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterFlags(flagCond: ((Int, Int) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => flagCond(r._2.getFlags, r._2.getFlags))
     return bamFileFilter
   }
@@ -504,9 +505,9 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the mapped flag
    * @param unmapFlagCond Condition on the end of the mapped flag
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, nhtsjdk.samtools.SAMRecord)]
    */
-  def filterUnmappedFlag(unmapFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterUnmappedFlag(unmapFlagCond: (Boolean => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => unmapFlagCond(r._2.getReadUnmappedFlag))
     return bamFileFilter
   }
@@ -514,9 +515,9 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the duplicate flag
    * @param dupFlagCond Condition on the end of the duplicate flag
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterDuplicateReadFlag(dupFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterDuplicateReadFlag(dupFlagCond: (Boolean => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => dupFlagCond(r._2.getDuplicateReadFlag))
     return bamFileFilter
   }
@@ -524,9 +525,9 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the primary flag
    * @param notPrimFlagCond Condition on the end of the primary flag
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterNotPrimaryAlignFlag(notPrimFlagCond: (Boolean => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterNotPrimaryAlignFlag(notPrimFlagCond: (Boolean => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => notPrimFlagCond(r._2.getNotPrimaryAlignmentFlag))
     return bamFileFilter
   }
@@ -534,14 +535,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the read name
    * @param readNameCond Condition on the end of the read name
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterReadName(readNameCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReadName(readNameCond: (String => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => readNameCond(r._2.getReadName))
     return bamFileFilter
   }
 
-  def filterReadName(readNameCond: ((String, String) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReadName(readNameCond: ((String, String) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => readNameCond(r._2.getReadName, r._2.getReadName))
     return bamFileFilter
   }
@@ -549,14 +550,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the read length
    * @param readLengthCond Condition on the end of the read length
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterReadLength(readLengthCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReadLength(readLengthCond: (Int => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => readLengthCond(r._2.getReadLength))
     return bamFileFilter
   }
 
-  def filterReadLength(readLengthCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterReadLength(readLengthCond: ((Int, Int) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => readLengthCond(r._2.getReadLength, r._2.getReadLength))
     return bamFileFilter
   }
@@ -564,14 +565,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the CIGAR string
    * @param cigarStringCond Condition on the end of the CIGAR string
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterCigarString(cigarStringCond: (String => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterCigarString(cigarStringCond: (String => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => cigarStringCond(r._2.getCigarString))
     return bamFileFilter
   }
 
-  def filterCigarString(cigarStringCond: ((String, String) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterCigarString(cigarStringCond: ((String, String) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => cigarStringCond(r._2.getCigarString, r._2.getCigarString))
     return bamFileFilter
   }
@@ -580,14 +581,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the CIGAR object
    * @param cigarCond Condition on the end of the CIGAR object
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int,htsjdk.samtools.SAMRecord)]
    */
-  def filterCigar(cigarCond: (net.sf.samtools.Cigar => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterCigar(cigarCond: (htsjdk.samtools.Cigar => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => cigarCond(r._2.getCigar))
     return bamFileFilter
   }
 
-  def filterCigar(cigarCond: ((net.sf.samtools.Cigar, net.sf.samtools.Cigar) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterCigar(cigarCond: ((htsjdk.samtools.Cigar, htsjdk.samtools.Cigar) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => cigarCond(r._2.getCigar, r._2.getCigar))
     return bamFileFilter
   }
@@ -595,14 +596,14 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
   /**
    * Method for filtering reads using conditions on the alignment length covered by read incl. gaps
    * @param alignLenCond Condition on the end of the alignmrnent length covered by read incl. gaps
-   * @return RDD[(Int, net.sf.samtools.SAMRecord)]
+   * @return RDD[(Int, htsjdk.samtools.SAMRecord)]
    */
-  def filterAlignmentLength(alignLenCond: (Int => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterAlignmentLength(alignLenCond: (Int => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => alignLenCond(r._2.getCigar.getPaddedReferenceLength))
     return bamFileFilter
   }
 
-  def filterAlignmentLength(alignLenCond: ((Int, Int) => Boolean)): RDD[(Int, net.sf.samtools.SAMRecord)] = {
+  def filterAlignmentLength(alignLenCond: ((Int, Int) => Boolean)): RDD[(Int, htsjdk.samtools.SAMRecord)] = {
     bamFileFilter = bamFileFilter.filter(r => alignLenCond(r._2.getCigar.getPaddedReferenceLength, r._2.getCigar.getPaddedReferenceLength))
     return bamFileFilter
   }
@@ -613,7 +614,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => (r._1._2, (r._1._1, r._2)))
       .groupByKey()
       .sortByKey()
-      .mapValues(r => r.sortBy(r => r._1))
+      .mapValues(r => r.toSeq.sortBy(r => r._1))
       .collect()
     var samplesHeader: String = ""
     val samplesIDSort = samplesID.sortBy(r => r)
@@ -661,7 +662,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => (r._1._2, (r._1._1, r._2)))
       .groupByKey()
       .sortByKey()
-      .mapValues(r => r.sortBy(r => r._1))
+      .mapValues(r => r.toSeq.sortBy(r => r._1))
       .collect()
     var samplesHeader: String = ""
     val samplesIDSort = samplesID.sortBy(r => r)
@@ -722,7 +723,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
       .map(r => (r._1._2, (r._1._1, r._2)))
       .groupByKey()
       .sortByKey()
-      .mapValues(r => r.sortBy(r => r._1))
+      .mapValues(r => r.toSeq.sortBy(r => r._1))
       .collect()
     val samplesIDSort = samplesID.sortBy(r => r)
     var i = 0
@@ -925,7 +926,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @param iAsc If results should be sorted ascending (by default)
    * @return RDD of((sampleID,(chrName,alignStart)),read object)
    */
-  def sortReadsByAlign(iAsc: Boolean = true): RDD[((Int, (String, Int)), net.sf.samtools.SAMRecord)] = {
+  def sortReadsByAlign(iAsc: Boolean = true): RDD[((Int, (String, Int)), htsjdk.samtools.SAMRecord)] = {
 
     val sortReads = getReads
       .map(r => ((r._1, SparkSeqConversions.chrToLong(r._2.getReferenceName), r._2.getAlignmentStart), r._2))
@@ -941,7 +942,7 @@ class SparkSeqAnalysis(iSC: SparkContext, iBAMFile: String, iSampleId: Int, iNor
    * @param iAsc If results should be sorted ascending (by default)
    * @return RDD of((sampleID,(chrName,alignStart)),read object)
    */
-  def sortSampleReadsByAlign(iSampleID: Int, iAsc: Boolean = true): RDD[((Int, (String, Int)), net.sf.samtools.SAMRecord)] = {
+  def sortSampleReadsByAlign(iSampleID: Int, iAsc: Boolean = true): RDD[((Int, (String, Int)), htsjdk.samtools.SAMRecord)] = {
 
     val sortReads = getSampleReads(iSampleID)
       .map(r => ((r._1, SparkSeqConversions.chrToLong(r._2.getReferenceName), r._2.getAlignmentStart), r._2))
