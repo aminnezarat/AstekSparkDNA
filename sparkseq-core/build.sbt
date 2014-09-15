@@ -18,7 +18,7 @@ lazy val hadoopVersion = Properties.envOrElse("SPARK_HADOOP_VERSION", DEFAULT_HA
 ScctPlugin.instrumentSettings
 
 libraryDependencies ++= Seq(
-  "org.apache.spark" %% "spark-core" % "1.0.2",
+  "org.apache.spark" %% "spark-core" % "1.1.0",
   "org.scalatest" % "scalatest_2.10" % "2.1.0-RC2" % "test",
   "org.apache.commons" % "commons-math3" % "3.2",
   "org.apache.hadoop" % "hadoop-client" % hadoopVersion,
