@@ -2,30 +2,16 @@
 package pl.elka.pw.sparkseq
 
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
-import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
-import pl.elka.pw.sparkseq.conversions.SparkSeqConversions._
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
 import pl.elka.pw.sparkseq.seqAnalysis.SparkSeqAnalysis
+import pl.elka.pw.sparkseq.serialization.SparkSeqKryoProperties
+import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
 
 //import org.apache.spark.SparkConf
 //import org.apache.spark._
-import org.apache.spark.storage._
 //import SparkContext._
 //import spark._
-import org.apache.spark.HashPartitioner
-import org.apache.spark.rdd._
-import fi.tkk.ics.hadoop.bam.BAMInputFormat
-import fi.tkk.ics.hadoop.bam.SAMRecordWritable
-import org.apache.hadoop.io.LongWritable
 import org.apache.spark.SparkContext.rddToPairRDDFunctions
-import com.esotericsoftware.kryo.Kryo
-import collection.mutable.ArrayBuffer
-import pl.elka.pw.sparkseq.statisticalTests._
-import java.util.HashMap
-import scala.collection.mutable.Map
-import java.io.File
 
 /**
  * An example of a simple job implemented using SparkSeq.
