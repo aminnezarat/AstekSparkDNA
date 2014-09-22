@@ -57,9 +57,16 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case PathList("org", "objectweb", xs @ _*)         => MergeStrategy.last
     case PathList("javax", "xml", xs @ _*)         => MergeStrategy.first
     case PathList("javax", "servlet", xs @ _*)         => MergeStrategy.first
+    case PathList("javax", "activation",xs @ _*)         => MergeStrategy.first
+    case PathList("javax", "transaction",xs @ _*)         => MergeStrategy.first
+    case PathList("javax", "mail", xs @ _*)     => MergeStrategy.first
     case PathList(ps @ _*) if ps.last endsWith ".html" => MergeStrategy.first
     case "application.conf" => MergeStrategy.concat
-    case "unwanted.txt"     => MergeStrategy.discard
+    //case "META-INF/ECLIPSEF.RSA"     => MergeStrategy.discard
+    case "META-INF/mimetypes.default"  => MergeStrategy.first
+    case ("META-INF/ECLIPSEF.RSA") => MergeStrategy.first
+    case ("META-INF/mailcap") => MergeStrategy.first
+    case ("plugin.properties") => MergeStrategy.first
     case x => old(x)
   }
 }
