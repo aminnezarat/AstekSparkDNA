@@ -26,9 +26,9 @@ class SparkSeqKryoRegistrator extends org.apache.spark.serializer.KryoRegistrato
    * @param kryo
    */
   override def registerClasses(kryo: Kryo) {
-    kryo.register(classOf[fi.tkk.ics.hadoop.bam.SAMRecordWritable])
+    kryo.register(classOf[org.seqdoop.hadoop_bam.SAMRecordWritable])
     kryo.register(classOf[htsjdk.samtools.Cigar])
-    kryo.register(classOf[fi.tkk.ics.hadoop.bam.BAMInputFormat])
+    kryo.register(classOf[org.seqdoop.hadoop_bam.BAMInputFormat])
     kryo.register(classOf[org.apache.hadoop.io.LongWritable])
     kryo.register(classOf[htsjdk.samtools.BAMRecord])
     //kryo.register(classOf[pl.elka.pw.sparkseq.differentialExpression.SparkSeqDiffExpr])

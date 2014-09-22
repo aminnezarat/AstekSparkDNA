@@ -29,7 +29,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import collection.mutable.ArrayBuffer
 import org.apache.hadoop.io.LongWritable
-import fi.tkk.ics.hadoop.bam.{BAMInputFormat, SAMRecordWritable}
+import org.seqdoop.hadoop_bam.BAMInputFormat
+import org.seqdoop.hadoop_bam.SAMRecordWritable
 import pl.elka.pw.sparkseq.conversions.SparkSeqConversions
 import pl.elka.pw.sparkseq.util.SparkSeqContexProperties
 import scala.util.control._
