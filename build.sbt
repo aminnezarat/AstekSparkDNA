@@ -1,14 +1,14 @@
 import scala.util.Properties
- 
-name := "sparkseq"
 
-organization := "pl.edu.pw.elka"
+name := "asteksparkdna"
 
-version := "0.1-SNAPSHOT"
+organization := "seq.am.yz.astekdna"
+
+version := "1.0"
 
 scalaVersion := "2.10.4"
 
-publishTo := Some(Resolver.file("file", new File("/var/www/maven.sparkseq001.cloudapp.net/html/maven")) )
+publishTo := Some(Resolver.file("file", new File("/var/maven")) )
 
 ScctPlugin.instrumentSettings
 
@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
 )
 
 resolvers ++= Seq(
-  "Akka Repository" at "http://repo.akka.io/releases/",
+  "Akka Repository" at "http://repo.akka.io/releases/"
   "Typesafe" at "http://repo.typesafe.com/typesafe/releases",
   "Scala Tools Snapshots" at "http://scala-tools.org/repo-snapshots/",
   "ScalaNLP Maven2" at "http://repo.scalanlp.org/repo",
