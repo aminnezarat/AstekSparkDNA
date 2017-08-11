@@ -1,5 +1,5 @@
 import scala.util.Properties
-
+ 
 name := "sparkseq"
 
 organization := "pl.edu.pw.elka"
